@@ -151,47 +151,6 @@ app.get("/api/dossier/:id", checkAdmin, (req, res) => {
     res.json(d);
 });
 
-// --- Vue HTML résumé pour l’admin (humain lisible !) ---
-app.get("/dossier/:id", checkAdmin, (req, res) => {
-  let d = loadDemandes().find(d => d.id === req.params.id);
-  if (!d) return res.status(404).send("Demande non trouvée");
-  res.send(`
-    <h2>Détail de la demande</h2>
-    <ul>
-      <li><b>Date :</b> ${formatDateFr(d.date)}</li>
-      <li><b>Magasin :</b> ${d.magasin || ""}</li>
-      <li><b>Nom :</b> ${d.nom || ""}</li>
-      <li><b>Email :</b> ${d.email || ""}</li>
-      <li><b>Produit :</b> ${d.marque_produit||""} / ${d.produit_concerne||""} / ${d.reference_piece||""} / ${d.quantite_posee||""}</li>
-      <li><b>Véhicule :</b> ${d.immatriculation||""} / ${d.marque_vehicule||""} / ${d.modele_vehicule||""} / ${d.num_serie||""} / ${d.premiere_immat||""}</li>
-      <li><b>Problème :</b> ${d.date_pose||""} / ${d.date_constat||""} / ${d.km_pose||""} / ${d.km_constat||""}</li>
-      <li><b>Problème rencontré :</b> ${d.probleme_rencontre||""}</li>
-      <li><b>Statut :</b> ${d.statut}</li>
-      <li><b>Pièces jointes :</b> ${
-        (d.files && d.files.length)
-          ? d.files.map(f =>
-              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
-            ).join(" / ")
-          : "Aucune"
-      }</li>
-      <li><b>Réponse admin :</b> ${d.reponse || "Aucune"}</li>
-      <li><b>Documents admin :</b> ${
-        (d.reponseFiles && d.reponseFiles.length)
-          ? d.reponseFiles.map(f =>
-              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
-            ).join(" / ")
-          : "Aucun"
-      }</li>
-      <li><b>Historique :</b>
-        <ul>
-          ${(d.historique||[]).map(h => `<li>${formatDateFr(h.date)} — ${h.action}</li>`).join('')}
-        </ul>
-      </li>
-    </ul>
-    <a href="/admin">Retour admin</a>
-  `);
-});
-
 // --- Ajout doc client (option) ---
 app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
@@ -265,7 +224,13 @@ app.get("/admin", checkAdmin, (req, res) => {
             <td>\${x.statut}</td>
             <td>
               \${(x.files && x.files.length) 
-                ? x.files.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
+                ? x.files.map(f=>{
+                    let ext = f.original.split('.').pop().toLowerCase();
+                    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                      return \`<a href="/download/\${f.url}" target="_blank" rel="noopener"><img src="/download/\${f.url}" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;"></a>\`;
+                    }
+                    return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`;
+                  }).join("<br>")
                 : '—'}
             </td>
             <td>
@@ -318,6 +283,7 @@ app.get("/admin", checkAdmin, (req, res) => {
       });
       renderTable(activeMagasin);
 
+      // Fonction fiche "voirDossier" en 2 colonnes, SANS doublons de PJ
       window.voirDossier = function(id) {
         let d = demandes.find(x=>x.id===id);
         if(!d) return alert("Dossier introuvable !");
@@ -327,93 +293,63 @@ app.get("/admin", checkAdmin, (req, res) => {
           <title>Détail dossier</title>
           <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-            .grid { max-width:900px; margin:24px auto; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-            .bloc { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 13px 18px 12px 18px; min-height: 94px; }
-            .bloc label, .bloc .titre { font-weight: bold; font-size: 1.07em; color: #194e72; display: block; margin-bottom: 8px;}
-            .bloc .sublabel { font-weight:normal; color:#555; margin-bottom:3px; }
-            .full { grid-column:1/3; }
-            @media (max-width:900px) { .grid { grid-template-columns: 1fr; } .full { grid-column:1/2; } }
+            .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
+            .fiche-table table { width:100%; border-collapse:collapse; }
+            .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
+            .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
+            .fiche-table tr { border-bottom:1px solid #f0f0f0;}
+            .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
+            .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
           </style>
         </head><body>
-          <div class="grid">
-            <div class="bloc">
-              <label>Nom du client :</label>
-              <div>\${d.nom||""}</div>
-              <label class="sublabel">Email :</label>
-              <div>\${d.email||""}</div>
-            </div>
-            <div class="bloc">
-              <label>Magasin :</label>
-              <div>\${d.magasin||""}</div>
-            </div>
-            <div class="bloc">
-              <span class="titre">Produit</span>
-              <label class="sublabel">Marque du produit :</label>
-              <div>\${d.marque_produit||""}</div>
-              <label class="sublabel">Produit concerné :</label>
-              <div>\${d.produit_concerne||""}</div>
-              <label class="sublabel">Référence de la pièce :</label>
-              <div>\${d.reference_piece||""}</div>
-              <label class="sublabel">Quantité posée :</label>
-              <div>\${d.quantite_posee||""}</div>
-            </div>
-            <div class="bloc">
-              <span class="titre">Véhicule</span>
-              <label class="sublabel">Immatriculation :</label>
-              <div>\${d.immatriculation||""}</div>
-              <label class="sublabel">Marque :</label>
-              <div>\${d.marque_vehicule||""}</div>
-              <label class="sublabel">Modèle :</label>
-              <div>\${d.modele_vehicule||""}</div>
-              <label class="sublabel">Numéro de série :</label>
-              <div>\${d.num_serie||""}</div>
-              <label class="sublabel">1ère immatriculation :</label>
-              <div>\${d.premiere_immat||""}</div>
-            </div>
-            <div class="bloc">
-              <span class="titre">Problème</span>
-              <label class="sublabel">Date de pose :</label>
-              <div>\${d.date_pose||""}</div>
-              <label class="sublabel">Date du constat :</label>
-              <div>\${d.date_constat||""}</div>
-              <label class="sublabel">Kilométrage à la pose :</label>
-              <div>\${d.km_pose||""}</div>
-              <label class="sublabel">Kilométrage au constat :</label>
-              <div>\${d.km_constat||""}</div>
-            </div>
-            <div class="bloc">
-              <span class="titre">Problème rencontré :</span>
-              <div>\${d.probleme_rencontre||""}</div>
-            </div>
-            <div class="bloc">
-              <label>Date de création du dossier :</label>
-              <div>\${(new Date(d.date)).toLocaleDateString("fr-FR")}</div>
-              <label>Statut :</label>
-              <div>\${d.statut||""}</div>
-            </div>
-            <div class="bloc">
-              <label>Pièces jointes :</label>
-              <div>
-              \${(d.files||[]).map(f=>{
-                let ext = f.original.split('.').pop().toLowerCase();
-                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return \`<a href="/download/\${f.url}" target="_blank" rel="noopener"><img src="/download/\${f.url}" style="max-width:180px;max-height:120px;display:block;margin-bottom:5px;border-radius:4px;"></a>\`;
+          <div class="fiche-table">
+            <table>
+              <tr><th>Nom du client</th><td>\${d.nom||""}</td></tr>
+              <tr><th>Email</th><td>\${d.email||""}</td></tr>
+              <tr><th>Magasin</th><td>\${d.magasin||""}</td></tr>
+              <tr><td colspan="2" class="fiche-title">Produit</td></tr>
+              <tr><th>Marque du produit</th><td>\${d.marque_produit||""}</td></tr>
+              <tr><th>Produit concerné</th><td>\${d.produit_concerne||""}</td></tr>
+              <tr><th>Référence de la pièce</th><td>\${d.reference_piece||""}</td></tr>
+              <tr><th>Quantité posée</th><td>\${d.quantite_posee||""}</td></tr>
+              <tr><td colspan="2" class="fiche-title">Véhicule</td></tr>
+              <tr><th>Immatriculation</th><td>\${d.immatriculation||""}</td></tr>
+              <tr><th>Marque</th><td>\${d.marque_vehicule||""}</td></tr>
+              <tr><th>Modèle</th><td>\${d.modele_vehicule||""}</td></tr>
+              <tr><th>Numéro de série</th><td>\${d.num_serie||""}</td></tr>
+              <tr><th>1ère immatriculation</th><td>\${d.premiere_immat||""}</td></tr>
+              <tr><td colspan="2" class="fiche-title">Problème</td></tr>
+              <tr><th>Date de pose</th><td>\${d.date_pose||""}</td></tr>
+              <tr><th>Date du constat</th><td>\${d.date_constat||""}</td></tr>
+              <tr><th>Kilométrage à la pose</th><td>\${d.km_pose||""}</td></tr>
+              <tr><th>Kilométrage au constat</th><td>\${d.km_constat||""}</td></tr>
+              <tr><th>Problème rencontré</th><td>\${d.probleme_rencontre||""}</td></tr>
+              <tr><th>Date de création du dossier</th><td>\${(new Date(d.date)).toLocaleDateString("fr-FR")}</td></tr>
+              <tr><th>Statut</th><td>\${d.statut||""}</td></tr>
+              <tr><th>Pièces jointes</th><td>
+                \${
+                  (d.files||[]).length === 0
+                    ? 'Aucune'
+                    : d.files.map(f=>{
+                        let ext = f.original.split('.').pop().toLowerCase();
+                        if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                          return \`<a href="/download/\${f.url}" target="_blank" rel="noopener"><img src="/download/\${f.url}" class="pj-img"></a>\`;
+                        }
+                        return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`;
+                      }).join("<br>")
                 }
-                return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a><br>\`;
-              }).join("")}
-              </div>
-              <label>Réponse / documents admin :</label>
-              <div>
-              \${(d.reponse||"")}<br>
-              \${(d.reponseFiles||[]).map(f=>{
-                return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a><br>\`;
-              }).join("")}
-              </div>
-            </div>
+              </td></tr>
+              <tr><th>Réponse / documents admin</th><td>
+                \${(d.reponse||"")}
+                \${(d.reponseFiles||[]).length
+                    ? "<br>"+d.reponseFiles.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
+                    : ""}
+              </td></tr>
+            </table>
           </div>
         </body></html>
         \`;
-        let w = window.open("", "_blank", "width=900,height=900");
+        let w = window.open("", "_blank", "width=820,height=900");
         w.document.write(detailHtml);
         w.document.close();
       }
