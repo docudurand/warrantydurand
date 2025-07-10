@@ -103,7 +103,7 @@ app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, re
     });
 });
 
-// --- Création d'une demande ---
+// --- Création d'une demande (filtrage anti-doublon PJ) ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let {
@@ -118,6 +118,13 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
         original: f.originalname,
         url: f.filename
     }));
+    // --- Filtrage anti-doublon par nom de fichier
+    let seen = new Set();
+    files = files.filter(f => {
+      if (seen.has(f.original)) return false;
+      seen.add(f.original);
+      return true;
+    });
     let demande = {
       id, nom, email, magasin,
       marque_produit, produit_concerne, reference_piece, quantite_posee,
@@ -151,7 +158,7 @@ app.get("/api/dossier/:id", checkAdmin, (req, res) => {
     res.json(d);
 });
 
-// --- Ajout doc client (option) ---
+// --- Ajout doc client (anti-doublon aussi ici !) ---
 app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -160,13 +167,15 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) =>
         original: f.originalname,
         url: f.filename
     }));
+    let already = new Set((d.files||[]).map(f=>f.original));
+    files = files.filter(f=>!already.has(f.original));
     d.files.push(...files);
     (d.historique = d.historique || []).push({ date: new Date().toISOString(), action: "Doc ajouté par client" });
     saveDemandes(demandes);
     res.json({ success: true });
 });
 
-// --- Admin : change statut + réponse/pièces jointes ---
+// --- Admin : change statut + réponse/pièces jointes (anti-doublon PJ admin) ---
 app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -176,7 +185,11 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     if (reponse) d.reponse = reponse;
     if (req.files && req.files.length) {
         d.reponseFiles = d.reponseFiles || [];
-        d.reponseFiles.push(...req.files.map(f=>({ original: f.originalname, url: f.filename })));
+        // Anti-doublon réponse admin (par nom fichier)
+        let already = new Set((d.reponseFiles).map(f=>f.original));
+        let toAdd = req.files.map(f=>({ original: f.originalname, url: f.filename }))
+                      .filter(f=>!already.has(f.original));
+        d.reponseFiles.push(...toAdd);
     }
     (d.historique = d.historique || []).push({
         date: new Date().toISOString(),
@@ -186,7 +199,7 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Admin : tableau de bord avec bouton "Voir" (fiche détaillée sans doublon PJ) ---
+// --- Admin : tableau de bord + voir fiche, SANS doublon PJ ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
