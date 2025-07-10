@@ -270,7 +270,7 @@ app.get("/admin", checkAdmin, (req, res) => {
     allYears = Array.from(allYears).sort();
 
     let html = `
-    <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/assets/banniere.png" alt="Bannière"
+    <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière"
       style="display:block; width:100%; max-width:980px; margin:25px auto 8px auto; border-radius:14px; box-shadow:0 4px 20px #0002;">
     <a href="/logout" style="float:right;">Déconnexion</a>
     <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
