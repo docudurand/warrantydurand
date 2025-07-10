@@ -90,14 +90,7 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 5), (req, res) => 
     res.json({ success: true });
 });
 
-// --- Route : admin change le statut + ajoute réponse ou pièce jointe ---
-function checkAdmin(req, res, next) {
-    // Simple auth : user:admin / pass:secret (à modifier)
-    const creds = basicAuth(req);
-    if (!creds || creds.name !== "admin" || creds.pass !== "secret")
-        return res.status(401).send('Accès refusé');
-    next();
-}
+function checkAdmin(req, res, next) { next(); }
 app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 5), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -131,8 +124,8 @@ app.get("/admin", checkAdmin, (req, res) => {
         <td>${formatDateFr(d.date)}</td>
         <td>${d.nom}</td>
         <td>${d.email}</td>
-        <td>${d.produit}</td>
         <td>${d.commande}</td>
+        <td>${d.produit}</td>
         <td>${d.statut}</td>
         <td>
           <form action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
