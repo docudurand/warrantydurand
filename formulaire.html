@@ -32,7 +32,7 @@
 document.getElementById("formGarantie").onsubmit = async function(e){
   e.preventDefault();
   let formData = new FormData(this);
-  let resp = await fetch('https://TON_BACKEND_RENDER_URL/api/demandes', { method: 'POST', body: formData });
+  let resp = await fetch('https://warrantydurand.onrender.com/api/demandes', { method: 'POST', body: formData });
   let res = await resp.json();
   if(res.success){
     resultForm.innerHTML = "<b>Votre demande a bien été enregistrée !</b><br>ID dossier : "+res.id;

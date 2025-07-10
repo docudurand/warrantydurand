@@ -22,7 +22,7 @@
 document.getElementById("searchForm").onsubmit = async function(e){
   e.preventDefault();
   let email = document.getElementById("email").value;
-  let resp = await fetch('https://TON_BACKEND_RENDER_URL/api/mes-dossiers?email='+encodeURIComponent(email));
+  let resp = await fetch('https://warrantydurand.onrender.com/api/mes-dossiers?email='+encodeURIComponent(email));
   let dossiers = await resp.json();
   if(!dossiers.length){
     result.innerHTML = "<p>Aucun dossier trouvé pour cet email.</p>";
@@ -37,13 +37,13 @@ document.getElementById("searchForm").onsubmit = async function(e){
     html += "<td>"+d.statut+"</td>";
     html += "<td>";
     if(d.files && d.files.length) d.files.forEach(f=>{
-      html+='<a href="https://TON_BACKEND_RENDER_URL/'+f.url+'" target="_blank">📄</a> ';
+      html+='<a href="https://warrantydurand.onrender.com/'+f.url+'" target="_blank">📄</a> ';
     });
     html += "</td>";
     html += "<td>";
     if(d.reponse) html+=d.reponse+"<br>";
     if(d.reponseFiles && d.reponseFiles.length) d.reponseFiles.forEach(f=>{
-      html+='<a href="https://TON_BACKEND_RENDER_URL/'+f.url+'" target="_blank">📄</a> ';
+      html+='<a href="https://warrantydurand.onrender.com/'+f.url+'" target="_blank">📄</a> ';
     });
     html += "</td>";
     html += "</tr>";
