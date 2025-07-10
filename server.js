@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
+import mime from "mime-types";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,14 +13,14 @@ const DATA_FILE = "./demandes.json";
 const UPLOADS_DIR = "./uploads";
 
 // --- Authentification Admin par formulaire HTML ---
-const ADMIN_USER = "admin";           // <-- modifie ici si besoin
-const ADMIN_PASS = "secret";          // <-- modifie ici si besoin
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "secret";
 const ADMIN_COOKIE = "adminsession";
 let adminSessions = new Set();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(UPLOADS_DIR)); // Pour servir les pièces jointes
+app.use(express.static(UPLOADS_DIR)); // Pour servir les pièces jointes si besoin
 app.use(cookieParser());
 
 // --- Multer pour upload fichiers ---
@@ -80,7 +81,7 @@ app.get("/logout", (req, res) => {
 });
 
 // --- Création d'une demande ---
-app.post("/api/demandes", upload.array("document", 10), (req, res) => { // accepte jusqu'à 10 PJ
+app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let { nom, email, commande, produit, desc } = req.body;
     let id = genId();
@@ -138,7 +139,7 @@ app.get("/dossier/:id", checkAdmin, (req, res) => {
       <li><b>Pièces jointes :</b> ${
         (d.files && d.files.length)
           ? d.files.map(f =>
-              `<a href="/${f.url}" target="_blank" download="${f.original}">${f.original}</a>`
+              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
             ).join(" / ")
           : "Aucune"
       }</li>
@@ -146,7 +147,7 @@ app.get("/dossier/:id", checkAdmin, (req, res) => {
       <li><b>Documents admin :</b> ${
         (d.reponseFiles && d.reponseFiles.length)
           ? d.reponseFiles.map(f =>
-              `<a href="/${f.url}" target="_blank" download="${f.original}">${f.original}</a>`
+              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
             ).join(" / ")
           : "Aucun"
       }</li>
@@ -232,6 +233,27 @@ app.get("/admin", checkAdmin, (req, res) => {
     </table>
     `;
     res.send(html);
+});
+
+// --- Route de téléchargement de PJ avec extension ---
+app.get("/download/:fileid", (req, res) => {
+  const fileid = req.params.fileid;
+  const demandes = loadDemandes();
+  let found = null;
+  for(const d of demandes){
+    let f = (d.files||[]).find(f => f.url === fileid);
+    if(f) { found = f; break; }
+    if(d.reponseFiles) {
+      let fr = d.reponseFiles.find(f2=>f2.url === fileid);
+      if(fr) { found = fr; break; }
+    }
+  }
+  if(!found) return res.status(404).send("Fichier introuvable");
+  const filePath = path.join(UPLOADS_DIR, fileid);
+  const contentType = mime.lookup(found.original) || "application/octet-stream";
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Content-Disposition", `inline; filename="${found.original}"`);
+  fs.createReadStream(filePath).pipe(res);
 });
 
 // --- Lancement serveur ---
