@@ -103,7 +103,7 @@ app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, re
     });
 });
 
-// --- Création d'une demande : chaque champ est séparé ! ---
+// --- Création d'une demande ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let {
@@ -186,7 +186,7 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Admin : tableau de bord avec bouton "Voir" (fiche détaillée en grille) ---
+// --- Admin : tableau de bord avec bouton "Voir" (fiche détaillée sans doublon PJ) ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
@@ -223,20 +223,17 @@ app.get("/admin", checkAdmin, (req, res) => {
             <td>\${x.immatriculation||''}</td>
             <td>\${x.statut}</td>
             <td>
-              \<tr><th>Pièces jointes</th><td>
-  ${
-    (d.files||[]).length === 0
-      ? 'Aucune'
-      : d.files.map(f=>{
-          let ext = f.original.split('.').pop().toLowerCase();
-          if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-            return `<a href="/download/${f.url}" target="_blank" rel="noopener"><img src="/download/${f.url}" class="pj-img"></a>`;
-          } else {
-            return `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`;
-          }
-        }).join("<br>")
-  }
-</td></tr>
+              \${(x.files && x.files.length) 
+                ? x.files.map(f=>{
+                    let ext = f.original.split('.').pop().toLowerCase();
+                    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                      return \`<a href="/download/\${f.url}" target="_blank" rel="noopener"><img src="/download/\${f.url}" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;"></a>\`;
+                    } else {
+                      return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`;
+                    }
+                  }).join("<br>")
+                : '—'}
+            </td>
             <td>
               \${(x.reponse ? \`<div>\${x.reponse}</div>\` : '')}
               \${(x.reponseFiles && x.reponseFiles.length)
@@ -287,7 +284,6 @@ app.get("/admin", checkAdmin, (req, res) => {
       });
       renderTable(activeMagasin);
 
-      // Fonction fiche "voirDossier" en 2 colonnes, SANS doublons de PJ
       window.voirDossier = function(id) {
         let d = demandes.find(x=>x.id===id);
         if(!d) return alert("Dossier introuvable !");
@@ -338,8 +334,9 @@ app.get("/admin", checkAdmin, (req, res) => {
                         let ext = f.original.split('.').pop().toLowerCase();
                         if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
                           return \`<a href="/download/\${f.url}" target="_blank" rel="noopener"><img src="/download/\${f.url}" class="pj-img"></a>\`;
+                        } else {
+                          return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`;
                         }
-                        return \`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`;
                       }).join("<br>")
                 }
               </td></tr>
