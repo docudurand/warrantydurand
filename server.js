@@ -3,17 +3,24 @@ import multer from "multer";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
-import basicAuth from "basic-auth";
+import crypto from "crypto";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = "./demandes.json";
 const UPLOADS_DIR = "./uploads";
 
-// --- Middleware ---
+// --- Authentification Admin par formulaire HTML ---
+const ADMIN_USER = "admin";           // <-- modifie ici si besoin
+const ADMIN_PASS = "secret";          // <-- modifie ici si besoin
+const ADMIN_COOKIE = "adminsession";
+let adminSessions = new Set();
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(UPLOADS_DIR)); // Permet le download des pièces jointes
+app.use(express.static(UPLOADS_DIR)); // Pour servir les pièces jointes
+app.use(cookieParser());
 
 // --- Multer pour upload fichiers ---
 const upload = multer({ dest: UPLOADS_DIR });
@@ -33,7 +40,46 @@ function formatDateFr(date) {
     return new Date(date).toLocaleDateString("fr-FR");
 }
 
-// --- Route : créer une demande ---
+// --- Authentification admin (cookie/session) ---
+function checkAdmin(req, res, next) {
+  if(req.cookies && req.cookies[ADMIN_COOKIE] && adminSessions.has(req.cookies[ADMIN_COOKIE])) {
+    next();
+  } else {
+    res.redirect("/admin-login");
+  }
+}
+
+// --- Page de login admin ---
+app.get("/admin-login", (req, res) => {
+  res.send(`
+    <h2>Connexion Admin</h2>
+    <form method="POST" action="/admin-login" style="max-width:350px;margin:auto;padding:16px;border:1px solid #ccc">
+      <label>Utilisateur : <input name="user" /></label><br><br>
+      <label>Mot de passe : <input type="password" name="pass" /></label><br><br>
+      <button type="submit">Connexion</button>
+      ${req.query.err ? "<div style='color:red;'>Identifiants incorrects</div>" : ""}
+    </form>
+  `);
+});
+app.post("/admin-login", express.urlencoded({extended:true}), (req, res) => {
+  const {user, pass} = req.body;
+  if(user === ADMIN_USER && pass === ADMIN_PASS) {
+    // Création d'une session
+    const token = crypto.randomBytes(32).toString("hex");
+    adminSessions.add(token);
+    res.cookie(ADMIN_COOKIE, token, { httpOnly:true, sameSite:"lax" });
+    res.redirect("/admin");
+  } else {
+    res.redirect("/admin-login?err=1");
+  }
+});
+app.get("/logout", (req, res) => {
+  if(req.cookies && req.cookies[ADMIN_COOKIE]) adminSessions.delete(req.cookies[ADMIN_COOKIE]);
+  res.clearCookie(ADMIN_COOKIE);
+  res.redirect("/admin-login");
+});
+
+// --- Création d'une demande ---
 app.post("/api/demandes", upload.array("document", 5), (req, res) => {
     let demandes = loadDemandes();
     let { nom, email, commande, produit, desc } = req.body;
@@ -54,7 +100,7 @@ app.post("/api/demandes", upload.array("document", 5), (req, res) => {
     res.json({ success: true, id });
 });
 
-// --- Route : liste des dossiers d’un client ---
+// --- Liste des dossiers d’un client ---
 app.get("/api/mes-dossiers", (req, res) => {
     let { email } = req.query;
     if (!email) return res.json([]);
@@ -68,14 +114,14 @@ app.get("/api/mes-dossiers", (req, res) => {
     })));
 });
 
-// --- Route : voir détail d’une demande ---
+// --- Voir détail d’une demande ---
 app.get("/api/dossier/:id", (req, res) => {
     let d = loadDemandes().find(d => d.id === req.params.id);
     if (!d) return res.status(404).json({ error: "Not found" });
     res.json(d);
 });
 
-// --- Route : client ajoute un document à un dossier (option) ---
+// --- Client ajoute un document à un dossier (option) ---
 app.post("/api/dossier/:id/add-doc", upload.array("document", 5), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -90,7 +136,7 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 5), (req, res) => 
     res.json({ success: true });
 });
 
-function checkAdmin(req, res, next) { next(); }
+// --- Admin : change statut + ajoute réponse ou pièce jointe ---
 app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 5), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -110,10 +156,11 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 5), 
     res.json({ success: true });
 });
 
-// --- Page d’admin ultra-simple (accès via /admin, login basique HTTP) ---
+// --- Tableau de bord admin ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     let html = `
+    <a href="/logout" style="float:right;">Déconnexion</a>
     <h2>Tableau de bord dossiers</h2>
     <table border="1" cellpadding="5" style="border-collapse:collapse;">
     <tr>
@@ -124,8 +171,8 @@ app.get("/admin", checkAdmin, (req, res) => {
         <td>${formatDateFr(d.date)}</td>
         <td>${d.nom}</td>
         <td>${d.email}</td>
-        <td>${d.commande}</td>
         <td>${d.produit}</td>
+        <td>${d.commande}</td>
         <td>${d.statut}</td>
         <td>
           <form action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
