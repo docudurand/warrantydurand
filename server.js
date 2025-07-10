@@ -180,7 +180,7 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     }
     (d.historique = d.historique || []).push({
         date: new Date().toISOString(),
-        action: "Statut changé ou réponse ajoutée par admin"
+        action: "Statut changé ou réponse ajoutée"
     });
     saveDemandes(demandes);
     res.json({ success: true });
@@ -307,7 +307,7 @@ app.get("/admin", checkAdmin, (req, res) => {
 
         renderStats(magasin, mois, annee);
 
-        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";
+        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse</th><th>Actions</th><th>Voir</th></tr>";
         html += d.map(x=>\`
           <tr>
             <td>\${new Date(x.date).toLocaleDateString("fr-FR")}</td>
@@ -442,7 +442,7 @@ app.get("/admin", checkAdmin, (req, res) => {
                       }).join("<br>")
                 }
               </td></tr>
-              <tr><th>Réponse / documents admin</th><td>
+              <tr><th>Réponse</th><td>
                 \${(d.reponse||"")}
                 \${(d.reponseFiles||[]).length
                     ? "<br>"+d.reponseFiles.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
