@@ -167,7 +167,7 @@ Un client vient d'enregistrer un dossier de garantie.
 
 Nom : ${nom}
 Email client : ${email}
-Produit concerné : ${produit_concerne}
+Marque du produit : ${marque_produit}
 Date : ${new Date(now).toLocaleString("fr-FR")}
 `
     }, (err, info) => {
@@ -233,10 +233,11 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
 
     if(d.email){
       transporter.sendMail({
-        from: `"Garantie" <${GMAIL_USER}>`,
+        from: `"Garantie Durand Services" <${GMAIL_USER}>`,
         to: d.email,
-        subject: "Mise à jour dossier garantie",
-        text: `Une mise à jour a été apportée à un dossier de garantie, merci de consulter votre suivi.
+        subject: "Mise à jour dossier garantie Durand Services",
+        text: `
+		Une mise à jour a été apportée à un dossier de garantie, merci de consulter votre suivi.
 
 Produit : ${d.produit_concerne}
 Statut : ${d.statut}
