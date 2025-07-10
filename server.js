@@ -7,11 +7,38 @@ import crypto from "crypto";
 import cookieParser from "cookie-parser";
 import mime from "mime-types";
 import archiver from "archiver";
+import nodemailer from "nodemailer";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = "./demandes.json";
 const UPLOADS_DIR = "./uploads";
+
+const MAGASIN_MAILS = {
+  "Annemasse":    "respmagannemasse@durandservices.fr",
+  "Bourgoin-Jallieu":    "magasin5bourgoin@durandservices.fr",
+  "Chasse-sur-Rhone":    "magvl5chasse@durandservices.fr",
+  "Chassieu":    "respmagchassieu@durandservices.fr",
+  "Gleize":    "magvl4gleize@durandservices.fr",
+  "La Motte-Servolex":    "respmaglms@durandservices.fr",
+  "Les Echets":    "magvlmiribel@durandservices.fr",
+  "Rives":    "magvl3rives@durandservices.fr",
+  "Saint-Egreve":    "magvlstegreve@durandservices.fr",
+  "Saint-Jean-Bonnefonds":    "respmagsjb@durandservices.fr",
+  "Saint-martin-d'heres":   "magvl1smdh@durandservices.fr",
+  "Seynod":    "respmagseynod@durandservices.fr",
+};
+
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_PASS = process.env.GMAIL_PASS;
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: GMAIL_USER,
+    pass: GMAIL_PASS
+  }
+});
 
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "secret";
@@ -128,6 +155,26 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     };
     demandes.push(demande);
     saveDemandes(demandes);
+
+    const destinataire = MAGASIN_MAILS[magasin] || GMAIL_USER;
+    transporter.sendMail({
+      from: `"Garantie" <${GMAIL_USER}>`,
+      to: destinataire,
+      subject: "Nouvelle demande de garantie",
+      text: `Bonjour,
+
+Un client vient d'enregistrer un dossier de garantie.
+
+Nom : ${nom}
+Email client : ${email}
+Produit concerné : ${produit_concerne}
+Date : ${new Date(now).toLocaleString("fr-FR")}
+`
+    }, (err, info) => {
+      if(err) console.log("Erreur envoi mail magasin:", err);
+      else console.log("Mail envoyé magasin", info.messageId);
+    });
+
     res.json({ success: true, id });
 });
 
@@ -180,9 +227,29 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     }
     (d.historique = d.historique || []).push({
         date: new Date().toISOString(),
-        action: "Statut changé ou réponse ajoutée"
+        action: "Statut changé ou réponse ajoutée par admin"
     });
     saveDemandes(demandes);
+
+    if(d.email){
+      transporter.sendMail({
+        from: `"Garantie" <${GMAIL_USER}>`,
+        to: d.email,
+        subject: "Mise à jour dossier garantie",
+        text: `Une mise à jour a été apportée à un dossier de garantie, merci de consulter votre suivi.
+
+Produit : ${d.produit_concerne}
+Statut : ${d.statut}
+Date : ${new Date().toLocaleString("fr-FR")}
+
+Merci de ne pas réponse à cet email.
+`
+      }, (err, info) => {
+        if(err) console.log("Erreur envoi mail client:", err);
+        else console.log("Mail envoyé client", info.messageId);
+      });
+    }
+
     res.json({ success: true });
 });
 
@@ -307,7 +374,7 @@ app.get("/admin", checkAdmin, (req, res) => {
 
         renderStats(magasin, mois, annee);
 
-        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse</th><th>Actions</th><th>Voir</th></tr>";
+        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";
         html += d.map(x=>\`
           <tr>
             <td>\${new Date(x.date).toLocaleDateString("fr-FR")}</td>
@@ -442,7 +509,7 @@ app.get("/admin", checkAdmin, (req, res) => {
                       }).join("<br>")
                 }
               </td></tr>
-              <tr><th>Réponse</th><td>
+              <tr><th>Réponse / documents admin</th><td>
                 \${(d.reponse||"")}
                 \${(d.reponseFiles||[]).length
                     ? "<br>"+d.reponseFiles.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
