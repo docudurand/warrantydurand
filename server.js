@@ -24,7 +24,6 @@ app.use(express.json());
 app.use(express.static(UPLOADS_DIR));
 app.use(cookieParser());
 
-// --- Multer pour upload fichiers ---
 const upload = multer({ dest: UPLOADS_DIR });
 
 // --- Fonctions utilitaires ---
@@ -42,7 +41,6 @@ function formatDateFr(date) {
     return new Date(date).toLocaleDateString("fr-FR");
 }
 
-// --- Authentification admin (cookie/session) ---
 function checkAdmin(req, res, next) {
   if(req.cookies && req.cookies[ADMIN_COOKIE] && adminSessions.has(req.cookies[ADMIN_COOKIE])) {
     next();
@@ -88,19 +86,34 @@ app.get("/admin/export", checkAdmin, (req, res) => {
   const archive = archiver('zip', { zlib: { level: 9 } });
   archive.pipe(res);
 
-  // Ajoute le fichier demandes.json
   if (fs.existsSync(DATA_FILE)) archive.file(DATA_FILE, { name: 'demandes.json' });
-
-  // Ajoute tout le dossier uploads (s'il existe)
   if (fs.existsSync(UPLOADS_DIR)) archive.directory(UPLOADS_DIR, 'uploads');
 
   archive.finalize();
 });
 
+// --- Import ZIP complet des données (admin seulement) ---
+app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, res) => {
+  if (!req.file) return res.send("Aucun fichier reçu !");
+  const unzipper = await import('unzipper');
+  const backupPath = req.file.path;
+  const extractPath = process.cwd();
+
+  fs.createReadStream(backupPath)
+    .pipe(unzipper.Extract({ path: extractPath }))
+    .on('close', () => {
+      fs.unlinkSync(backupPath);
+      res.send(`<p style="color:green;">Sauvegarde restaurée avec succès ! <a href="/admin">Retour admin</a></p>`);
+    })
+    .on('error', (err) => {
+      res.send(`<p style="color:red;">Erreur lors de la restauration : ${err.message}</p>`);
+    });
+});
+
 // --- Création d'une demande ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
-    let { magasin, nom, email, commande, produit, desc } = req.body;
+    let { nom, email, commande, produit, desc, magasin } = req.body;
     let id = genId();
     let now = new Date().toISOString();
     let files = (req.files || []).map(f => ({
@@ -108,7 +121,7 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
         url: f.filename
     }));
     let demande = {
-        id, magasin, nom, email, commande, produit, desc,
+        id, nom, email, commande, produit, desc, magasin,
         files, date: now,
         statut: "Enregistré",
         historique: [{ date: now, action: "Demande créée" }]
@@ -147,6 +160,7 @@ app.get("/dossier/:id", checkAdmin, (req, res) => {
     <h2>Détail de la demande</h2>
     <ul>
       <li><b>Date :</b> ${formatDateFr(d.date)}</li>
+      <li><b>Magasin :</b> ${d.magasin || "Non précisé"}</li>
       <li><b>Nom :</b> ${d.nom}</li>
       <li><b>Email :</b> ${d.email}</li>
       <li><b>Commande :</b> ${d.commande}</li>
@@ -213,13 +227,18 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Tableau de bord admin (AJAX + bouton export + pop-up confirmation) ---
+// --- Admin : tableau de bord avec onglets magasins + import/export + AJAX ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
 
     let html = `
     <a href="/logout" style="float:right;">Déconnexion</a>
+    <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
+      <label>🔁 Importer une sauvegarde (.zip):</label>
+      <input type="file" name="backupzip" accept=".zip" required>
+      <button type="submit">Importer</button>
+    </form>
     <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
     <h2>Tableau de bord dossiers</h2>
     <div style="margin-bottom:14px;">
@@ -288,11 +307,16 @@ app.get("/admin", checkAdmin, (req, res) => {
         };
       });
       renderTable(activeMagasin);
+
+      document.getElementById("importForm").onsubmit = function() {
+        setTimeout(() => {
+          alert("Import en cours... Actualisez la page admin dans quelques secondes pour voir le résultat.");
+        }, 200);
+      };
     </script>
     `;
     res.send(html);
 });
-
 
 // --- Route de téléchargement de PJ avec extension ---
 app.get("/download/:fileid", (req, res) => {
