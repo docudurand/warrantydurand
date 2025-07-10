@@ -185,7 +185,6 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     if (reponse) d.reponse = reponse;
     if (req.files && req.files.length) {
         d.reponseFiles = d.reponseFiles || [];
-        // Anti-doublon réponse admin (par nom fichier)
         let already = new Set((d.reponseFiles).map(f=>f.original));
         let toAdd = req.files.map(f=>({ original: f.originalname, url: f.filename }))
                       .filter(f=>!already.has(f.original));
@@ -199,10 +198,23 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Admin : tableau de bord + voir fiche, SANS doublon PJ ---
+// --- Admin : tableau de bord + voir fiche, SANS doublon PJ et avec filtres mois/année ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
+    // Récupérer toutes les années/mois uniques
+    let allMonths = new Set();
+    let allYears = new Set();
+    for (let d of demandes) {
+      if(d.date){
+        let dd = new Date(d.date);
+        allMonths.add(('0'+(dd.getMonth()+1)).slice(-2));
+        allYears.add(dd.getFullYear());
+      }
+    }
+    allMonths = Array.from(allMonths).sort();
+    allYears = Array.from(allYears).sort();
+
     let html = `
     <a href="/logout" style="float:right;">Déconnexion</a>
     <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
@@ -212,20 +224,47 @@ app.get("/admin", checkAdmin, (req, res) => {
     </form>
     <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
     <h2>Tableau de bord dossiers</h2>
-    <div style="margin-bottom:14px;">
+    <div style="margin-bottom:10px;">
       ${magasins.map((m, i) =>
         `<button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
       ).join('')}
+    </div>
+    <div style="margin-bottom:10px;">
+      <label>Mois :
+        <select id="moisFilter">
+          <option value="">Tous</option>
+          ${["01","02","03","04","05","06","07","08","09","10","11","12"].map(m=>`<option value="${m}">${m}</option>`).join('')}
+        </select>
+      </label>
+      <label style="margin-left:24px;">Année :
+        <select id="anneeFilter">
+          <option value="">Toutes</option>
+          ${allYears.map(y=>`<option value="${y}">${y}</option>`).join('')}
+        </select>
+      </label>
     </div>
     <div id="contenu-admin"></div>
     <script>
       let demandes = ${JSON.stringify(demandes)};
       let magasins = ${JSON.stringify(magasins)};
       let activeMagasin = magasins[0];
+      let moisFilter = "";
+      let anneeFilter = "";
 
-      function renderTable(magasin) {
+      function renderTable(magasin, mois, annee) {
         activeMagasin = magasin;
         let d = demandes.filter(x=>x.magasin===magasin);
+        if (mois) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return ('0'+(dd.getMonth()+1)).slice(-2) === mois;
+        });
+        if (annee) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return dd.getFullYear().toString() === annee;
+        });
+
         let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";
         html += d.map(x=>\`
           <tr>
@@ -292,10 +331,18 @@ app.get("/admin", checkAdmin, (req, res) => {
         btn.onclick = function(){
           document.querySelectorAll(".onglet-magasin").forEach(b=>{b.style.background="#eee"; b.style.color="#222";});
           btn.style.background="#006e90"; btn.style.color="#fff";
-          renderTable(btn.dataset.magasin);
+          renderTable(btn.dataset.magasin, moisFilter, anneeFilter);
         };
       });
-      renderTable(activeMagasin);
+      document.getElementById("moisFilter").onchange = function() {
+        moisFilter = this.value;
+        renderTable(activeMagasin, moisFilter, anneeFilter);
+      };
+      document.getElementById("anneeFilter").onchange = function() {
+        anneeFilter = this.value;
+        renderTable(activeMagasin, moisFilter, anneeFilter);
+      };
+      renderTable(activeMagasin, moisFilter, anneeFilter);
 
       window.voirDossier = function(id) {
         let d = demandes.find(x=>x.id===id);
