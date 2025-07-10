@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Suivi de mes dossiers garantie</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width:600px; margin:auto; }
+    table { width: 100%; border-collapse: collapse; margin-top:18px; }
+    th, td { border: 1px solid #eee; padding: 6px; text-align:left;}
+    th { background:#006e90; color:#fff; }
+  </style>
+</head>
+<body>
+  <h2>Suivi de mes dossiers</h2>
+  <form id="searchForm">
+    <label>Votre email :</label>
+    <input type="email" id="email" required>
+    <button type="submit">Afficher mes dossiers</button>
+  </form>
+  <div id="result"></div>
+<script>
+document.getElementById("searchForm").onsubmit = async function(e){
+  e.preventDefault();
+  let email = document.getElementById("email").value;
+  let resp = await fetch('https://TON_BACKEND_RENDER_URL/api/mes-dossiers?email='+encodeURIComponent(email));
+  let dossiers = await resp.json();
+  if(!dossiers.length){
+    result.innerHTML = "<p>Aucun dossier trouvé pour cet email.</p>";
+    return;
+  }
+  let html = "<table><tr><th>Date</th><th>Produit</th><th>Commande</th><th>Statut</th><th>PJ</th><th>Réponse</th></tr>";
+  for(let d of dossiers){
+    html += "<tr>";
+    html += "<td>"+(new Date(d.date).toLocaleDateString("fr-FR"))+"</td>";
+    html += "<td>"+d.produit+"</td>";
+    html += "<td>"+d.commande+"</td>";
+    html += "<td>"+d.statut+"</td>";
+    html += "<td>";
+    if(d.files && d.files.length) d.files.forEach(f=>{
+      html+='<a href="https://TON_BACKEND_RENDER_URL/'+f.url+'" target="_blank">📄</a> ';
+    });
+    html += "</td>";
+    html += "<td>";
+    if(d.reponse) html+=d.reponse+"<br>";
+    if(d.reponseFiles && d.reponseFiles.length) d.reponseFiles.forEach(f=>{
+      html+='<a href="https://TON_BACKEND_RENDER_URL/'+f.url+'" target="_blank">📄</a> ';
+    });
+    html += "</td>";
+    html += "</tr>";
+  }
+  html += "</table>";
+  result.innerHTML = html;
+};
+</script>
+</body>
+</html>
