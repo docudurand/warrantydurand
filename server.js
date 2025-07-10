@@ -80,7 +80,7 @@ app.get("/logout", (req, res) => {
 });
 
 // --- Création d'une demande ---
-app.post("/api/demandes", upload.array("document", 5), (req, res) => {
+app.post("/api/demandes", upload.array("document", 10), (req, res) => { // accepte jusqu'à 10 PJ
     let demandes = loadDemandes();
     let { nom, email, commande, produit, desc } = req.body;
     let id = genId();
@@ -114,15 +114,54 @@ app.get("/api/mes-dossiers", (req, res) => {
     })));
 });
 
-// --- Voir détail d’une demande ---
-app.get("/api/dossier/:id", (req, res) => {
+// --- Voir détail d’une demande (JSON brut, pour API ou debug) ---
+app.get("/api/dossier/:id", checkAdmin, (req, res) => {
     let d = loadDemandes().find(d => d.id === req.params.id);
     if (!d) return res.status(404).json({ error: "Not found" });
     res.json(d);
 });
 
+// --- Vue HTML résumé pour l’admin (humain lisible !) ---
+app.get("/dossier/:id", checkAdmin, (req, res) => {
+  let d = loadDemandes().find(d => d.id === req.params.id);
+  if (!d) return res.status(404).send("Demande non trouvée");
+  res.send(`
+    <h2>Détail de la demande</h2>
+    <ul>
+      <li><b>Date :</b> ${formatDateFr(d.date)}</li>
+      <li><b>Nom :</b> ${d.nom}</li>
+      <li><b>Email :</b> ${d.email}</li>
+      <li><b>Commande :</b> ${d.commande}</li>
+      <li><b>Produit :</b> ${d.produit}</li>
+      <li><b>Description :</b> ${d.desc}</li>
+      <li><b>Statut :</b> ${d.statut}</li>
+      <li><b>Pièces jointes :</b> ${
+        (d.files && d.files.length)
+          ? d.files.map(f =>
+              `<a href="/${f.url}" target="_blank" download="${f.original}">${f.original}</a>`
+            ).join(" / ")
+          : "Aucune"
+      }</li>
+      <li><b>Réponse admin :</b> ${d.reponse || "Aucune"}</li>
+      <li><b>Documents admin :</b> ${
+        (d.reponseFiles && d.reponseFiles.length)
+          ? d.reponseFiles.map(f =>
+              `<a href="/${f.url}" target="_blank" download="${f.original}">${f.original}</a>`
+            ).join(" / ")
+          : "Aucun"
+      }</li>
+      <li><b>Historique :</b>
+        <ul>
+          ${(d.historique||[]).map(h => `<li>${formatDateFr(h.date)} — ${h.action}</li>`).join('')}
+        </ul>
+      </li>
+    </ul>
+    <a href="/admin">Retour admin</a>
+  `);
+});
+
 // --- Client ajoute un document à un dossier (option) ---
-app.post("/api/dossier/:id/add-doc", upload.array("document", 5), (req, res) => {
+app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
     if (!d) return res.status(404).json({ error: "Not found" });
@@ -137,7 +176,7 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 5), (req, res) => 
 });
 
 // --- Admin : change statut + ajoute réponse ou pièce jointe ---
-app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 5), (req, res) => {
+app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
     if (!d) return res.status(404).json({ error: "Not found" });
@@ -186,7 +225,7 @@ app.get("/admin", checkAdmin, (req, res) => {
             <input type="file" name="reponseFiles" multiple>
             <button type="submit">Valider</button>
           </form>
-          <a href="/api/dossier/${d.id}" target="_blank">Voir</a>
+          <a href="/dossier/${d.id}" target="_blank">Voir</a>
         </td>
       </tr>
     `).join("")}
