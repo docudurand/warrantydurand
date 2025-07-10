@@ -20,7 +20,7 @@ let adminSessions = new Set();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(UPLOADS_DIR)); // Pour servir les pièces jointes si besoin
+app.use(express.static(UPLOADS_DIR));
 app.use(cookieParser());
 
 // --- Multer pour upload fichiers ---
@@ -65,7 +65,6 @@ app.get("/admin-login", (req, res) => {
 app.post("/admin-login", express.urlencoded({extended:true}), (req, res) => {
   const {user, pass} = req.body;
   if(user === ADMIN_USER && pass === ADMIN_PASS) {
-    // Création d'une session
     const token = crypto.randomBytes(32).toString("hex");
     adminSessions.add(token);
     res.cookie(ADMIN_COOKIE, token, { httpOnly:true, sameSite:"lax" });
@@ -196,13 +195,13 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Tableau de bord admin ---
+// --- Tableau de bord admin (AJAX + pop-up confirmation) ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     let html = `
     <a href="/logout" style="float:right;">Déconnexion</a>
     <h2>Tableau de bord dossiers</h2>
-    <table border="1" cellpadding="5" style="border-collapse:collapse;">
+    <table border="1" cellpadding="5" style="border-collapse:collapse; width:100%;" id="adminTable">
     <tr>
       <th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Actions</th>
     </tr>
@@ -215,7 +214,7 @@ app.get("/admin", checkAdmin, (req, res) => {
         <td>${d.commande}</td>
         <td>${d.statut}</td>
         <td>
-          <form action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
+          <form class="admin-form" action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
             <select name="statut">
               <option${d.statut==="Enregistré"?" selected":""}>Enregistré</option>
               <option${d.statut==="Accepté"?" selected":""}>Accepté</option>
@@ -231,6 +230,23 @@ app.get("/admin", checkAdmin, (req, res) => {
       </tr>
     `).join("")}
     </table>
+    <script>
+    document.querySelectorAll('.admin-form').forEach(form => {
+      form.onsubmit = async function(e){
+        e.preventDefault();
+        const formData = new FormData(form);
+        const action = form.action;
+        let resp = await fetch(action, {method:'POST', body:formData});
+        let res = await resp.json();
+        if(res.success){
+          alert("Modification enregistrée !");
+          location.reload();
+        } else {
+          alert("Erreur lors de la modification.");
+        }
+      };
+    });
+    </script>
     `;
     res.send(html);
 });
