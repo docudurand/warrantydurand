@@ -227,7 +227,7 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Admin : tableau de bord avec onglets magasins + import/export + AJAX ---
+// --- Admin : tableau de bord avec onglets magasins + import/export + AJAX + affichage PJ ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
@@ -255,7 +255,7 @@ app.get("/admin", checkAdmin, (req, res) => {
       function renderTable(magasin) {
         activeMagasin = magasin;
         let d = demandes.filter(x=>x.magasin===magasin);
-        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Actions</th></tr>";
+        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th></tr>";
         html += d.map(x=>\`
           <tr>
             <td>\${new Date(x.date).toLocaleDateString("fr-FR")}</td>
@@ -264,6 +264,17 @@ app.get("/admin", checkAdmin, (req, res) => {
             <td>\${x.produit}</td>
             <td>\${x.commande}</td>
             <td>\${x.statut}</td>
+            <td>
+              \${(x.files && x.files.length) 
+                ? x.files.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
+                : '—'}
+            </td>
+            <td>
+              \${(x.reponse ? \`<div>\${x.reponse}</div>\` : '')}
+              \${(x.reponseFiles && x.reponseFiles.length)
+                ? x.reponseFiles.map(f=>\`<a href="/download/\${f.url}" target="_blank" rel="noopener noreferrer">\${f.original}</a>\`).join("<br>")
+                : ''}
+            </td>
             <td>
               <form class="admin-form" action="/api/dossier/\${x.id}/admin" method="post" enctype="multipart/form-data">
                 <select name="statut">
