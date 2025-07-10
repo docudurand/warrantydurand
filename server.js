@@ -100,7 +100,7 @@ app.get("/admin/export", checkAdmin, (req, res) => {
 // --- Création d'une demande ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
-    let { nom, email, commande, produit, desc } = req.body;
+    let { magasin, nom, email, commande, produit, desc } = req.body;
     let id = genId();
     let now = new Date().toISOString();
     let files = (req.files || []).map(f => ({
@@ -108,7 +108,7 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
         url: f.filename
     }));
     let demande = {
-        id, nom, email, commande, produit, desc,
+        id, magasin, nom, email, commande, produit, desc,
         files, date: now,
         statut: "Enregistré",
         historique: [{ date: now, action: "Demande créée" }]
@@ -216,59 +216,83 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
 // --- Tableau de bord admin (AJAX + bouton export + pop-up confirmation) ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
+    const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
+
     let html = `
     <a href="/logout" style="float:right;">Déconnexion</a>
     <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
     <h2>Tableau de bord dossiers</h2>
-    <table border="1" cellpadding="5" style="border-collapse:collapse; width:100%;" id="adminTable">
-    <tr>
-      <th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Actions</th>
-    </tr>
-    ${demandes.map(d => `
-      <tr>
-        <td>${formatDateFr(d.date)}</td>
-        <td>${d.nom}</td>
-        <td>${d.email}</td>
-        <td>${d.produit}</td>
-        <td>${d.commande}</td>
-        <td>${d.statut}</td>
-        <td>
-          <form class="admin-form" action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
-            <select name="statut">
-              <option${d.statut==="Enregistré"?" selected":""}>Enregistré</option>
-              <option${d.statut==="Accepté"?" selected":""}>Accepté</option>
-              <option${d.statut==="Refusé"?" selected":""}>Refusé</option>
-              <option${d.statut==="En attente info"?" selected":""}>En attente info</option>
-            </select>
-            <input type="text" name="reponse" placeholder="Message ou commentaire..." style="width:120px;">
-            <input type="file" name="reponseFiles" multiple>
-            <button type="submit">Valider</button>
-          </form>
-          <a href="/dossier/${d.id}" target="_blank">Voir</a>
-        </td>
-      </tr>
-    `).join("")}
-    </table>
+    <div style="margin-bottom:14px;">
+      ${magasins.map((m, i) =>
+        `<button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
+      ).join('')}
+    </div>
+    <div id="contenu-admin"></div>
     <script>
-    document.querySelectorAll('.admin-form').forEach(form => {
-      form.onsubmit = async function(e){
-        e.preventDefault();
-        const formData = new FormData(form);
-        const action = form.action;
-        let resp = await fetch(action, {method:'POST', body:formData});
-        let res = await resp.json();
-        if(res.success){
-          alert("Modification enregistrée !");
-          location.reload();
-        } else {
-          alert("Erreur lors de la modification.");
-        }
-      };
-    });
+      let demandes = ${JSON.stringify(demandes)};
+      let magasins = ${JSON.stringify(magasins)};
+      let activeMagasin = magasins[0];
+
+      function renderTable(magasin) {
+        activeMagasin = magasin;
+        let d = demandes.filter(x=>x.magasin===magasin);
+        let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Actions</th></tr>";
+        html += d.map(x=>\`
+          <tr>
+            <td>\${new Date(x.date).toLocaleDateString("fr-FR")}</td>
+            <td>\${x.nom}</td>
+            <td>\${x.email}</td>
+            <td>\${x.produit}</td>
+            <td>\${x.commande}</td>
+            <td>\${x.statut}</td>
+            <td>
+              <form class="admin-form" action="/api/dossier/\${x.id}/admin" method="post" enctype="multipart/form-data">
+                <select name="statut">
+                  <option\${x.statut==="Enregistré"?" selected":""}>Enregistré</option>
+                  <option\${x.statut==="Accepté"?" selected":""}>Accepté</option>
+                  <option\${x.statut==="Refusé"?" selected":""}>Refusé</option>
+                  <option\${x.statut==="En attente info"?" selected":""}>En attente info</option>
+                </select>
+                <input type="text" name="reponse" placeholder="Message ou commentaire..." style="width:120px;">
+                <input type="file" name="reponseFiles" multiple>
+                <button type="submit">Valider</button>
+              </form>
+              <a href="/dossier/\${x.id}" target="_blank">Voir</a>
+            </td>
+          </tr>
+        \`).join('');
+        html += "</table>";
+        document.getElementById("contenu-admin").innerHTML = html;
+
+        document.querySelectorAll('.admin-form').forEach(form => {
+          form.onsubmit = async function(e){
+            e.preventDefault();
+            const formData = new FormData(form);
+            const action = form.action;
+            let resp = await fetch(action, {method:'POST', body:formData});
+            let res = await resp.json();
+            if(res.success){
+              alert("Modification enregistrée !");
+              location.reload();
+            } else {
+              alert("Erreur lors de la modification.");
+            }
+          };
+        });
+      }
+      document.querySelectorAll(".onglet-magasin").forEach(btn=>{
+        btn.onclick = function(){
+          document.querySelectorAll(".onglet-magasin").forEach(b=>{b.style.background="#eee"; b.style.color="#222";});
+          btn.style.background="#006e90"; btn.style.color="#fff";
+          renderTable(btn.dataset.magasin);
+        };
+      });
+      renderTable(activeMagasin);
     </script>
     `;
     res.send(html);
 });
+
 
 // --- Route de téléchargement de PJ avec extension ---
 app.get("/download/:fileid", (req, res) => {
