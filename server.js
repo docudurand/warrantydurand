@@ -35,9 +35,6 @@ function saveDemandes(demandes) {
 function genId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2,5);
 }
-function formatDateFr(date) {
-    return new Date(date).toLocaleDateString("fr-FR");
-}
 function checkAdmin(req, res, next) {
   if(req.cookies && req.cookies[ADMIN_COOKIE] && adminSessions.has(req.cookies[ADMIN_COOKIE])) {
     next();
@@ -46,7 +43,6 @@ function checkAdmin(req, res, next) {
   }
 }
 
-// --- Authentification admin ---
 app.get("/admin-login", (req, res) => {
   res.send(`
     <h2>Connexion Admin</h2>
@@ -75,7 +71,6 @@ app.get("/logout", (req, res) => {
   res.redirect("/admin-login");
 });
 
-// --- Export ZIP ---
 app.get("/admin/export", checkAdmin, (req, res) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde_garantie.zip"');
@@ -86,7 +81,6 @@ app.get("/admin/export", checkAdmin, (req, res) => {
   archive.finalize();
 });
 
-// --- Import ZIP ---
 app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.send("Aucun fichier reçu !");
   const unzipper = await import('unzipper');
@@ -103,7 +97,6 @@ app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, re
     });
 });
 
-// --- Création d'une demande (filtrage anti-doublon PJ) ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let {
@@ -118,7 +111,6 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
         original: f.originalname,
         url: f.filename
     }));
-    // --- Filtrage anti-doublon par nom de fichier
     let seen = new Set();
     files = files.filter(f => {
       if (seen.has(f.original)) return false;
@@ -139,7 +131,6 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
     res.json({ success: true, id });
 });
 
-// --- Liste des dossiers d’un client ---
 app.get("/api/mes-dossiers", (req, res) => {
     let { email } = req.query;
     if (!email) return res.json([]);
@@ -151,14 +142,12 @@ app.get("/api/mes-dossiers", (req, res) => {
     })));
 });
 
-// --- Voir détail d’une demande (JSON brut, pour API ou debug) ---
 app.get("/api/dossier/:id", checkAdmin, (req, res) => {
     let d = loadDemandes().find(d => d.id === req.params.id);
     if (!d) return res.status(404).json({ error: "Not found" });
     res.json(d);
 });
 
-// --- Ajout doc client (anti-doublon aussi ici !) ---
 app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -175,7 +164,6 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) =>
     res.json({ success: true });
 });
 
-// --- Admin : change statut + réponse/pièces jointes (anti-doublon PJ admin) ---
 app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
     let demandes = loadDemandes();
     let d = demandes.find(d => d.id === req.params.id);
@@ -198,11 +186,9 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Admin : tableau de bord + voir fiche, SANS doublon PJ et avec filtres mois/année ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
-    const magasins = ["Gleize", "Miribel", "St-Jean-Bonnefond"];
-    // Récupérer toutes les années/mois uniques
+    const magasins = ["Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu", "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Saint-Priest", "Seynod"];
     let allMonths = new Set();
     let allYears = new Set();
     for (let d of demandes) {
@@ -216,6 +202,22 @@ app.get("/admin", checkAdmin, (req, res) => {
     allYears = Array.from(allYears).sort();
 
     let html = `
+    <style>
+      .stat-cards { display:flex; gap:18px; margin-bottom:18px; }
+      .stat-card {
+        min-width:190px; flex:1;
+        background:#f9fafb; border-radius:11px; box-shadow:0 3px 12px #0001;
+        padding:18px 20px 12px 20px; display:flex; flex-direction:column; align-items:center;
+        font-family:Arial,sans-serif; font-size:1.17em; 
+      }
+      .stat-title { font-size:1em; font-weight:bold; margin-bottom:12px;}
+      .stat-num { font-size:2.1em; font-weight:bold; margin-bottom:2px;}
+      .stat-enreg {color:#1373be;}
+      .stat-accept {color:#259a54;}
+      .stat-attente {color:#d39213;}
+      .stat-refus {color:#b23b3b;}
+      @media(max-width:850px) {.stat-cards{flex-direction:column;gap:12px;}}
+    </style>
     <a href="/logout" style="float:right;">Déconnexion</a>
     <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
       <label>🔁 Importer une sauvegarde (.zip):</label>
@@ -243,6 +245,7 @@ app.get("/admin", checkAdmin, (req, res) => {
         </select>
       </label>
     </div>
+    <div id="statistiques"></div>
     <div id="contenu-admin"></div>
     <script>
       let demandes = ${JSON.stringify(demandes)};
@@ -250,6 +253,43 @@ app.get("/admin", checkAdmin, (req, res) => {
       let activeMagasin = magasins[0];
       let moisFilter = "";
       let anneeFilter = "";
+
+      function renderStats(magasin, mois, annee) {
+        let d = demandes.filter(x=>x.magasin===magasin);
+        if (mois) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return ('0'+(dd.getMonth()+1)).slice(-2) === mois;
+        });
+        if (annee) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return dd.getFullYear().toString() === annee;
+        });
+
+        let nbEnreg = d.filter(x=>x.statut==="Enregistré").length;
+        let nbAccept = d.filter(x=>x.statut==="Accepté").length;
+        let nbAttente = d.filter(x=>x.statut==="En attente info").length;
+        let nbRefus = d.filter(x=>x.statut==="Refusé").length;
+
+        let html = \`
+          <div class="stat-cards">
+            <div class="stat-card"><div class="stat-title">Dossiers enregistrés</div>
+              <div class="stat-num stat-enreg">\${nbEnreg}</div>
+            </div>
+            <div class="stat-card"><div class="stat-title">Dossiers acceptés</div>
+              <div class="stat-num stat-accept">\${nbAccept}</div>
+            </div>
+            <div class="stat-card"><div class="stat-title">Dossiers en attente info</div>
+              <div class="stat-num stat-attente">\${nbAttente}</div>
+            </div>
+            <div class="stat-card"><div class="stat-title">Dossiers refusés</div>
+              <div class="stat-num stat-refus">\${nbRefus}</div>
+            </div>
+          </div>
+        \`;
+        document.getElementById("statistiques").innerHTML = html;
+      }
 
       function renderTable(magasin, mois, annee) {
         activeMagasin = magasin;
@@ -264,6 +304,8 @@ app.get("/admin", checkAdmin, (req, res) => {
           let dd = new Date(x.date);
           return dd.getFullYear().toString() === annee;
         });
+
+        renderStats(magasin, mois, annee);
 
         let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";
         html += d.map(x=>\`
@@ -424,7 +466,6 @@ app.get("/admin", checkAdmin, (req, res) => {
     res.send(html);
 });
 
-// --- Route de téléchargement de PJ avec extension ---
 app.get("/download/:fileid", (req, res) => {
   const fileid = req.params.fileid;
   const demandes = loadDemandes();
