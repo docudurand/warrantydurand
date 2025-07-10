@@ -6,6 +6,7 @@ import path from "path";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
 import mime from "mime-types";
+import archiver from "archiver";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -77,6 +78,23 @@ app.get("/logout", (req, res) => {
   if(req.cookies && req.cookies[ADMIN_COOKIE]) adminSessions.delete(req.cookies[ADMIN_COOKIE]);
   res.clearCookie(ADMIN_COOKIE);
   res.redirect("/admin-login");
+});
+
+// --- Export ZIP complet des données (admin seulement) ---
+app.get("/admin/export", checkAdmin, (req, res) => {
+  res.setHeader('Content-Type', 'application/zip');
+  res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde_garantie.zip"');
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.pipe(res);
+
+  // Ajoute le fichier demandes.json
+  if (fs.existsSync(DATA_FILE)) archive.file(DATA_FILE, { name: 'demandes.json' });
+
+  // Ajoute tout le dossier uploads (s'il existe)
+  if (fs.existsSync(UPLOADS_DIR)) archive.directory(UPLOADS_DIR, 'uploads');
+
+  archive.finalize();
 });
 
 // --- Création d'une demande ---
@@ -195,11 +213,12 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
     res.json({ success: true });
 });
 
-// --- Tableau de bord admin (AJAX + pop-up confirmation) ---
+// --- Tableau de bord admin (AJAX + bouton export + pop-up confirmation) ---
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     let html = `
     <a href="/logout" style="float:right;">Déconnexion</a>
+    <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
     <h2>Tableau de bord dossiers</h2>
     <table border="1" cellpadding="5" style="border-collapse:collapse; width:100%;" id="adminTable">
     <tr>

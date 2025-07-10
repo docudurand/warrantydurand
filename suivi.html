@@ -8,10 +8,16 @@
     table { width: 100%; border-collapse: collapse; margin-top:18px; }
     th, td { border: 1px solid #eee; padding: 6px; text-align:left;}
     th { background:#006e90; color:#fff; }
+    .nom-fichier { font-size: 0.97em; color: #222; margin-left: 2px; }
+    .help { font-size:0.96em; color:#555; margin-bottom:12px; display:block;}
   </style>
 </head>
 <body>
   <h2>Suivi de mes dossiers</h2>
+  <span class="help">
+    📄 Pour ouvrir ou télécharger une pièce jointe, cliquez sur le lien.<br>
+    Si votre navigateur ne propose pas le téléchargement ou l’affichage, faites un clic droit puis « Enregistrer le lien sous... »
+  </span>
   <form id="searchForm">
     <label>Votre email :</label>
     <input type="email" id="email" required>
@@ -19,10 +25,10 @@
   </form>
   <div id="result"></div>
 <script>
-document.getElementById("searchForm").onsubmit = async function(e){
+searchForm.onsubmit = async function(e){
   e.preventDefault();
-  let email = document.getElementById("email").value;
-  let resp = await fetch('https://warrantydurand.onrender.com/api/mes-dossiers?email='+encodeURIComponent(email));
+  let emailValue = document.getElementById('email').value;
+  let resp = await fetch('https://warrantydurand.onrender.com/api/mes-dossiers?email='+encodeURIComponent(emailValue));
   let dossiers = await resp.json();
   if(!dossiers.length){
     result.innerHTML = "<p>Aucun dossier trouvé pour cet email.</p>";
@@ -37,13 +43,13 @@ document.getElementById("searchForm").onsubmit = async function(e){
     html += "<td>"+d.statut+"</td>";
     html += "<td>";
     if(d.files && d.files.length) d.files.forEach(f=>{
-      html+='<a href="https://warrantydurand.onrender.com/'+f.url+'" target="_blank">📄</a> ';
+      html+='<a href="https://warrantydurand.onrender.com/download/'+f.url+'" target="_blank" rel="noopener noreferrer">📄 <span class="nom-fichier">'+f.original+'</span></a><br>';
     });
     html += "</td>";
     html += "<td>";
     if(d.reponse) html+=d.reponse+"<br>";
     if(d.reponseFiles && d.reponseFiles.length) d.reponseFiles.forEach(f=>{
-      html+='<a href="https://warrantydurand.onrender.com/'+f.url+'" target="_blank">📄</a> ';
+      html+='<a href="https://warrantydurand.onrender.com/download/'+f.url+'" target="_blank" rel="noopener noreferrer">📄 <span class="nom-fichier">'+f.original+'</span></a><br>';
     });
     html += "</td>";
     html += "</tr>";
