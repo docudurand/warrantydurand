@@ -254,10 +254,15 @@ Merci de ne pas répondre à cet email.
   res.json({ success: true });
 });
 
-// --------- MODIF BANNIERE 100% ---------
+// ========================= ADMIN INTERFACE =========================
+
 app.get("/admin", checkAdmin, (req, res) => {
   let demandes = loadDemandes();
-  const magasins = ["Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu", "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Saint-Priest", "Seynod"];
+  const magasins = [
+    "Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu",
+    "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve",
+    "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Saint-Priest", "Seynod"
+  ];
   let allMonths = new Set();
   let allYears = new Set();
   for (let d of demandes) {
@@ -274,18 +279,17 @@ app.get("/admin", checkAdmin, (req, res) => {
   <style>
     .admin-banniere {
       display:block;
-      width:100vw;
-      max-width:100vw;
-      min-width:100vw;
-      margin:0;
-      border-radius:0;
+      width:100vw; max-width:100vw; min-width:100vw;
+      margin:0; border-radius:0;
       box-shadow:0 4px 20px #0002;
       position:relative;
-      left:50%;
-      right:50%;
-      transform:translate(-50%,0);
+      left:50%; right:50%; transform:translate(-50%,0);
     }
     body { margin:0; padding:0; }
+    .onglet-magasin.active { background:#006e90!important; color:#fff!important; }
+    .table-dossiers { width:100%; border-collapse:collapse; margin-top:18px;}
+    .table-dossiers th, .table-dossiers td { border:1px solid #d3d3d3; padding:7px 8px; }
+    .table-dossiers th { background:#f2f7fa; }
   </style>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière" class="admin-banniere">
   <a href="/logout" style="float:right;">Déconnexion</a>
@@ -298,7 +302,7 @@ app.get("/admin", checkAdmin, (req, res) => {
   <h2>Tableau de bord dossiers</h2>
   <div style="margin-bottom:10px;">
     ${magasins.map((m, i) =>
-      `<button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i == 0 ? '006e90' : 'eee'}; color:#${i == 0 ? 'fff' : '222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
+      `<button class="onglet-magasin${i==0?' active':''}" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
     ).join('')}
   </div>
   <div style="margin-bottom:10px;">
@@ -317,6 +321,123 @@ app.get("/admin", checkAdmin, (req, res) => {
   </div>
   <div id="statistiques"></div>
   <div id="contenu-admin"></div>
+  <script>
+    const demandes = ${JSON.stringify(demandes)};
+    let selectedMagasin = "${magasins[0]}";
+    let selectedMois = "";
+    let selectedAnnee = "";
+
+    function render() {
+      // Filtrage
+      let filtres = demandes.filter(d => d.magasin === selectedMagasin);
+      if(selectedMois) filtres = filtres.filter(d => (d.date||'').slice(5,7) === selectedMois);
+      if(selectedAnnee) filtres = filtres.filter(d => (d.date||'').slice(0,4) === selectedAnnee);
+
+      // Statistiques
+      let total = filtres.length;
+      let enreg = filtres.filter(d=>d.statut==='Enregistré').length;
+      let accept = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("accept")).length;
+      let attente = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("attente")).length;
+      let refus = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("refus")).length;
+
+      document.getElementById('statistiques').innerHTML = \`
+        <div class="stat-cards">
+          <div class="stat-card"><span class="stat-title">Total</span><span class="stat-num">\${total}</span></div>
+          <div class="stat-card"><span class="stat-title stat-enreg">Enregistré</span><span class="stat-num stat-enreg">\${enreg}</span></div>
+          <div class="stat-card"><span class="stat-title stat-accept">Accepté</span><span class="stat-num stat-accept">\${accept}</span></div>
+          <div class="stat-card"><span class="stat-title stat-attente">En attente</span><span class="stat-num stat-attente">\${attente}</span></div>
+          <div class="stat-card"><span class="stat-title stat-refus">Refusé</span><span class="stat-num stat-refus">\${refus}</span></div>
+        </div>
+      \`;
+
+      // Tableau dossiers
+      if(filtres.length == 0) {
+        document.getElementById('contenu-admin').innerHTML = "<p style='margin:18px 0;font-size:1.18em;'>Aucun dossier pour ce magasin ou période.</p>";
+        return;
+      }
+      let rows = filtres.map(d =>
+        \`<tr>
+          <td>\${d.nom||""}</td>
+          <td>\${d.email||""}</td>
+          <td>\${d.reference_piece||""}</td>
+          <td>\${d.produit_concerne||""}</td>
+          <td>\${(d.date||"").slice(0,10)}</td>
+          <td>\${d.statut||""}</td>
+          <td><button onclick="voirDossier('\${d.id}')" style="padding:2px 11px;border:none;background:#1373be;color:#fff;border-radius:5px;cursor:pointer;">Voir</button></td>
+        </tr>\`
+      ).join("");
+      document.getElementById('contenu-admin').innerHTML = \`
+        <table class="table-dossiers">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Réf. pièce</th>
+              <th>Produit</th>
+              <th>Date</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>\${rows}</tbody>
+        </table>
+      \`;
+    }
+
+    document.querySelectorAll(".onglet-magasin").forEach(btn=>{
+      btn.onclick = function() {
+        document.querySelectorAll(".onglet-magasin").forEach(b=>b.classList.remove("active"));
+        this.classList.add("active");
+        selectedMagasin = this.dataset.magasin;
+        render();
+      }
+    });
+
+    document.getElementById("moisFilter").onchange = function() {
+      selectedMois = this.value;
+      render();
+    }
+    document.getElementById("anneeFilter").onchange = function() {
+      selectedAnnee = this.value;
+      render();
+    }
+
+    // Voir dossier (popup simple)
+    window.voirDossier = function(id) {
+      let d = demandes.find(d=>d.id===id);
+      if(!d) return;
+      let fichiers = (d.files||[]).map(f=>\`<a href="/download/\${f.url}" target="_blank">\${f.original}</a>\`).join("<br>");
+      let reponseFiles = (d.reponseFiles||[]).map(f=>\`<a href="/download/\${f.url}" target="_blank">\${f.original}</a>\`).join("<br>");
+      let histo = (d.historique||[]).map(h=>\`<div><b>\${(h.date||"").slice(0,19).replace("T"," ")} :</b> \${h.action}</div>\`).join("");
+      let contenu = \`
+        <div style='padding:16px 6vw 6px 6vw; max-width:720px; margin:auto; background:#fff;border-radius:8px;box-shadow:0 2px 10px #0001;'>
+          <h3>Détail du dossier</h3>
+          <b>Nom:</b> \${d.nom||""} <br>
+          <b>Email:</b> \${d.email||""} <br>
+          <b>Magasin:</b> \${d.magasin||""}<br>
+          <b>Produit:</b> \${d.produit_concerne||""} <br>
+          <b>Réf pièce:</b> \${d.reference_piece||""} <br>
+          <b>Quantité posée:</b> \${d.quantite_posee||""} <br>
+          <b>Problème rencontré:</b><br><div style="white-space:pre-line; background:#f8fafc; border-radius:6px; margin-bottom:7px; padding:5px 9px;">\${d.probleme_rencontre||""}</div>
+          <b>Statut:</b> \${d.statut||""} <br>
+          <b>Historique:</b><br>\${histo||""}
+          <b>Fichiers client:</b><br>\${fichiers||""}
+          <b>Fichiers admin:</b><br>\${reponseFiles||""}
+          <br><button onclick="document.getElementById('popup-detail').remove()" style="margin:10px auto 0 auto;display:block;background:#1373be;color:#fff;padding:7px 28px;border:none;border-radius:5px;font-size:1em;cursor:pointer;">Fermer</button>
+        </div>
+      \`;
+      let pop = document.createElement('div');
+      pop.id = "popup-detail";
+      pop.style.position = "fixed"; pop.style.top=0; pop.style.left=0; pop.style.width="100vw"; pop.style.height="100vh";
+      pop.style.background="rgba(10,40,80,0.18)";
+      pop.style.zIndex=99999;
+      pop.innerHTML = contenu;
+      document.body.appendChild(pop);
+    };
+
+    // Premier affichage
+    render();
+  </script>
   <style>
     .stat-cards { display:flex; gap:18px; margin-bottom:18px; }
     .stat-card {
@@ -333,10 +454,8 @@ app.get("/admin", checkAdmin, (req, res) => {
     .stat-refus {color:#b23b3b;}
     @media(max-width:850px) {.stat-cards{flex-direction:column;gap:12px;}}
   </style>
-  <script>
-    // ... (JS de gestion du tableau, filtres, voirDossier, identique à ta version précédente)
-  </script>
   `;
+
   res.send(html);
 });
 
