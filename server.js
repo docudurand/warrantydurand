@@ -7,39 +7,13 @@ import crypto from "crypto";
 import cookieParser from "cookie-parser";
 import mime from "mime-types";
 import archiver from "archiver";
-import nodemailer from "nodemailer";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = "./demandes.json";
 const UPLOADS_DIR = "./uploads";
 
-const MAGASIN_MAILS = {
-  "Annemasse": "respmagannemasse@durandservices.fr",
-  "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
-  "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
-  "Chassieu": "respmagchassieu@durandservices.fr",
-  "Gleize": "magvl4gleize@durandservices.fr",
-  "La Motte-Servolex": "respmaglms@durandservices.fr",
-  "Les Echets": "magvlmiribel@durandservices.fr",
-  "Rives": "magvl3rives@durandservices.fr",
-  "Saint-Egreve": "magvlstegreve@durandservices.fr",
-  "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
-  "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
-  "Seynod": "respmagseynod@durandservices.fr",
-};
-
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_PASS = process.env.GMAIL_PASS;
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: GMAIL_USER,
-    pass: GMAIL_PASS
-  }
-});
-
+// --- Authentification Admin par formulaire HTML ---
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "secret";
 const ADMIN_COOKIE = "adminsession";
@@ -50,26 +24,34 @@ app.use(express.json());
 app.use(express.static(UPLOADS_DIR));
 app.use(cookieParser());
 
+// --- Multer pour upload fichiers ---
 const upload = multer({ dest: UPLOADS_DIR });
 
+// --- Fonctions utilitaires ---
 function loadDemandes() {
-  if (!fs.existsSync(DATA_FILE)) return [];
-  return JSON.parse(fs.readFileSync(DATA_FILE));
+    if (!fs.existsSync(DATA_FILE)) return [];
+    return JSON.parse(fs.readFileSync(DATA_FILE));
 }
 function saveDemandes(demandes) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(demandes, null, 2));
+    fs.writeFileSync(DATA_FILE, JSON.stringify(demandes, null, 2));
 }
 function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    return Date.now().toString(36) + Math.random().toString(36).substr(2,5);
 }
+function formatDateFr(date) {
+    return new Date(date).toLocaleDateString("fr-FR");
+}
+
+// --- Authentification admin (cookie/session) ---
 function checkAdmin(req, res, next) {
-  if (req.cookies && req.cookies[ADMIN_COOKIE] && adminSessions.has(req.cookies[ADMIN_COOKIE])) {
+  if(req.cookies && req.cookies[ADMIN_COOKIE] && adminSessions.has(req.cookies[ADMIN_COOKIE])) {
     next();
   } else {
     res.redirect("/admin-login");
   }
 }
 
+// --- Page de login admin ---
 app.get("/admin-login", (req, res) => {
   res.send(`
     <h2>Connexion Admin</h2>
@@ -81,397 +63,227 @@ app.get("/admin-login", (req, res) => {
     </form>
   `);
 });
-app.post("/admin-login", express.urlencoded({ extended: true }), (req, res) => {
-  const { user, pass } = req.body;
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+app.post("/admin-login", express.urlencoded({extended:true}), (req, res) => {
+  const {user, pass} = req.body;
+  if(user === ADMIN_USER && pass === ADMIN_PASS) {
     const token = crypto.randomBytes(32).toString("hex");
     adminSessions.add(token);
-    res.cookie(ADMIN_COOKIE, token, { httpOnly: true, sameSite: "lax" });
+    res.cookie(ADMIN_COOKIE, token, { httpOnly:true, sameSite:"lax" });
     res.redirect("/admin");
   } else {
     res.redirect("/admin-login?err=1");
   }
 });
 app.get("/logout", (req, res) => {
-  if (req.cookies && req.cookies[ADMIN_COOKIE]) adminSessions.delete(req.cookies[ADMIN_COOKIE]);
+  if(req.cookies && req.cookies[ADMIN_COOKIE]) adminSessions.delete(req.cookies[ADMIN_COOKIE]);
   res.clearCookie(ADMIN_COOKIE);
   res.redirect("/admin-login");
 });
 
+// --- Export ZIP complet des données (admin seulement) ---
 app.get("/admin/export", checkAdmin, (req, res) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde_garantie.zip"');
+
   const archive = archiver('zip', { zlib: { level: 9 } });
   archive.pipe(res);
+
+  // Ajoute le fichier demandes.json
   if (fs.existsSync(DATA_FILE)) archive.file(DATA_FILE, { name: 'demandes.json' });
+
+  // Ajoute tout le dossier uploads (s'il existe)
   if (fs.existsSync(UPLOADS_DIR)) archive.directory(UPLOADS_DIR, 'uploads');
+
   archive.finalize();
 });
 
-app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, res) => {
-  if (!req.file) return res.send("Aucun fichier reçu !");
-  const unzipper = await import('unzipper');
-  const backupPath = req.file.path;
-  const extractPath = process.cwd();
-  fs.createReadStream(backupPath)
-    .pipe(unzipper.Extract({ path: extractPath }))
-    .on('close', () => {
-      fs.unlinkSync(backupPath);
-      res.send(`<p style="color:green;">Sauvegarde restaurée avec succès ! <a href="/admin">Retour admin</a></p>`);
-    })
-    .on('error', (err) => {
-      res.send(`<p style="color:red;">Erreur lors de la restauration : ${err.message}</p>`);
-    });
-});
-
+// --- Création d'une demande ---
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
-  let demandes = loadDemandes();
-  let {
-    nom, email, magasin,
-    marque_produit, produit_concerne, reference_piece, quantite_posee,
-    immatriculation, marque_vehicule, modele_vehicule, num_serie, premiere_immat,
-    date_pose, date_constat, km_pose, km_constat, probleme_rencontre
-  } = req.body;
-  let id = genId();
-  let now = new Date().toISOString();
-  let files = (req.files || []).map(f => ({
-    original: f.originalname,
-    url: f.filename
-  }));
-  let seen = new Set();
-  files = files.filter(f => {
-    if (seen.has(f.original)) return false;
-    seen.add(f.original);
-    return true;
-  });
-  let demande = {
-    id, nom, email, magasin,
-    marque_produit, produit_concerne, reference_piece, quantite_posee,
-    immatriculation, marque_vehicule, modele_vehicule, num_serie, premiere_immat,
-    date_pose, date_constat, km_pose, km_constat, probleme_rencontre,
-    files, date: now,
-    statut: "Enregistré",
-    historique: [{ date: now, action: "Demande créée" }]
-  };
-  demandes.push(demande);
-  saveDemandes(demandes);
-
-  const destinataire = MAGASIN_MAILS[magasin] || GMAIL_USER;
-  transporter.sendMail({
-    from: `"Garantie" <${GMAIL_USER}>`,
-    to: destinataire,
-    subject: "Nouvelle demande de garantie",
-    text: `Bonjour,
-
-Un client vient d'enregistrer un dossier de garantie.
-
-Nom : ${nom}
-Email client : ${email}
-Marque du produit : ${marque_produit}
-Date : ${new Date().toLocaleDateString("fr-FR")}
-`
-  }, (err, info) => {
-    if (err) console.log("Erreur envoi mail magasin:", err);
-    else console.log("Mail envoyé magasin", info.messageId);
-  });
-
-  res.json({ success: true, id });
-});
-
-app.get("/api/mes-dossiers", (req, res) => {
-  let { email } = req.query;
-  if (!email) return res.json([]);
-  let demandes = loadDemandes().filter(d => d.email && d.email.toLowerCase() === email.toLowerCase());
-  res.json(demandes.map(d => ({
-    ...d,
-    reponse: d.reponse || null,
-    reponseFiles: d.reponseFiles || []
-  })));
-});
-
-app.get("/api/dossier/:id", checkAdmin, (req, res) => {
-  let d = loadDemandes().find(d => d.id === req.params.id);
-  if (!d) return res.status(404).json({ error: "Not found" });
-  res.json(d);
-});
-
-app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
-  let demandes = loadDemandes();
-  let d = demandes.find(d => d.id === req.params.id);
-  if (!d) return res.status(404).json({ error: "Not found" });
-  let files = (req.files || []).map(f => ({
-    original: f.originalname,
-    url: f.filename
-  }));
-  let already = new Set((d.files || []).map(f => f.original));
-  files = files.filter(f => !already.has(f.original));
-  d.files.push(...files);
-  (d.historique = d.historique || []).push({ date: new Date().toISOString(), action: "Doc ajouté par client" });
-  saveDemandes(demandes);
-  res.json({ success: true });
-});
-
-app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
-  let demandes = loadDemandes();
-  let d = demandes.find(d => d.id === req.params.id);
-  if (!d) return res.status(404).json({ error: "Not found" });
-  let { statut, reponse } = req.body;
-  if (statut) d.statut = statut;
-  if (reponse) d.reponse = reponse;
-  if (req.files && req.files.length) {
-    d.reponseFiles = d.reponseFiles || [];
-    let already = new Set((d.reponseFiles).map(f => f.original));
-    let toAdd = req.files.map(f => ({ original: f.originalname, url: f.filename }))
-      .filter(f => !already.has(f.original));
-    d.reponseFiles.push(...toAdd);
-  }
-  (d.historique = d.historique || []).push({
-    date: new Date().toISOString(),
-    action: "Statut changé ou réponse ajoutée par admin"
-  });
-  saveDemandes(demandes);
-
-  if (d.email) {
-    transporter.sendMail({
-      from: `"Garantie Durand Services" <${GMAIL_USER}>`,
-      to: d.email,
-      subject: "Mise à jour dossier garantie Durand Services",
-      text: `
-Une mise à jour a été apportée à un dossier de garantie, merci de consulter votre suivi.
-
-Produit : ${d.produit_concerne}
-Statut : ${d.statut}
-Date : ${new Date().toLocaleDateString("fr-FR")}
-
-Merci de ne pas répondre à cet email.
-`
-    }, (err, info) => {
-      if (err) console.log("Erreur envoi mail client:", err);
-      else console.log("Mail envoyé client", info.messageId);
-    });
-  }
-
-  res.json({ success: true });
-});
-
-// ========================= ADMIN INTERFACE =========================
-
-app.get("/admin", checkAdmin, (req, res) => {
-  let demandes = loadDemandes();
-  const magasins = [
-    "Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu",
-    "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve",
-    "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Saint-Priest", "Seynod"
-  ];
-  let allMonths = new Set();
-  let allYears = new Set();
-  for (let d of demandes) {
-    if (d.date) {
-      let dd = new Date(d.date);
-      allMonths.add(('0' + (dd.getMonth() + 1)).slice(-2));
-      allYears.add(dd.getFullYear());
-    }
-  }
-  allMonths = Array.from(allMonths).sort();
-  allYears = Array.from(allYears).sort();
-
-  let html = `
-  <style>
-    .admin-banniere {
-      display:block;
-      width:100vw; max-width:100vw; min-width:100vw;
-      margin:0; border-radius:0;
-      box-shadow:0 4px 20px #0002;
-      position:relative;
-      left:50%; right:50%; transform:translate(-50%,0);
-    }
-    body { margin:0; padding:0; }
-    .onglet-magasin.active { background:#006e90!important; color:#fff!important; }
-    .table-dossiers { width:100%; border-collapse:collapse; margin-top:18px;}
-    .table-dossiers th, .table-dossiers td { border:1px solid #d3d3d3; padding:7px 8px; }
-    .table-dossiers th { background:#f2f7fa; }
-  </style>
-  <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière" class="admin-banniere">
-  <a href="/logout" style="float:right;">Déconnexion</a>
-  <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
-    <label>🔁 Importer une sauvegarde (.zip):</label>
-    <input type="file" name="backupzip" accept=".zip" required>
-    <button type="submit">Importer</button>
-  </form>
-  <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
-  <h2>Tableau de bord dossiers</h2>
-  <div style="margin-bottom:10px;">
-    ${magasins.map((m, i) =>
-      `<button class="onglet-magasin${i==0?' active':''}" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
-    ).join('')}
-  </div>
-  <div style="margin-bottom:10px;">
-    <label>Mois :
-      <select id="moisFilter">
-        <option value="">Tous</option>
-        ${["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map(m => `<option value="${m}">${m}</option>`).join('')}
-      </select>
-    </label>
-    <label style="margin-left:24px;">Année :
-      <select id="anneeFilter">
-        <option value="">Toutes</option>
-        ${allYears.map(y => `<option value="${y}">${y}</option>`).join('')}
-      </select>
-    </label>
-  </div>
-  <div id="statistiques"></div>
-  <div id="contenu-admin"></div>
-  <script>
-    const demandes = ${JSON.stringify(demandes)};
-    let selectedMagasin = "${magasins[0]}";
-    let selectedMois = "";
-    let selectedAnnee = "";
-
-    function render() {
-      // Filtrage
-      let filtres = demandes.filter(d => d.magasin === selectedMagasin);
-      if(selectedMois) filtres = filtres.filter(d => (d.date||'').slice(5,7) === selectedMois);
-      if(selectedAnnee) filtres = filtres.filter(d => (d.date||'').slice(0,4) === selectedAnnee);
-
-      // Statistiques
-      let total = filtres.length;
-      let enreg = filtres.filter(d=>d.statut==='Enregistré').length;
-      let accept = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("accept")).length;
-      let attente = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("attente")).length;
-      let refus = filtres.filter(d=>d.statut && d.statut.toLowerCase().includes("refus")).length;
-
-      document.getElementById('statistiques').innerHTML = \`
-        <div class="stat-cards">
-          <div class="stat-card"><span class="stat-title">Total</span><span class="stat-num">\${total}</span></div>
-          <div class="stat-card"><span class="stat-title stat-enreg">Enregistré</span><span class="stat-num stat-enreg">\${enreg}</span></div>
-          <div class="stat-card"><span class="stat-title stat-accept">Accepté</span><span class="stat-num stat-accept">\${accept}</span></div>
-          <div class="stat-card"><span class="stat-title stat-attente">En attente</span><span class="stat-num stat-attente">\${attente}</span></div>
-          <div class="stat-card"><span class="stat-title stat-refus">Refusé</span><span class="stat-num stat-refus">\${refus}</span></div>
-        </div>
-      \`;
-
-      // Tableau dossiers
-      if(filtres.length == 0) {
-        document.getElementById('contenu-admin').innerHTML = "<p style='margin:18px 0;font-size:1.18em;'>Aucun dossier pour ce magasin ou période.</p>";
-        return;
-      }
-      let rows = filtres.map(d =>
-        \`<tr>
-          <td>\${d.nom||""}</td>
-          <td>\${d.email||""}</td>
-          <td>\${d.reference_piece||""}</td>
-          <td>\${d.produit_concerne||""}</td>
-          <td>\${(d.date||"").slice(0,10)}</td>
-          <td>\${d.statut||""}</td>
-          <td><button onclick="voirDossier('\${d.id}')" style="padding:2px 11px;border:none;background:#1373be;color:#fff;border-radius:5px;cursor:pointer;">Voir</button></td>
-        </tr>\`
-      ).join("");
-      document.getElementById('contenu-admin').innerHTML = \`
-        <table class="table-dossiers">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Réf. pièce</th>
-              <th>Produit</th>
-              <th>Date</th>
-              <th>Statut</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>\${rows}</tbody>
-        </table>
-      \`;
-    }
-
-    document.querySelectorAll(".onglet-magasin").forEach(btn=>{
-      btn.onclick = function() {
-        document.querySelectorAll(".onglet-magasin").forEach(b=>b.classList.remove("active"));
-        this.classList.add("active");
-        selectedMagasin = this.dataset.magasin;
-        render();
-      }
-    });
-
-    document.getElementById("moisFilter").onchange = function() {
-      selectedMois = this.value;
-      render();
-    }
-    document.getElementById("anneeFilter").onchange = function() {
-      selectedAnnee = this.value;
-      render();
-    }
-
-    // Voir dossier (popup simple)
-    window.voirDossier = function(id) {
-      let d = demandes.find(d=>d.id===id);
-      if(!d) return;
-      let fichiers = (d.files||[]).map(f=>\`<a href="/download/\${f.url}" target="_blank">\${f.original}</a>\`).join("<br>");
-      let reponseFiles = (d.reponseFiles||[]).map(f=>\`<a href="/download/\${f.url}" target="_blank">\${f.original}</a>\`).join("<br>");
-      let histo = (d.historique||[]).map(h=>\`<div><b>\${(h.date||"").slice(0,19).replace("T"," ")} :</b> \${h.action}</div>\`).join("");
-      let contenu = \`
-        <div style='padding:16px 6vw 6px 6vw; max-width:720px; margin:auto; background:#fff;border-radius:8px;box-shadow:0 2px 10px #0001;'>
-          <h3>Détail du dossier</h3>
-          <b>Nom:</b> \${d.nom||""} <br>
-          <b>Email:</b> \${d.email||""} <br>
-          <b>Magasin:</b> \${d.magasin||""}<br>
-          <b>Produit:</b> \${d.produit_concerne||""} <br>
-          <b>Réf pièce:</b> \${d.reference_piece||""} <br>
-          <b>Quantité posée:</b> \${d.quantite_posee||""} <br>
-          <b>Problème rencontré:</b><br><div style="white-space:pre-line; background:#f8fafc; border-radius:6px; margin-bottom:7px; padding:5px 9px;">\${d.probleme_rencontre||""}</div>
-          <b>Statut:</b> \${d.statut||""} <br>
-          <b>Historique:</b><br>\${histo||""}
-          <b>Fichiers client:</b><br>\${fichiers||""}
-          <b>Fichiers admin:</b><br>\${reponseFiles||""}
-          <br><button onclick="document.getElementById('popup-detail').remove()" style="margin:10px auto 0 auto;display:block;background:#1373be;color:#fff;padding:7px 28px;border:none;border-radius:5px;font-size:1em;cursor:pointer;">Fermer</button>
-        </div>
-      \`;
-      let pop = document.createElement('div');
-      pop.id = "popup-detail";
-      pop.style.position = "fixed"; pop.style.top=0; pop.style.left=0; pop.style.width="100vw"; pop.style.height="100vh";
-      pop.style.background="rgba(10,40,80,0.18)";
-      pop.style.zIndex=99999;
-      pop.innerHTML = contenu;
-      document.body.appendChild(pop);
+    let demandes = loadDemandes();
+    let { nom, email, commande, produit, desc } = req.body;
+    let id = genId();
+    let now = new Date().toISOString();
+    let files = (req.files || []).map(f => ({
+        original: f.originalname,
+        url: f.filename
+    }));
+    let demande = {
+        id, nom, email, commande, produit, desc,
+        files, date: now,
+        statut: "Enregistré",
+        historique: [{ date: now, action: "Demande créée" }]
     };
-
-    // Premier affichage
-    render();
-  </script>
-  <style>
-    .stat-cards { display:flex; gap:18px; margin-bottom:18px; }
-    .stat-card {
-      min-width:190px; flex:1;
-      background:#f9fafb; border-radius:11px; box-shadow:0 3px 12px #0001;
-      padding:18px 20px 12px 20px; display:flex; flex-direction:column; align-items:center;
-      font-family:Arial,sans-serif; font-size:1.17em; 
-    }
-    .stat-title { font-size:1em; font-weight:bold; margin-bottom:12px;}
-    .stat-num { font-size:2.1em; font-weight:bold; margin-bottom:2px;}
-    .stat-enreg {color:#1373be;}
-    .stat-accept {color:#259a54;}
-    .stat-attente {color:#d39213;}
-    .stat-refus {color:#b23b3b;}
-    @media(max-width:850px) {.stat-cards{flex-direction:column;gap:12px;}}
-  </style>
-  `;
-
-  res.send(html);
+    demandes.push(demande);
+    saveDemandes(demandes);
+    res.json({ success: true, id });
 });
 
+// --- Liste des dossiers d’un client ---
+app.get("/api/mes-dossiers", (req, res) => {
+    let { email } = req.query;
+    if (!email) return res.json([]);
+    let demandes = loadDemandes().filter(d => d.email.toLowerCase() === email.toLowerCase());
+    res.json(demandes.map(d => ({
+        id: d.id, produit: d.produit, commande: d.commande,
+        statut: d.statut, date: d.date, files: d.files,
+        historique: d.historique || [],
+        reponse: d.reponse || null,
+        reponseFiles: d.reponseFiles || []
+    })));
+});
+
+// --- Voir détail d’une demande (JSON brut, pour API ou debug) ---
+app.get("/api/dossier/:id", checkAdmin, (req, res) => {
+    let d = loadDemandes().find(d => d.id === req.params.id);
+    if (!d) return res.status(404).json({ error: "Not found" });
+    res.json(d);
+});
+
+// --- Vue HTML résumé pour l’admin (humain lisible !) ---
+app.get("/dossier/:id", checkAdmin, (req, res) => {
+  let d = loadDemandes().find(d => d.id === req.params.id);
+  if (!d) return res.status(404).send("Demande non trouvée");
+  res.send(`
+    <h2>Détail de la demande</h2>
+    <ul>
+      <li><b>Date :</b> ${formatDateFr(d.date)}</li>
+      <li><b>Nom :</b> ${d.nom}</li>
+      <li><b>Email :</b> ${d.email}</li>
+      <li><b>Commande :</b> ${d.commande}</li>
+      <li><b>Produit :</b> ${d.produit}</li>
+      <li><b>Description :</b> ${d.desc}</li>
+      <li><b>Statut :</b> ${d.statut}</li>
+      <li><b>Pièces jointes :</b> ${
+        (d.files && d.files.length)
+          ? d.files.map(f =>
+              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
+            ).join(" / ")
+          : "Aucune"
+      }</li>
+      <li><b>Réponse admin :</b> ${d.reponse || "Aucune"}</li>
+      <li><b>Documents admin :</b> ${
+        (d.reponseFiles && d.reponseFiles.length)
+          ? d.reponseFiles.map(f =>
+              `<a href="/download/${f.url}" target="_blank" rel="noopener noreferrer">${f.original}</a>`
+            ).join(" / ")
+          : "Aucun"
+      }</li>
+      <li><b>Historique :</b>
+        <ul>
+          ${(d.historique||[]).map(h => `<li>${formatDateFr(h.date)} — ${h.action}</li>`).join('')}
+        </ul>
+      </li>
+    </ul>
+    <a href="/admin">Retour admin</a>
+  `);
+});
+
+// --- Client ajoute un document à un dossier (option) ---
+app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
+    let demandes = loadDemandes();
+    let d = demandes.find(d => d.id === req.params.id);
+    if (!d) return res.status(404).json({ error: "Not found" });
+    let files = (req.files || []).map(f => ({
+        original: f.originalname,
+        url: f.filename
+    }));
+    d.files.push(...files);
+    (d.historique = d.historique || []).push({ date: new Date().toISOString(), action: "Doc ajouté par client" });
+    saveDemandes(demandes);
+    res.json({ success: true });
+});
+
+// --- Admin : change statut + ajoute réponse ou pièce jointe ---
+app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
+    let demandes = loadDemandes();
+    let d = demandes.find(d => d.id === req.params.id);
+    if (!d) return res.status(404).json({ error: "Not found" });
+    let { statut, reponse } = req.body;
+    if (statut) d.statut = statut;
+    if (reponse) d.reponse = reponse;
+    if (req.files && req.files.length) {
+        d.reponseFiles = d.reponseFiles || [];
+        d.reponseFiles.push(...req.files.map(f=>({ original: f.originalname, url: f.filename })));
+    }
+    (d.historique = d.historique || []).push({
+        date: new Date().toISOString(),
+        action: "Statut changé ou réponse ajoutée par admin"
+    });
+    saveDemandes(demandes);
+    res.json({ success: true });
+});
+
+// --- Tableau de bord admin (AJAX + bouton export + pop-up confirmation) ---
+app.get("/admin", checkAdmin, (req, res) => {
+    let demandes = loadDemandes();
+    let html = `
+    <a href="/logout" style="float:right;">Déconnexion</a>
+    <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
+    <h2>Tableau de bord dossiers</h2>
+    <table border="1" cellpadding="5" style="border-collapse:collapse; width:100%;" id="adminTable">
+    <tr>
+      <th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Commande</th><th>Statut</th><th>Actions</th>
+    </tr>
+    ${demandes.map(d => `
+      <tr>
+        <td>${formatDateFr(d.date)}</td>
+        <td>${d.nom}</td>
+        <td>${d.email}</td>
+        <td>${d.produit}</td>
+        <td>${d.commande}</td>
+        <td>${d.statut}</td>
+        <td>
+          <form class="admin-form" action="/api/dossier/${d.id}/admin" method="post" enctype="multipart/form-data">
+            <select name="statut">
+              <option${d.statut==="Enregistré"?" selected":""}>Enregistré</option>
+              <option${d.statut==="Accepté"?" selected":""}>Accepté</option>
+              <option${d.statut==="Refusé"?" selected":""}>Refusé</option>
+              <option${d.statut==="En attente info"?" selected":""}>En attente info</option>
+            </select>
+            <input type="text" name="reponse" placeholder="Message ou commentaire..." style="width:120px;">
+            <input type="file" name="reponseFiles" multiple>
+            <button type="submit">Valider</button>
+          </form>
+          <a href="/dossier/${d.id}" target="_blank">Voir</a>
+        </td>
+      </tr>
+    `).join("")}
+    </table>
+    <script>
+    document.querySelectorAll('.admin-form').forEach(form => {
+      form.onsubmit = async function(e){
+        e.preventDefault();
+        const formData = new FormData(form);
+        const action = form.action;
+        let resp = await fetch(action, {method:'POST', body:formData});
+        let res = await resp.json();
+        if(res.success){
+          alert("Modification enregistrée !");
+          location.reload();
+        } else {
+          alert("Erreur lors de la modification.");
+        }
+      };
+    });
+    </script>
+    `;
+    res.send(html);
+});
+
+// --- Route de téléchargement de PJ avec extension ---
 app.get("/download/:fileid", (req, res) => {
   const fileid = req.params.fileid;
   const demandes = loadDemandes();
   let found = null;
-  for (const d of demandes) {
-    let f = (d.files || []).find(f => f.url === fileid);
-    if (f) { found = f; break; }
-    if (d.reponseFiles) {
-      let fr = d.reponseFiles.find(f2 => f2.url === fileid);
-      if (fr) { found = fr; break; }
+  for(const d of demandes){
+    let f = (d.files||[]).find(f => f.url === fileid);
+    if(f) { found = f; break; }
+    if(d.reponseFiles) {
+      let fr = d.reponseFiles.find(f2=>f2.url === fileid);
+      if(fr) { found = fr; break; }
     }
   }
-  if (!found) return res.status(404).send("Fichier introuvable");
+  if(!found) return res.status(404).send("Fichier introuvable");
   const filePath = path.join(UPLOADS_DIR, fileid);
   const contentType = mime.lookup(found.original) || "application/octet-stream";
   res.setHeader("Content-Type", contentType);
@@ -479,4 +291,5 @@ app.get("/download/:fileid", (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-app.listen(PORT, () => console.log("Serveur garantie en ligne sur port " + PORT));
+// --- Lancement serveur ---
+app.listen(PORT, ()=>console.log("Serveur garantie en ligne sur port "+PORT));
