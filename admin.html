@@ -118,6 +118,15 @@
     <div class="filters-row" id="filters-row" style="display:none;">
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
+      <label>Statut :
+        <select id="statut-filter">
+          <option value="">Tous</option>
+          <option value="enregistré">Enregistré</option>
+          <option value="accepté">Accepté</option>
+          <option value="refusé">Refusé</option>
+          <option value="en attente d'info">En attente d'info</option>
+        </select>
+      </label>
     </div>
     <div id="dossier-list"></div>
   </div>
@@ -150,7 +159,7 @@
     ];
     let allDossiers = [];
     let currentMagasin = MAGASINS[0];
-    let filtres = { mois: "", annee: "" };
+    let filtres = { mois: "", annee: "", statut: "" };
     let formOpen = null;
 
     function adminLogin() {
@@ -216,6 +225,7 @@
     function afficherFiltres(dossiers) {
       let moisSel = document.getElementById("mois-filter");
       let anneeSel = document.getElementById("annee-filter");
+      let statutSel = document.getElementById("statut-filter");
       let moisSet = new Set(), anneeSet = new Set();
 
       dossiers.forEach(d => {
@@ -239,10 +249,12 @@
 
       moisSel.value = filtres.mois;
       anneeSel.value = filtres.annee;
+      statutSel.value = filtres.statut;
 
-      moisSel.onchange = anneeSel.onchange = function(){
+      moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
         filtres.mois = moisSel.value;
         filtres.annee = anneeSel.value;
+        filtres.statut = statutSel.value;
         afficherDossiers(currentMagasin);
       };
     }
@@ -266,6 +278,9 @@
           let date = new Date(d.date);
           return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
         });
+      }
+      if(filtres.statut) {
+        dossiers = dossiers.filter(d=>d.statut===filtres.statut);
       }
 
       let html = `<table>
