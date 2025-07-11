@@ -414,27 +414,35 @@ app.get("/admin", checkAdmin, (req, res) => {
             </tr>
         \`;
         table += d.map(x => {
-          const filesHtml = (x.files||[]).map(f => {
-            const ext = f.original.split('.').pop().toLowerCase();
-            if (["jpg","jpeg","png","gif","webp","bmp"].includes(ext)) {
-              return \`<a href="/download/\${f.url}" target="_blank">
-                        <img src="/download/\${f.url}" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;">
-                      </a>\`;
-            } else {
-              return \`<a href="/download/\${f.url}" target="_blank">\${f.original}</a>\`;
-            }
-          }).join("<br>") || "—";
+          var filesHtml = "";
+if (x.files && x.files.length) {
+  for (var i = 0; i < x.files.length; i++) {
+    var f = x.files[i];
+    var ext = (f.original.split('.').pop() || "").toLowerCase();
+    if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext) !== -1) {
+      filesHtml += '<a href="/download/' + f.url + '" target="_blank">' +
+                   '<img src="/download/' + f.url + '" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;">' +
+                   '</a>';
+    } else {
+      filesHtml += '<a href="/download/' + f.url + '" target="_blank">' + f.original + '</a>';
+    }
+    if (i < x.files.length - 1) filesHtml += "<br>";
+  }
+} else {
+  filesHtml = "—";
+}
 
-          var respHtml = '';
-+ if (x.reponse) {
-+   respHtml += '<div>' + x.reponse + '</div>';
-+ }
-+ if (x.reponseFiles && x.reponseFiles.length) {
-+   x.reponseFiles.forEach(function(fr, idx) {
-+     respHtml += '<a href="/download/' + fr.url + '">' + fr.original + '</a>';
-+     if (idx < x.reponseFiles.length - 1) respHtml += '<br>';
-+   });
-+ }
+var respHtml = '';
+if (x.reponse) {
+  respHtml += '<div>' + x.reponse + '</div>';
+}
+if (x.reponseFiles && x.reponseFiles.length) {
+  x.reponseFiles.forEach(function(fr, idx) {
+    respHtml += '<a href="/download/' + fr.url + '">' + fr.original + '</a>';
+    if (idx < x.reponseFiles.length - 1) respHtml += '<br>';
+  });
+}
+
 
           return \`
             <tr>
