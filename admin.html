@@ -52,8 +52,9 @@
     .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
-    .mini-form { display:none; align-items:center; gap:9px; justify-content:center;}
-    .mini-form textarea { min-width:80px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
+    .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
+    .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
     .mini-form input[type="file"] { margin-top:0; }
     .mini-form select { font-size:0.97em;}
     .mini-form .bouton { margin-left:7px;}
@@ -150,6 +151,7 @@
     let allDossiers = [];
     let currentMagasin = MAGASINS[0];
     let filtres = { mois: "", annee: "" };
+    let formOpen = null;
 
     function adminLogin() {
       let pw = document.getElementById('admin-pass').value;
@@ -266,10 +268,6 @@
         });
       }
 
-      if(!dossiers.length){
-        document.getElementById('dossier-list').innerHTML = `<p style='color:#d23b33;font-size:1.18em;text-align:center;'>Aucun dossier pour ce magasin et cette période</p>`;
-        return;
-      }
       let html = `<table>
         <tr>
           <th>Date</th>
@@ -284,7 +282,7 @@
         </tr>`;
       dossiers.forEach(d=>{
         let id = d.id;
-        html += `<tr id="row-${id}">
+        html += `<tr>
           <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
           <td>${d.nom||''}</td>
           <td>${d.produit_concerne||''}</td>
@@ -301,9 +299,12 @@
               }
             }).join("<br>") : ""}
           </td>
-          <td class="action">
-            <button class="maj-btn" data-id="${id}">Mettre à jour</button>
-            <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="margin-top:3px;">
+          <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
+          <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+        </tr>
+        <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+          <td colspan="9">
+            <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
               <select class="statut-select" name="statut">
                 <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
                 <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
@@ -313,11 +314,10 @@
               <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
               <input type="file" name="reponseFiles" multiple>
               <button type="submit" class="bouton">Répondre</button>
-              <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="this.closest('form').style.display='none'">Annuler</button>
+              <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
               <span class="admin-msg"></span>
             </form>
           </td>
-          <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
         </tr>`;
       });
       html += `</table>`;
@@ -326,11 +326,13 @@
       // Activer les boutons "Mettre à jour"
       document.querySelectorAll('.maj-btn').forEach(btn => {
         btn.onclick = function(){
-          document.querySelectorAll('.mini-form').forEach(f=>f.style.display="none");
+          document.querySelectorAll('.mini-form-row').forEach(f=>f.style.display="none");
           let id = btn.getAttribute('data-id');
-          let form = document.getElementById('form-'+id);
-          form.style.display = "flex";
-          form.scrollIntoView({behavior:"smooth",block:"center"});
+          let row = document.getElementById('mini-row-'+id);
+          if(row) {
+            row.style.display = "table-row";
+            row.scrollIntoView({behavior:"smooth",block:"center"});
+          }
         };
       });
 
@@ -345,13 +347,19 @@
           let json = await resp.json();
           if (json.success) {
             this.querySelector('.admin-msg').textContent = "Réponse envoyée ✔";
-            setTimeout(()=>{this.style.display="none"}, 1000);
-            chargerDossiers();
+            setTimeout(()=>{
+              document.getElementById('mini-row-'+id).style.display="none";
+              chargerDossiers();
+            }, 1100);
           } else {
             this.querySelector('.admin-msg').textContent = "Erreur";
           }
         };
       });
+    }
+
+    function fermerMiniForm(id){
+      document.getElementById('mini-row-'+id).style.display = "none";
     }
 
     function voirDossier(id) {
