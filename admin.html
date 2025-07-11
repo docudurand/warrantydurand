@@ -7,27 +7,10 @@
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
-    #admin-content {
-      display:none;
-      width: 98vw;
-      max-width: 1620px;
-      margin:34px auto 0 auto;
-      background:#fff;
-      border-radius:24px;
-      box-shadow:0 3px 20px #0001;
-      padding:44px 32px 38px 32px;
-      box-sizing: border-box;
-      overflow-x: auto;
-      min-width: 320px;
-    }
+    #admin-content { display:none; width: 98vw; max-width: 1620px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:44px 32px 38px 32px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
-    .tab {
-      padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer;
-      background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em;
-      border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center;
-      transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;
-    }
+    .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
     .tab.active { background: #006e90; color: #fff; z-index: 1; }
     #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
     .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
@@ -44,15 +27,17 @@
     th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
-    .bouton, .voir-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
-    .bouton:hover, .voir-btn:hover { background:#1780b0;}
+    .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
+    .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
-    .reponse-form { display:flex; flex-direction:column; gap:7px; align-items:stretch; margin:0; }
-    .reponse-form textarea { min-width:180px; min-height:38px; font-size:1em; padding:8px 10px; border-radius:6px; border:1px solid #c3d2e0;}
-    .reponse-form input[type="file"] { margin-top:2px;}
-    .reponse-form button { margin-top:6px;}
-    .admin-msg { font-size:1.05em; color:#259a54; margin-left:6px;}
+    .mini-form { display:none; align-items:center; gap:9px; justify-content:center;}
+    .mini-form textarea { min-width:80px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form input[type="file"] { margin-top:0; }
+    .mini-form select { font-size:0.97em;}
+    .mini-form .bouton { margin-left:7px;}
+    .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
+    .maj-btn { background: #1780b0; padding: 7px 12px;}
     @media (max-width:1700px) {
       #admin-content { max-width: 98vw; }
       .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; }
@@ -69,9 +54,8 @@
       .tab { min-width: 86px; font-size:0.94em;}
       #status-counters {flex-direction:column;align-items:center;gap:13px;}
       .counter-card { min-width: 160px; padding:13px 1vw;}
-      .reponse-form textarea { min-width:80vw; }
+      .mini-form textarea { min-width: 60vw;}
     }
-    /* BOUTONS LATERAUX */
     #side-tools { position:fixed; top:110px; right:0; z-index:99; display:flex; flex-direction:column; gap:14px; }
     #side-tools button, #side-tools label {
       background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none;
@@ -87,7 +71,6 @@
   </style>
 </head>
 <body>
-  <!-- Boutons latéraux ZIP -->
   <div id="side-tools">
     <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
     <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
@@ -98,23 +81,19 @@
     </form>
     <span id="importzip-msg"></span>
   </div>
-
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
     <button class="bouton" onclick="adminLogin()">Connexion</button>
     <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
   </div>
-
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
     <div id="dossier-list"></div>
   </div>
-
   <script>
-    // Sauvegarde/Restaurer ZIP
     document.getElementById("btn-exportzip").onclick = function(){
       window.open("/api/admin/exportzip", "_blank");
     };
@@ -138,7 +117,6 @@
       });
     };
 
-    // --- Interface admin ---
     const MAGASINS = [
       "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
     ];
@@ -220,41 +198,45 @@
           <th>Client</th>
           <th>Produit</th>
           <th>Immatriculation</th>
-          <th>Mise à jour</th>
+          <th>Statut</th>
+          <th>Réponse</th>
+          <th>Fichiers réponse</th>
+          <th>Mettre à jour</th>
           <th>Voir</th>
         </tr>`;
       dossiers.forEach(d=>{
-        html += `<tr>
+        let id = d.id;
+        html += `<tr id="row-${id}">
           <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
           <td>${d.nom||''}</td>
           <td>${d.produit_concerne||''}</td>
           <td>${d.immatriculation||''}</td>
+          <td id="statut-${id}">${d.statut||''}</td>
+          <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
+          <td id="pj-${id}">
+            ${(d.reponseFiles||[]).length ? d.reponseFiles.map(f=>{
+              let ext = f.original.split('.').pop().toLowerCase();
+              if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+              } else {
+                return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+              }
+            }).join("<br>") : ""}
+          </td>
           <td>
-            <form class="reponse-form" data-id="${d.id}" enctype="multipart/form-data" style="margin-top:0;">
-              <label style="font-size:0.98em;margin-bottom:2px;">Statut :
-                <select class="statut-select" name="statut">
-                  <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-                  <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-                  <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-                  <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-                </select>
-              </label>
-              <label style="font-size:0.98em;margin-bottom:2px;">Réponse :
-                <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-              </label>
-              <label style="font-size:0.98em;margin-bottom:2px;">Ajouter pièce(s) jointe(s) :
-                <input type="file" name="reponseFiles" multiple>
-              </label>
+            <button class="maj-btn" data-id="${id}">Mettre à jour</button>
+            <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="margin-top:3px;">
+              <select class="statut-select" name="statut">
+                <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+                <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+                <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+                <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+              </select>
+              <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+              <input type="file" name="reponseFiles" multiple>
               <button type="submit" class="bouton">Répondre</button>
+              <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="this.closest('form').style.display='none'">Annuler</button>
               <span class="admin-msg"></span>
-              ${d.reponseFiles && d.reponseFiles.length ? d.reponseFiles.map(f=>{
-                let ext = f.original.split('.').pop().toLowerCase();
-                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
-                } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                }
-              }).join("<br>") : ""}
             </form>
           </td>
           <td><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
@@ -263,17 +245,29 @@
       html += `</table>`;
       document.getElementById('dossier-list').innerHTML = html;
 
-      // Ajout de l'envoi asynchrone pour chaque mini-formulaire réponse/statut/fichier
-      document.querySelectorAll('.reponse-form').forEach(form => {
+      // Activer les boutons "Mettre à jour"
+      document.querySelectorAll('.maj-btn').forEach(btn => {
+        btn.onclick = function(){
+          document.querySelectorAll('.mini-form').forEach(f=>f.style.display="none");
+          let id = btn.getAttribute('data-id');
+          let form = document.getElementById('form-'+id);
+          form.style.display = "flex";
+          form.scrollIntoView({behavior:"smooth",block:"center"});
+        };
+      });
+
+      // Form submit
+      document.querySelectorAll('.mini-form').forEach(form => {
         form.onsubmit = async function(e) {
           e.preventDefault();
           let id = this.getAttribute('data-id');
-          let fd = new FormData(this); // Prend tous les champs du form
+          let fd = new FormData(this);
           this.querySelector('.admin-msg').textContent = "Envoi...";
           let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
           let json = await resp.json();
           if (json.success) {
             this.querySelector('.admin-msg').textContent = "Réponse envoyée ✔";
+            setTimeout(()=>{this.style.display="none"}, 1000);
             chargerDossiers();
           } else {
             this.querySelector('.admin-msg').textContent = "Erreur";
