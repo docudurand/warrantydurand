@@ -4,165 +4,177 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import cookieParser from "cookie-parser";
+import nodemailer from "nodemailer";
 import mime from "mime-types";
+import archiver from "archiver";
+import { fileURLToPath } from "url";
 
-const __dirname = path.resolve();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = "./demandes.json";
-const UPLOADS_DIR = "./uploads";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "superadmin2024"; // Change-le sur Render !
+const DATA_FILE = path.join(__dirname, "demandes.json");
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 
-// Config
-app.use(cors());
-app.use(express.json());
-app.use(cookieParser());
-app.use(express.static("public")); // Pour servir les formulaires statiques
-app.use('/uploads', express.static(UPLOADS_DIR));
+const MAGASIN_MAILS = {
+  "Annemasse": "respmagannemasse@durandservices.fr",
+  "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
+  "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
+  "Chassieu": "magasin5chassieu@durandservices.fr",
+  "Gleize": "mag5gleize@durandservices.fr",
+  "La Motte-Servolex": "magasinlms@durandservices.fr",
+  "Les Echets": "magasin5echets@durandservices.fr",
+  "Rives": "magasin5rives@durandservices.fr",
+  "Saint-Egreve": "mag5stegreve@durandservices.fr",
+  "Saint-Jean-Bonnefonds": "magasin5sjbf@durandservices.fr",
+  "Saint-martin-d'heres": "magasin5smh@durandservices.fr",
+  "Seynod": "magasin5seynod@durandservices.fr"
+};
 
-// Init stockage JSON
-if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]", "utf8");
+// Mailer (adapte l'auth SMTP à ton serveur si besoin)
+const mailer = nodemailer.createTransport({
+  host: process.env.MAIL_HOST || "smtp.gmail.com",
+  port: process.env.MAIL_PORT || 465,
+  secure: true,
+  auth: {
+    user: process.env.MAIL_USER || "xxxx@gmail.com",
+    pass: process.env.MAIL_PASS || "xxxx"
+  }
+});
+
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
+if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
 
-// Multer pour fichiers joints
+app.use(cors());
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/uploads", express.static(UPLOADS_DIR));
+
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, UPLOADS_DIR);
-  },
-  filename: function (req, file, cb) {
-    const unique = Date.now() + '-' + Math.round(Math.random()*1E9);
-    cb(null, unique + '-' + file.originalname.replace(/\s+/g, '_'));
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e8);
+    cb(null, unique + "-" + file.originalname.replace(/\s/g, "_"));
   }
 });
 const upload = multer({ storage });
 
-// Magasins (adapter ici si tu veux rajouter/supprimer)
-const MAGASINS = [
-  "Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu",
-  "Gleize", "La Motte-Servolex", "Les Echets", "Rives",
-  "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
-];
+const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
-// Helper
-function readData() {
-  return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-}
-function writeData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-}
-
-// API : Enregistrement d'une nouvelle demande
-app.post("/api/demandes", upload.array("document"), (req, res) => {
+app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
-    const fields = req.body;
-    const files = (req.files || []).map(f => ({
-      url: f.filename,
-      original: f.originalname,
-      type: f.mimetype,
-      size: f.size
+    let d = req.body;
+    d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    d.date = new Date().toISOString();
+    d.statut = "enregistré";
+    d.files = (req.files||[]).map(f=>({
+      url: path.basename(f.filename),
+      original: f.originalname
     }));
-    const id = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-    const date = new Date().toISOString();
-    const dossier = {
-      id,
-      date,
-      statut: "enregistré",
-      ...fields,
-      quantite_posee: fields.quantite_posee || "",
-      km_pose: fields.km_pose || "",
-      km_constat: fields.km_constat || "",
-      files,
-      reponse: "",
-      reponseFiles: [],
-    };
-
+    d.reponse = "";
+    d.reponseFiles = [];
     const data = readData();
-    data.push(dossier);
+    data.push(d);
     writeData(data);
 
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-});
-
-// API : Suivi client (filtre par email)
-app.get("/api/mes-dossiers", (req, res) => {
-  const email = (req.query.email||"").toLowerCase();
-  if (!email) return res.json([]);
-  const data = readData();
-  const result = data.filter(d => (d.email||"").toLowerCase() === email);
-  res.json(result.reverse());
-});
-
-// Téléchargement des pièces jointes
-app.get("/download/:filename", (req, res) => {
-  const file = req.params.filename;
-  const filepath = path.join(UPLOADS_DIR, file);
-  if (fs.existsSync(filepath)) {
-    res.type(mime.lookup(filepath) || "application/octet-stream");
-    res.download(filepath);
-  } else {
-    res.status(404).send("Fichier non trouvé");
-  }
-});
-
-// Auth admin simple (cookie, à améliorer si besoin)
-app.post("/api/admin/login", express.json(), (req, res) => {
-  const { password } = req.body;
-  if (password === ADMIN_PASSWORD) {
-    res.cookie("admin", "1", { httpOnly: true, sameSite: "Lax" });
-    res.json({ success: true });
-  } else {
-    res.json({ success: false, message: "Mot de passe incorrect" });
-  }
-});
-function adminAuth(req, res, next) {
-  if (req.cookies.admin === "1") return next();
-  res.status(401).json({ error: "Non autorisé" });
-}
-
-// API : Données admin (tous les dossiers)
-app.get("/api/admin/dossiers", adminAuth, (req, res) => {
-  const data = readData();
-  res.json(data.reverse());
-});
-
-// Changer le statut ou la réponse d'un dossier (admin)
-app.post("/api/admin/dossier/:id", adminAuth, upload.array("reponseFiles"), (req, res) => {
-  try {
-    const id = req.params.id;
-    const { statut, reponse } = req.body;
-    const data = readData();
-    const idx = data.findIndex(d => d.id === id);
-    if (idx === -1) return res.status(404).json({ error: "Dossier introuvable" });
-    if (statut) data[idx].statut = statut;
-    if (reponse !== undefined) data[idx].reponse = reponse;
-    // Fichiers de réponse (upload)
-    if (req.files && req.files.length) {
-      data[idx].reponseFiles = (data[idx].reponseFiles || []);
-      req.files.forEach(f => {
-        data[idx].reponseFiles.push({
-          url: f.filename,
-          original: f.originalname,
-          type: f.mimetype,
-          size: f.size
-        });
+    const respMail = MAGASIN_MAILS[d.magasin] || "";
+    if (respMail) {
+      await mailer.sendMail({
+        from: process.env.MAIL_FROM || '"Garantie Durand" <no-reply@durandservices.fr>',
+        to: respMail,
+        subject: `Nouvelle demande garantie (${d.magasin})`,
+        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
+          Client : ${d.nom} (${d.email})<br>
+          Produit : ${d.produit_concerne||""}<br>
+          <a href="[ADMIN_URL]">Accéder à l'admin</a>`,
+        attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
       });
     }
-    writeData(data);
+
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.json({ success: false, message: err.message });
   }
 });
 
-// Pour l'admin : page HTML
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "admin.html"));
+app.get("/api/admin/dossiers", (req, res) => {
+  res.json(readData());
 });
 
-// Démarrage du serveur
-app.listen(PORT, () => {
-  console.log("Serveur en ligne sur port", PORT);
+app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
+  let { id } = req.params;
+  let data = readData();
+  let dossier = data.find(x=>x.id===id);
+  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
+  let oldStatut = dossier.statut;
+
+  if (req.body.statut) dossier.statut = req.body.statut;
+  if (req.body.reponse) dossier.reponse = req.body.reponse;
+  if (req.files && req.files.length) {
+    dossier.reponseFiles = (dossier.reponseFiles||[]).concat(
+      req.files.map(f=>({url: path.basename(f.filename), original: f.originalname}))
+    );
+  }
+  writeData(data);
+
+  let changes = [];
+  if (req.body.statut && req.body.statut !== oldStatut) changes.push("statut");
+  if (req.body.reponse) changes.push("réponse");
+  if (req.files && req.files.length) changes.push("pièce jointe");
+  if (changes.length && dossier.email) {
+    let att = (dossier.reponseFiles||[]).map(f=>({
+      filename: f.original, path: path.join(UPLOADS_DIR, f.url)
+    }));
+    let html = `<div style="font-family:sans-serif;">
+      Bonjour,<br>
+      Votre dossier de garantie <b>${d.produit_concerne||""}</b> (${d.magasin}) a été mis à jour.<br>
+      <ul>
+        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
+        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
+        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
+      </ul>
+      <a href="[SUIVI_URL]">Accéder à votre suivi de dossier</a>
+      <br><br>L'équipe Garantie Durand
+    </div>`;
+    await mailer.sendMail({
+      from: process.env.MAIL_FROM || '"Garantie Durand" <no-reply@durandservices.fr>',
+      to: dossier.email,
+      subject: `Votre dossier garantie - mise à jour`,
+      html,
+      attachments: att
+    });
+  }
+
+  res.json({success:true});
 });
+
+// Auth admin (cookie sécurisé)
+app.post("/api/admin/login", (req, res) => {
+  let pw = "";
+  if (req.body && req.body.password) pw = req.body.password;
+  if (pw === ADMIN_PASSWORD) return res.json({success:true});
+  res.json({success:false, message:"Mot de passe incorrect"});
+});
+
+// Dossiers du client (email)
+app.get("/api/mes-dossiers", (req, res) => {
+  let email = (req.query.email||"").toLowerCase();
+  let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
+  res.json(dossiers);
+});
+
+// Télécharger fichier joint (sécurité)
+app.get("/download/:file", (req, res) => {
+  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
+  const filePath = path.join(UPLOADS_DIR, file);
+  if (!fs.existsSync(filePath)) return res.status(404).send("Fichier introuvable");
+  res.download(filePath);
+});
+
+// Pour les autres pages html
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));

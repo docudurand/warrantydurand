@@ -21,60 +21,21 @@
       min-width: 320px;
     }
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
-    .tabs {
-      display:flex;
-      gap:11px;
-      justify-content:center;
-      margin-bottom:34px;
-      flex-wrap:wrap;
-    }
+    .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab {
-      padding: 12px 34px;
-      border-radius: 10px 10px 0 0;
-      cursor: pointer;
-      background: #f0f6f9;
-      font-weight: 600;
-      color: #146083;
-      font-size: 1.14em;
-      border: 1.5px solid #cbe7f6;
-      border-bottom: 0;
-      min-width: 182px;
-      text-align: center;
-      transition: background 0.18s, color 0.18s;
-      box-sizing: border-box;
-      word-break: break-word;
-      white-space: normal;
+      padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer;
+      background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em;
+      border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center;
+      transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;
     }
-    .tab.active {
-      background: #006e90;
-      color: #fff;
-      z-index: 1;
-    }
-    #status-counters {
-      display:flex;
-      gap:35px;
-      justify-content:center;
-      margin-bottom:22px;
-      flex-wrap: wrap;
-    }
-    .counter-card {
-      background: #fff;
-      border-radius: 13px;
-      box-shadow: 0 2px 12px #0001;
-      padding: 32px 40px 26px 40px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 220px;
-      margin-bottom: 7px;
-    }
+    .tab.active { background: #006e90; color: #fff; z-index: 1; }
+    #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
+    .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
     .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
     .counter-card .counter-label.orange { color: #f8a900; }
     .counter-card .counter-label.green { color: #168b3e; }
     .counter-card .counter-label.red { color: #bb1810; }
-    .counter-card .counter-value {
-      font-size: 2.45em; font-weight: bold; margin-bottom:2px;
-    }
+    .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
@@ -83,20 +44,15 @@
     th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
-    .bouton, .voir-btn {
-      background:#006e90;
-      color:#fff;
-      border:none;
-      padding:7px 20px;
-      border-radius:6px;
-      cursor:pointer;
-      font-size:1em;
-      box-shadow:0 1px 4px #0002;
-      transition:background 0.15s;
-    }
+    .bouton, .voir-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
     .bouton:hover, .voir-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
+    .reponse-form { display:flex; gap:12px; align-items:center; margin:0; flex-wrap:wrap;}
+    .reponse-form textarea { min-width:260px; min-height:38px; font-size:1em; padding:8px 10px; border-radius:6px; border:1px solid #c3d2e0;}
+    .reponse-form input[type="file"] { margin-left:8px;}
+    .reponse-form button { margin-left:5px;}
+    .admin-msg { font-size:1.05em; color:#259a54; margin-left:11px;}
     @media (max-width:1700px) {
       #admin-content { max-width: 98vw; }
       .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; }
@@ -113,6 +69,7 @@
       .tab { min-width: 86px; font-size:0.94em;}
       #status-counters {flex-direction:column;align-items:center;gap:13px;}
       .counter-card { min-width: 160px; padding:13px 1vw;}
+      .reponse-form textarea { min-width:80vw; }
     }
   </style>
 </head>
@@ -166,7 +123,6 @@
       });
     }
 
-    // ------ Correction ici : on n'utilise plus onclick HTML ! ------
     function afficherOnglets() {
       let t = '';
       MAGASINS.forEach((m, i) => {
@@ -245,12 +201,51 @@
             }
           });
         html += `</td>
-          <td>${d.reponse||''}</td>
+          <td>
+            ${d.reponse ? `<div style="margin-bottom:5px;">${d.reponse}</div>` : ""}
+            ${d.reponseFiles && d.reponseFiles.length ? d.reponseFiles.map(f=>{
+              let ext = f.original.split('.').pop().toLowerCase();
+              if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+              } else {
+                return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+              }
+            }).join("<br>") : ""}
+            <form class="reponse-form" data-id="${d.id}" enctype="multipart/form-data" style="margin-top:10px;">
+              <textarea name="reponse" placeholder="Réponse (optionnel)"></textarea>
+              <input type="file" name="reponseFiles" multiple>
+              <button type="submit" class="bouton">Répondre</button>
+              <span class="admin-msg"></span>
+            </form>
+          </td>
           <td><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
         </tr>`;
       });
       html += `</table>`;
       document.getElementById('dossier-list').innerHTML = html;
+
+      // Ajout de l'envoi asynchrone pour chaque mini-formulaire réponse
+      document.querySelectorAll('.reponse-form').forEach(form => {
+        form.onsubmit = async function(e) {
+          e.preventDefault();
+          let id = this.getAttribute('data-id');
+          let fd = new FormData();
+          let reponse = this.querySelector('textarea').value;
+          fd.append("reponse", reponse);
+          let files = this.querySelector('input[type="file"]').files;
+          for (let f of files) fd.append("reponseFiles", f);
+          // Envoi
+          this.querySelector('.admin-msg').textContent = "Envoi...";
+          let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+          let json = await resp.json();
+          if (json.success) {
+            this.querySelector('.admin-msg').textContent = "Réponse envoyée ✔";
+            chargerDossiers();
+          } else {
+            this.querySelector('.admin-msg').textContent = "Erreur";
+          }
+        };
+      });
     }
 
     function changerStatut(id, statut) {
