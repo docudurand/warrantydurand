@@ -34,10 +34,7 @@ const GMAIL_PASS = process.env.GMAIL_PASS;
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: {
-    user: GMAIL_USER,
-    pass: GMAIL_PASS
-  }
+  auth: { user: GMAIL_USER, pass: GMAIL_PASS }
 });
 
 const ADMIN_USER = "admin";
@@ -257,19 +254,9 @@ Merci de ne pas répondre à cet email.
 app.get("/admin", checkAdmin, (req, res) => {
   let demandes = loadDemandes();
   const magasins = ["Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu", "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"];
-  let allMonths = new Set();
-  let allYears = new Set();
-  for (let d of demandes) {
-    if (d.date) {
-      let dd = new Date(d.date);
-      allMonths.add(('0' + (dd.getMonth() + 1)).slice(-2));
-      allYears.add(dd.getFullYear());
-    }
-  }
-  allMonths = Array.from(allMonths).sort();
-  allYears = Array.from(allYears).sort();
+  let allYears = Array.from(new Set(demandes.map(d=>d.date?new Date(d.date).getFullYear():null).filter(y=>y))).sort();
 
-  let html = `
+  res.send(`
     <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière"
       style="display:block; width:100%; max-width:980px; margin:25px auto 8px auto; border-radius:14px; box-shadow:0 4px 20px #0002;">
     <a href="/logout" style="float:right;">Déconnexion</a>
@@ -280,11 +267,7 @@ app.get("/admin", checkAdmin, (req, res) => {
     </form>
     <a href="/admin/export" style="display:inline-block; margin-bottom:15px; background:#006e90; color:#fff; padding:8px 16px; border-radius:5px; text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
     <h2>Tableau de bord dossiers</h2>
-    <div id="onglets-magasins" style="margin-bottom:10px;">
-      ${magasins.map((m, i) =>
-        `<button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i == 0 ? '006e90' : 'eee'}; color:#${i == 0 ? 'fff' : '222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
-      ).join('')}
-    </div>
+    <div id="onglets-magasins" style="margin-bottom:10px;"></div>
     <div style="margin-bottom:10px;">
       <label>Mois :
         <select id="moisFilter">
@@ -324,99 +307,80 @@ app.get("/admin", checkAdmin, (req, res) => {
       let moisFilter = "";
       let anneeFilter = "";
 
-      function renderStats(magasin, mois, annee) {
-        let d = demandes.filter(x => x.magasin === magasin);
-        if (mois) d = d.filter(x => {
-          if (!x.date) return false;
-          let dd = new Date(x.date);
-          return ('0' + (dd.getMonth() + 1)).slice(-2) === mois;
+      function renderOnglets() {
+        let onglets = magasins.map(m =>
+          '<button class="onglet-magasin" data-magasin="'+m+'" style="padding:7px 18px; margin-right:7px; background:'+(m===activeMagasin?'#006e90':'#eee')+'; color:'+(m===activeMagasin?'#fff':'#222')+'; border:none; border-radius:6px; cursor:pointer;">'+m+'</button>'
+        ).join('');
+        document.getElementById("onglets-magasins").innerHTML = onglets;
+        document.querySelectorAll(".onglet-magasin").forEach(btn=>{
+          btn.onclick = function(){
+            activeMagasin = btn.dataset.magasin;
+            renderOnglets();
+            renderAll();
+          }
         });
-        if (annee) d = d.filter(x => {
-          if (!x.date) return false;
-          let dd = new Date(x.date);
-          return dd.getFullYear().toString() === annee;
-        });
-
-        let nbEnreg = d.filter(x => x.statut === "Enregistré").length;
-        let nbAccept = d.filter(x => x.statut === "Accepté").length;
-        let nbAttente = d.filter(x => x.statut === "En attente info").length;
-        let nbRefus = d.filter(x => x.statut === "Refusé").length;
-
-        let html =
-          '<div class="stat-cards">' +
-          '<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">' + nbEnreg + '</div></div>' +
-          '<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">' + nbAccept + '</div></div>' +
-          '<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">' + nbAttente + '</div></div>' +
-          '<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">' + nbRefus + '</div></div>' +
-          '</div>';
-        document.getElementById("statistiques").innerHTML = html;
       }
 
-      function renderTable(magasin, mois, annee) {
-        activeMagasin = magasin;
-        let d = demandes.filter(x => x.magasin === magasin);
-        if (mois) d = d.filter(x => {
-          if (!x.date) return false;
-          let dd = new Date(x.date);
-          return ('0' + (dd.getMonth() + 1)).slice(-2) === mois;
-        });
-        if (annee) d = d.filter(x => {
-          if (!x.date) return false;
-          let dd = new Date(x.date);
-          return dd.getFullYear().toString() === annee;
-        });
+      function renderStats(d) {
+        let nbEnreg = d.filter(x=>x.statut==="Enregistré").length;
+        let nbAccept = d.filter(x=>x.statut==="Accepté").length;
+        let nbAttente = d.filter(x=>x.statut==="En attente info").length;
+        let nbRefus = d.filter(x=>x.statut==="Refusé").length;
+        document.getElementById("statistiques").innerHTML =
+          '<div class="stat-cards">'+
+            '<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">'+nbEnreg+'</div></div>'+
+            '<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">'+nbAccept+'</div></div>'+
+            '<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">'+nbAttente+'</div></div>'+
+            '<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">'+nbRefus+'</div></div>'+
+          '</div>';
+      }
 
-        renderStats(magasin, mois, annee);
-
+      function renderTable(d) {
         let html = "<table border='1' cellpadding='5' style='border-collapse:collapse; width:100%;'><tr><th>Date</th><th>Nom</th><th>Email</th><th>Produit</th><th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th><th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";
-        html += d.map(function(x) {
-          return "<tr>" +
-            "<td>" + (x.date ? (new Date(x.date).toLocaleDateString('fr-FR')) : '') + "</td>" +
-            "<td>" + (x.nom || '') + "</td>" +
-            "<td>" + (x.email || '') + "</td>" +
-            "<td>" + (x.produit_concerne || '') + "</td>" +
-            "<td>" + (x.immatriculation || '') + "</td>" +
-            "<td>" + (x.statut) + "</td>" +
-            "<td>" +
-              ((x.files && x.files.length)
-                ? x.files.map(function(f) {
+        html += d.map(x =>
+          "<tr>"+
+            "<td>"+(x.date ? (new Date(x.date).toLocaleDateString('fr-FR')) : '')+"</td>"+
+            "<td>"+(x.nom||'')+"</td>"+
+            "<td>"+(x.email||'')+"</td>"+
+            "<td>"+(x.produit_concerne||'')+"</td>"+
+            "<td>"+(x.immatriculation||'')+"</td>"+
+            "<td>"+(x.statut)+"</td>"+
+            "<td>"+((x.files&&x.files.length)
+                ? x.files.map(f=>{
                     let ext = f.original.split('.').pop().toLowerCase();
-                    if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) {
-                      return '<a href=\"/download/' + f.url + '\" target=\"_blank\" rel=\"noopener\"><img src=\"/download/' + f.url + '\" style=\"max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;\"></a>';
+                    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                      return '<a href="/download/'+f.url+'" target="_blank" rel="noopener"><img src="/download/'+f.url+'" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;"></a>';
                     } else {
-                      return '<a href=\"/download/' + f.url + '\" target=\"_blank\" rel=\"noopener noreferrer\">' + f.original + '</a>';
+                      return '<a href="/download/'+f.url+'" target="_blank" rel="noopener noreferrer">'+f.original+'</a>';
                     }
                   }).join("<br>")
-                : '—') +
-            "</td>" +
-            "<td>" +
-              (x.reponse ? ('<div>' + x.reponse + '</div>') : '') +
+                : '—')+
+            "</td>"+
+            "<td>"+
+              (x.reponse ? ('<div>'+x.reponse+'</div>') : '') +
               ((x.reponseFiles && x.reponseFiles.length)
-                ? x.reponseFiles.map(function(f) {
-                    return '<a href=\"/download/' + f.url + '\" target=\"_blank\" rel=\"noopener noreferrer\">' + f.original + '</a>';
-                  }).join("<br>")
-                : '') +
-            "</td>" +
-            "<td>" +
-              "<form class=\"admin-form\" action=\"/api/dossier/" + x.id + "/admin\" method=\"post\" enctype=\"multipart/form-data\">" +
-                "<select name=\"statut\">" +
-                  "<option" + (x.statut==="Enregistré"?" selected":"") + ">Enregistré</option>" +
-                  "<option" + (x.statut==="Accepté"?" selected":"") + ">Accepté</option>" +
-                  "<option" + (x.statut==="Refusé"?" selected":"") + ">Refusé</option>" +
-                  "<option" + (x.statut==="En attente info"?" selected":"") + ">En attente info</option>" +
-                "</select>" +
-                "<input type=\"text\" name=\"reponse\" placeholder=\"Message ou commentaire...\" style=\"width:120px;\">" +
-                "<input type=\"file\" name=\"reponseFiles\" multiple>" +
-                "<button type=\"submit\">Valider</button>" +
-              "</form>" +
-            "</td>" +
-            "<td><button class=\"bouton\" onclick=\"voirDossier('" + x.id + "')\">Voir</button></td>" +
-          "</tr>";
-        }).join('');
+                ? x.reponseFiles.map(f=>'<a href="/download/'+f.url+'" target="_blank" rel="noopener noreferrer">'+f.original+'</a>').join("<br>")
+                : '')+
+            "</td>"+
+            "<td>"+
+              "<form class='admin-form' action='/api/dossier/"+x.id+"/admin' method='post' enctype='multipart/form-data'>"+
+                "<select name='statut'>"+
+                  "<option"+(x.statut==="Enregistré"?" selected":"")+">Enregistré</option>"+
+                  "<option"+(x.statut==="Accepté"?" selected":"")+">Accepté</option>"+
+                  "<option"+(x.statut==="Refusé"?" selected":"")+">Refusé</option>"+
+                  "<option"+(x.statut==="En attente info"?" selected":"")+">En attente info</option>"+
+                "</select>"+
+                "<input type='text' name='reponse' placeholder='Message ou commentaire...' style='width:120px;'>"+
+                "<input type='file' name='reponseFiles' multiple>"+
+                "<button type='submit'>Valider</button>"+
+              "</form>"+
+            "</td>"+
+            "<td><button class='bouton' onclick=\"voirDossier('"+x.id+"')\">Voir</button></td>"+
+          "</tr>"
+        ).join('');
         html += "</table>";
         document.getElementById("contenu-admin").innerHTML = html;
-
-        document.querySelectorAll('.admin-form').forEach(function(form) {
+        document.querySelectorAll('.admin-form').forEach(form => {
           form.onsubmit = async function(e){
             e.preventDefault();
             const formData = new FormData(form);
@@ -433,94 +397,96 @@ app.get("/admin", checkAdmin, (req, res) => {
         });
       }
 
-      function attachOngletEvents() {
-        document.querySelectorAll(".onglet-magasin").forEach(function(btn) {
-          btn.onclick = function() {
-            document.querySelectorAll(".onglet-magasin").forEach(function(b){b.style.background="#eee"; b.style.color="#222";});
-            btn.style.background="#006e90"; btn.style.color="#fff";
-            renderTable(btn.dataset.magasin, moisFilter, anneeFilter);
-            attachOngletEvents();
-          };
+      function renderAll() {
+        let d = demandes.filter(x=>x.magasin===activeMagasin);
+        if (moisFilter) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return ('0'+(dd.getMonth()+1)).slice(-2) === moisFilter;
         });
+        if (anneeFilter) d = d.filter(x=>{
+          if (!x.date) return false;
+          let dd = new Date(x.date);
+          return dd.getFullYear().toString() === anneeFilter;
+        });
+        renderStats(d);
+        renderTable(d);
       }
 
-      document.getElementById("moisFilter").onchange = function () {
-        moisFilter = this.value;
-        renderTable(activeMagasin, moisFilter, anneeFilter);
-        attachOngletEvents();
-      };
-      document.getElementById("anneeFilter").onchange = function () {
-        anneeFilter = this.value;
-        renderTable(activeMagasin, moisFilter, anneeFilter);
-        attachOngletEvents();
-      };
-
       window.voirDossier = function(id) {
-        let d = demandes.find(function(x){return x.id===id;});
+        let d = demandes.find(x=>x.id===id);
         if(!d) return alert("Dossier introuvable !");
         let detailHtml =
-          "<html><head><meta charset=\"UTF-8\"><title>Détail dossier</title>" +
-          "<style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f9fafb;margin:0;}.fiche-table{max-width:700px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px 14px 24px;}.fiche-table table{width:100%;border-collapse:collapse;}.fiche-table th,.fiche-table td{text-align:left;padding:8px 10px;border:none;}.fiche-table th{color:#194e72;font-size:1.06em;text-align:left;width:220px;vertical-align:top;}.fiche-table tr{border-bottom:1px solid #f0f0f0;}.fiche-title{font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em;}.pj-img{max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002;}</style>" +
-          "</head><body>" +
-          "<div class=\"fiche-table\"><table>" +
-            "<tr><th>Nom du client</th><td>"+(d.nom||"")+"</td></tr>" +
-            "<tr><th>Email</th><td>"+(d.email||"")+"</td></tr>" +
-            "<tr><th>Magasin</th><td>"+(d.magasin||"")+"</td></tr>" +
-            "<tr><td colspan=\"2\" class=\"fiche-title\">Produit</td></tr>" +
-            "<tr><th>Marque du produit</th><td>"+(d.marque_produit||"")+"</td></tr>" +
-            "<tr><th>Produit concerné</th><td>"+(d.produit_concerne||"")+"</td></tr>" +
-            "<tr><th>Référence de la pièce</th><td>"+(d.reference_piece||"")+"</td></tr>" +
-            "<tr><th>Quantité posée</th><td>"+(d.quantite_posee||"")+"</td></tr>" +
-            "<tr><td colspan=\"2\" class=\"fiche-title\">Véhicule</td></tr>" +
-            "<tr><th>Immatriculation</th><td>"+(d.immatriculation||"")+"</td></tr>" +
-            "<tr><th>Marque</th><td>"+(d.marque_vehicule||"")+"</td></tr>" +
-            "<tr><th>Modèle</th><td>"+(d.modele_vehicule||"")+"</td></tr>" +
-            "<tr><th>Numéro de série</th><td>"+(d.num_serie||"")+"</td></tr>" +
-            "<tr><th>1ère immatriculation</th><td>"+(d.premiere_immat||"")+"</td></tr>" +
-            "<tr><td colspan=\"2\" class=\"fiche-title\">Problème</td></tr>" +
-            "<tr><th>Date de pose</th><td>"+(d.date_pose||"")+"</td></tr>" +
-            "<tr><th>Date du constat</th><td>"+(d.date_constat||"")+"</td></tr>" +
-            "<tr><th>Kilométrage à la pose</th><td>"+(d.km_pose||"")+"</td></tr>" +
-            "<tr><th>Kilométrage au constat</th><td>"+(d.km_constat||"")+"</td></tr>" +
-            "<tr><th>Problème rencontré</th><td>"+(d.probleme_rencontre||"")+"</td></tr>" +
-            "<tr><th>Date de création du dossier</th><td>"+(d.date?(new Date(d.date)).toLocaleDateString('fr-FR'):"")+"</td></tr>" +
-            "<tr><th>Statut</th><td>"+(d.statut||"")+"</td></tr>" +
+          "<html><head><meta charset='UTF-8'><title>Détail dossier</title>"+
+          "<style>body{font-family:'Segoe UI',Arial,sans-serif;background:#f9fafb;margin:0;}.fiche-table{max-width:700px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px 14px 24px;}.fiche-table table{width:100%;border-collapse:collapse;}.fiche-table th,.fiche-table td{text-align:left;padding:8px 10px;border:none;}.fiche-table th{color:#194e72;font-size:1.06em;text-align:left;width:220px;vertical-align:top;}.fiche-table tr{border-bottom:1px solid #f0f0f0;}.fiche-title{font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em;}.pj-img{max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002;}</style>"+
+          "</head><body>"+
+          "<div class='fiche-table'><table>"+
+            "<tr><th>Nom du client</th><td>"+(d.nom||"")+"</td></tr>"+
+            "<tr><th>Email</th><td>"+(d.email||"")+"</td></tr>"+
+            "<tr><th>Magasin</th><td>"+(d.magasin||"")+"</td></tr>"+
+            "<tr><td colspan='2' class='fiche-title'>Produit</td></tr>"+
+            "<tr><th>Marque du produit</th><td>"+(d.marque_produit||"")+"</td></tr>"+
+            "<tr><th>Produit concerné</th><td>"+(d.produit_concerne||"")+"</td></tr>"+
+            "<tr><th>Référence de la pièce</th><td>"+(d.reference_piece||"")+"</td></tr>"+
+            "<tr><th>Quantité posée</th><td>"+(d.quantite_posee||"")+"</td></tr>"+
+            "<tr><td colspan='2' class='fiche-title'>Véhicule</td></tr>"+
+            "<tr><th>Immatriculation</th><td>"+(d.immatriculation||"")+"</td></tr>"+
+            "<tr><th>Marque</th><td>"+(d.marque_vehicule||"")+"</td></tr>"+
+            "<tr><th>Modèle</th><td>"+(d.modele_vehicule||"")+"</td></tr>"+
+            "<tr><th>Numéro de série</th><td>"+(d.num_serie||"")+"</td></tr>"+
+            "<tr><th>1ère immatriculation</th><td>"+(d.premiere_immat||"")+"</td></tr>"+
+            "<tr><td colspan='2' class='fiche-title'>Problème</td></tr>"+
+            "<tr><th>Date de pose</th><td>"+(d.date_pose||"")+"</td></tr>"+
+            "<tr><th>Date du constat</th><td>"+(d.date_constat||"")+"</td></tr>"+
+            "<tr><th>Kilométrage à la pose</th><td>"+(d.km_pose||"")+"</td></tr>"+
+            "<tr><th>Kilométrage au constat</th><td>"+(d.km_constat||"")+"</td></tr>"+
+            "<tr><th>Problème rencontré</th><td>"+(d.probleme_rencontre||"")+"</td></tr>"+
+            "<tr><th>Date de création du dossier</th><td>"+(d.date?(new Date(d.date).toLocaleDateString('fr-FR')):"")+"</td></tr>"+
+            "<tr><th>Statut</th><td>"+(d.statut||"")+"</td></tr>"+
             "<tr><th>Pièces jointes</th><td>"+
                 ((d.files||[]).length === 0
                   ? 'Aucune'
-                  : d.files.map(function(f){
+                  : d.files.map(f=>{
                       let ext = f.original.split('.').pop().toLowerCase();
-                      if(['jpg','jpeg','png','gif','webp','bmp'].includes(ext)){
-                        return '<a href=\"/download/'+f.url+'\" target=\"_blank\" rel=\"noopener\"><img src=\"/download/'+f.url+'\" class=\"pj-img\"></a>';
+                      if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                        return '<a href="/download/'+f.url+'" target="_blank" rel="noopener"><img src="/download/'+f.url+'" class="pj-img"></a>';
                       } else {
-                        return '<a href=\"/download/'+f.url+'\" target=\"_blank\" rel=\"noopener noreferrer\">'+f.original+'</a>';
+                        return '<a href="/download/'+f.url+'" target="_blank" rel="noopener noreferrer">'+f.original+'</a>';
                       }
                     }).join("<br>")
                 ) +
-              "</td></tr>" +
+              "</td></tr>"+
               "<tr><th>Réponse / documents admin</th><td>"+
                 (d.reponse||"") +
                 ((d.reponseFiles||[]).length
-                  ? "<br>"+d.reponseFiles.map(function(f){return '<a href=\"/download/'+f.url+'\" target=\"_blank\" rel=\"noopener noreferrer\">'+f.original+'</a>';}).join("<br>")
+                  ? "<br>"+d.reponseFiles.map(f=>'<a href="/download/'+f.url+'" target="_blank" rel="noopener noreferrer">'+f.original+'</a>').join("<br>")
                   : "") +
-              "</td></tr>" +
+              "</td></tr>"+
             "</table></div></body></html>";
         let w = window.open("", "_blank", "width=820,height=900");
         w.document.write(detailHtml);
         w.document.close();
+      }
+
+      document.getElementById("moisFilter").onchange = function () {
+        moisFilter = this.value;
+        renderAll();
       };
+      document.getElementById("anneeFilter").onchange = function () {
+        anneeFilter = this.value;
+        renderAll();
+      };
+
+      renderOnglets();
+      renderAll();
 
       document.getElementById("importForm").onsubmit = function () {
         setTimeout(() => {
           alert("Import en cours... Actualisez la page admin dans quelques secondes pour voir le résultat.");
         }, 200);
       };
-
-      renderTable(activeMagasin, moisFilter, anneeFilter);
-      attachOngletEvents();
     </script>
-  `;
-  res.send(html);
+  `);
 });
 
 app.get("/download/:fileid", (req, res) => {
