@@ -85,20 +85,19 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     data.push(d);
     writeData(data);
 
-    // Envoi mail responsable magasin
     const respMail = MAGASIN_MAILS[d.magasin] || "";
-    if (respMail) {
-      await mailer.sendMail({
-        from: process.env.GMAIL_USER,
-        to: respMail,
-        subject: `Nouvelle demande garantie (${d.magasin})`,
-        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
-          Client : ${d.nom} (${d.email})<br>
-          Produit : ${d.produit_concerne||""}<br>
-          <a href="[ADMIN_URL]">Accéder à l'admin</a>`,
-        attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
-      });
-    }
+if (respMail) {
+  await mailer.sendMail({
+    from: "Garantie <" + process.env.GMAIL_USER + ">",
+    to: respMail,
+    subject: `Nouvelle demande de garantie`,
+    html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
+      Client : ${d.nom} (${d.email})<br>
+      Marque du produit : ${d.marque_produit||""}<br>
+      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>`,
+    attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
+  });
+}
 
     res.json({ success: true });
   } catch (err) {
@@ -111,7 +110,6 @@ app.get("/api/admin/dossiers", (req, res) => {
   res.json(readData());
 });
 
-// Changement statut, ajout réponse et/ou fichiers (ADMIN)
 app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
   let { id } = req.params;
   let data = readData();
@@ -129,7 +127,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   }
   writeData(data);
 
-  // Email client à chaque changement (statut, réponse ou pièce jointe)
   let changes = [];
   if (req.body.statut && req.body.statut !== oldStatut) changes.push("statut");
   if (req.body.reponse) changes.push("réponse");
@@ -139,19 +136,21 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       filename: f.original, path: path.join(UPLOADS_DIR, f.url)
     }));
     let html = `<div style="font-family:sans-serif;">
-      Bonjour,<br>
-      Votre dossier de garantie <b>${dossier.produit_concerne||""}</b> (${dossier.magasin}) a été mis à jour.<br>
-      <ul>
-        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
-        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
-        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
-      </ul>
-      <br><br>L'équipe Garantie Durand
-    </div>`;
+  Bonjour,<br>
+  Votre dossier de garantie a été mis à jour.<br>
+  Produit : ${dossier.produit_concerne}<br>
+  Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
+  <ul>
+    ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
+    ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
+    ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
+  </ul>
+  <br><br>L'équipe Garantie Durand
+</div>`;
     await mailer.sendMail({
-      from: process.env.GMAIL_USER,
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: dossier.email,
-      subject: `Votre dossier garantie - mise à jour`,
+      subject: `Mise à jour dossier garantie Durand Services`,
       html,
       attachments: att
     });
