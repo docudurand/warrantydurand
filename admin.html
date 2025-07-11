@@ -9,15 +9,15 @@
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content {
       display:none;
-      width: 98vw;        /* Utilise quasiment toute la largeur */
-      max-width: 1620px;  /* Très large, pour contenir tous les onglets */
+      width: 98vw;
+      max-width: 1620px;
       margin:34px auto 0 auto;
       background:#fff;
       border-radius:24px;
       box-shadow:0 3px 20px #0001;
       padding:44px 32px 38px 32px;
       box-sizing: border-box;
-      overflow-x: auto;   /* Pour éviter les coupures */
+      overflow-x: auto;
       min-width: 320px;
     }
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
@@ -166,13 +166,19 @@
       });
     }
 
-function afficherOnglets() {
-  let t = '';
-  MAGASINS.forEach(m=>{
-    t += `<div class="tab${m===currentMagasin?" active":""}" onclick="afficherDossiers(decodeURIComponent('${encodeURIComponent(m)}'))">${m}</div>`;
-  });
-  document.getElementById('tabs').innerHTML = t;
-}
+    // ------ Correction ici : on n'utilise plus onclick HTML ! ------
+    function afficherOnglets() {
+      let t = '';
+      MAGASINS.forEach((m, i) => {
+        t += `<div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+      });
+      document.getElementById('tabs').innerHTML = t;
+      MAGASINS.forEach((m, i) => {
+        document.getElementById('onglet-' + i).onclick = function() {
+          afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')));
+        }
+      });
+    }
 
     function afficherCompteurs(dossiers) {
       const stats = [
