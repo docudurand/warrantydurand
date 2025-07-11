@@ -281,7 +281,6 @@ app.get("/admin", checkAdmin, (req, res) => {
   allMonths = Array.from(allMonths).sort();
   allYears  = Array.from(allYears).sort();
 
-  // GROSSE ATTENTION ici : pas de backtick dans la string du script JS côté client !
   res.send(
     '<style>' +
       '.stat-cards { display:flex; gap:18px; margin-bottom:18px; }' +
@@ -365,12 +364,12 @@ app.get("/admin", checkAdmin, (req, res) => {
         'const nbRef    = d.filter(function(x){return x.statut==="Refusé"}).length;' +
 
         'document.getElementById("statistiques").innerHTML = ' +
-          \'<div class="stat-cards">\' + ' +
-            '\'<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">\' + nbEnreg + \'</div></div>\' +' +
-            '\'<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">\' + nbAccept + \'</div></div>\' +' +
-            '\'<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">\' + nbAtt + \'</div></div>\' +' +
-            '\'<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">\' + nbRef + \'</div></div>\' +' +
-          '\'</div>\';' +
+          '<div class="stat-cards">' +
+            '<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">' + nbEnreg + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">' + nbAccept + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">' + nbAtt + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">' + nbRef + '</div></div>' +
+          '</div>'; +
       '}' +
 
       'function renderTable(mag, mois, an) {' +
@@ -419,17 +418,17 @@ app.get("/admin", checkAdmin, (req, res) => {
             "<td>" + filesHtml + "</td>" +' +
             "<td>" + respHtml + "</td>" +' +
             "<td>" +' +
-              \'<form class="admin-form" action="/api/dossier/\' + x.id + \'/admin" method="post" enctype="multipart/form-data">\' +' +
-                \'<select name="statut">\' +' +
-                  \'<option\' + (x.statut==="Enregistré"?" selected":"") + \'>Enregistré</option>\' +' +
-                  \'<option\' + (x.statut==="Accepté"?" selected":"") + \'>Accepté</option>\' +' +
-                  \'<option\' + (x.statut==="Refusé"?" selected":"") + \'>Refusé</option>\' +' +
-                  \'<option\' + (x.statut==="En attente info"?" selected":"") + \'>En attente info</option>\' +' +
-                \'</select>\' +' +
-                \'<input type="text" name="reponse" placeholder="Message..." style="width:120px;">\' +' +
-                \'<input type="file" name="reponseFiles" multiple>\' +' +
-                \'<button type="submit">Valider</button>\' +' +
-              \'</form>\' +' +
+              '<form class="admin-form" action="/api/dossier/' + x.id + '/admin" method="post" enctype="multipart/form-data">' +
+                '<select name="statut">' +
+                  '<option' + (x.statut==="Enregistré"?" selected":"") + '>Enregistré</option>' +
+                  '<option' + (x.statut==="Accepté"?" selected":"") + '>Accepté</option>' +
+                  '<option' + (x.statut==="Refusé"?" selected":"") + '>Refusé</option>' +
+                  '<option' + (x.statut==="En attente info"?" selected":"") + '>En attente info</option>' +
+                '</select>' +
+                '<input type="text" name="reponse" placeholder="Message..." style="width:120px;">' +
+                '<input type="file" name="reponseFiles" multiple>' +
+                '<button type="submit">Valider</button>' +
+              '</form>' +
             "</td>" +' +
             "<td><button onclick=\\"voirDossier(\'" + x.id + "\')\\">Voir</button></td>" +' +
           "</tr>";' +
@@ -464,13 +463,13 @@ app.get("/admin", checkAdmin, (req, res) => {
         'const d = demandes.find(function(x){ return x.id === id; });' +
         'if (!d) return alert("Dossier introuvable !");' +
         'let detail = "<html><head><meta charset=\\"UTF-8\\"><title>Détail dossier</title>" +' +
-            \'<style>\' +' +
+            "<style>" +' +
               "body { font-family:\'Segoe UI\',Arial,sans-serif;background:#f9fafb;margin:0; }" +' +
               ".fiche-table { max-width:700px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px; }" +' +
               ".fiche-table th { color:#194e72;font-size:1.06em;text-align:left;width:220px; }" +' +
               ".fiche-title { font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em; }" +' +
               ".pj-img { max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002; }" +' +
-            \'</style>\' +' +
+            "</style>" +' +
           "</head><body>" +' +
             "<div class=\\"fiche-table\\"><table>" +' +
               "<tr><th>Nom du client</th><td>" + (d.nom||"") + "</td></tr>" +' +
