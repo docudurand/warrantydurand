@@ -48,11 +48,11 @@
     .bouton:hover, .voir-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
-    .reponse-form { display:flex; gap:12px; align-items:center; margin:0; flex-wrap:wrap;}
-    .reponse-form textarea { min-width:260px; min-height:38px; font-size:1em; padding:8px 10px; border-radius:6px; border:1px solid #c3d2e0;}
-    .reponse-form input[type="file"] { margin-left:8px;}
-    .reponse-form button { margin-left:5px;}
-    .admin-msg { font-size:1.05em; color:#259a54; margin-left:11px;}
+    .reponse-form { display:flex; flex-direction:column; gap:7px; align-items:stretch; margin:0; }
+    .reponse-form textarea { min-width:180px; min-height:38px; font-size:1em; padding:8px 10px; border-radius:6px; border:1px solid #c3d2e0;}
+    .reponse-form input[type="file"] { margin-top:2px;}
+    .reponse-form button { margin-top:6px;}
+    .admin-msg { font-size:1.05em; color:#259a54; margin-left:6px;}
     @media (max-width:1700px) {
       #admin-content { max-width: 98vw; }
       .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; }
@@ -220,9 +220,7 @@
           <th>Client</th>
           <th>Produit</th>
           <th>Immatriculation</th>
-          <th>Statut</th>
-          <th>Pièces jointes</th>
-          <th>Réponse</th>
+          <th>Mise à jour</th>
           <th>Voir</th>
         </tr>`;
       dossiers.forEach(d=>{
@@ -232,39 +230,31 @@
           <td>${d.produit_concerne||''}</td>
           <td>${d.immatriculation||''}</td>
           <td>
-            <select class="statut-select" onchange="changerStatut('${d.id}', this.value)">
-              <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-              <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-              <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-              <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-            </select>
-          </td>
-          <td>`;
-        if (d.files && d.files.length)
-          d.files.forEach(f=>{
-            let ext = f.original.split('.').pop().toLowerCase();
-            if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-              html += `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
-            } else {
-              html += `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-            }
-          });
-        html += `</td>
-          <td>
-            ${d.reponse ? `<div style="margin-bottom:5px;">${d.reponse}</div>` : ""}
-            ${d.reponseFiles && d.reponseFiles.length ? d.reponseFiles.map(f=>{
-              let ext = f.original.split('.').pop().toLowerCase();
-              if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
-              } else {
-                return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-              }
-            }).join("<br>") : ""}
-            <form class="reponse-form" data-id="${d.id}" enctype="multipart/form-data" style="margin-top:10px;">
-              <textarea name="reponse" placeholder="Réponse (optionnel)"></textarea>
-              <input type="file" name="reponseFiles" multiple>
+            <form class="reponse-form" data-id="${d.id}" enctype="multipart/form-data" style="margin-top:0;">
+              <label style="font-size:0.98em;margin-bottom:2px;">Statut :
+                <select class="statut-select" name="statut">
+                  <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+                  <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+                  <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+                  <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+                </select>
+              </label>
+              <label style="font-size:0.98em;margin-bottom:2px;">Réponse :
+                <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+              </label>
+              <label style="font-size:0.98em;margin-bottom:2px;">Ajouter pièce(s) jointe(s) :
+                <input type="file" name="reponseFiles" multiple>
+              </label>
               <button type="submit" class="bouton">Répondre</button>
               <span class="admin-msg"></span>
+              ${d.reponseFiles && d.reponseFiles.length ? d.reponseFiles.map(f=>{
+                let ext = f.original.split('.').pop().toLowerCase();
+                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                } else {
+                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                }
+              }).join("<br>") : ""}
             </form>
           </td>
           <td><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
@@ -273,17 +263,12 @@
       html += `</table>`;
       document.getElementById('dossier-list').innerHTML = html;
 
-      // Ajout de l'envoi asynchrone pour chaque mini-formulaire réponse
+      // Ajout de l'envoi asynchrone pour chaque mini-formulaire réponse/statut/fichier
       document.querySelectorAll('.reponse-form').forEach(form => {
         form.onsubmit = async function(e) {
           e.preventDefault();
           let id = this.getAttribute('data-id');
-          let fd = new FormData();
-          let reponse = this.querySelector('textarea').value;
-          fd.append("reponse", reponse);
-          let files = this.querySelector('input[type="file"]').files;
-          for (let f of files) fd.append("reponseFiles", f);
-          // Envoi
+          let fd = new FormData(this); // Prend tous les champs du form
           this.querySelector('.admin-msg').textContent = "Envoi...";
           let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
           let json = await resp.json();
@@ -294,19 +279,6 @@
             this.querySelector('.admin-msg').textContent = "Erreur";
           }
         };
-      });
-    }
-
-    function changerStatut(id, statut) {
-      fetch(`/api/admin/dossier/${id}`, {
-        method: 'POST',
-        body: JSON.stringify({statut}),
-        headers: {'Content-Type':'application/json'}
-      })
-      .then(r=>r.json())
-      .then(json=>{
-        if(json.success) chargerDossiers();
-        else alert(json.message || "Erreur lors du changement de statut");
       });
     }
 
