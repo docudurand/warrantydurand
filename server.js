@@ -9,8 +9,6 @@ import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
 import { fileURLToPath } from "url";
-import { google } from "googleapis";
-import cron from "node-cron";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -18,9 +16,6 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
-const CREDENTIALS_PATH = path.join(__dirname, "credentials.json");
-
-const DRIVE_FOLDER_ID = process.env.DRIVE_FOLDER_ID || "https://drive.google.com/drive/folders/1o8DdCgX8qRduD-bJjfDkGoVYOejCT8mY?usp=drive_link";
 
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
@@ -132,17 +127,17 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       filename: f.original, path: path.join(UPLOADS_DIR, f.url)
     }));
     let html = `<div style="font-family:sans-serif;">
-  Bonjour,<br>
-  Votre dossier de garantie a été mis à jour.<br>
-  Produit : ${dossier.produit_concerne}<br>
-  Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
-  <ul>
-    ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
-    ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
-    ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
-  </ul>
-  <br><br>L'équipe Garantie Durand
-</div>`;
+      Bonjour,<br>
+      Votre dossier de garantie a été mis à jour.<br>
+      Produit : ${dossier.produit_concerne}<br>
+      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
+      <ul>
+        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
+        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
+        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
+      </ul>
+      <br><br>L'équipe Garantie Durand
+    </div>`;
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: dossier.email,
@@ -215,62 +210,10 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
       fs.renameSync(newUploads, UPLOADS_DIR);
     }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
-    fs.unlinkSync(zipPath);
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
-  }
-});
-
-function createBackupZip() {
-  return new Promise((resolve, reject) => {
-    const ARCHIVE_PATH = path.join(__dirname, "backup.zip");
-    const output = fs.createWriteStream(ARCHIVE_PATH);
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    output.on('close', () => resolve(ARCHIVE_PATH));
-    archive.on('error', reject);
-    archive.pipe(output);
-    archive.file(DATA_FILE, { name: "demandes.json" });
-    if (fs.existsSync(UPLOADS_DIR)) {
-      archive.directory(UPLOADS_DIR, "uploads");
-    }
-    archive.finalize();
-  });
-}
-
-async function uploadToDrive() {
-  if (!fs.existsSync(CREDENTIALS_PATH)) {
-    console.warn("Pas de credentials.json pour Google Drive, sauvegarde ignorée.");
-    return;
-  }
-  const auth = new google.auth.GoogleAuth({
-    keyFile: CREDENTIALS_PATH,
-    scopes: ["https://www.googleapis.com/auth/drive.file"],
-  });
-  const drive = google.drive({ version: "v3", auth });
-  const archivePath = await createBackupZip();
-  const fileMetadata = {
-    name: `sauvegarde_${new Date().toISOString().replace(/[:.]/g,'_')}.zip`,
-    parents: [DRIVE_FOLDER_ID]
-  };
-  const media = {
-    mimeType: "application/zip",
-    body: fs.createReadStream(archivePath)
-  };
-  await drive.files.create({
-    resource: fileMetadata,
-    media,
-    fields: "id"
-  });
-  fs.unlinkSync(archivePath);
-  console.log("Sauvegarde Drive effectuée :", fileMetadata.name);
-}
-
-cron.schedule('5 * * * *', async () => {
-  try {
-    await uploadToDrive();
-  } catch(e) {
-    console.error("Erreur sauvegarde Google Drive :", e);
   }
 });
 
