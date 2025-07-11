@@ -282,94 +282,95 @@ app.get("/admin", checkAdmin, (req, res) => {
   allYears  = Array.from(allYears).sort();
 
   res.send(
-    '<style>' +
-      '.stat-cards { display:flex; gap:18px; margin-bottom:18px; }' +
-      '.stat-card { min-width:190px; flex:1; background:#f9fafb; border-radius:11px;' +
-        'box-shadow:0 3px 12px #0001; padding:18px 20px 12px 20px; display:flex;' +
-        'flex-direction:column; align-items:center; font-family:Arial,sans-serif;' +
-        'font-size:1.17em;' +
-      '}' +
-      '.stat-title { font-size:1em; font-weight:bold; margin-bottom:12px; }' +
-      '.stat-num { font-size:2.1em; font-weight:bold; margin-bottom:2px; }' +
-      '.stat-enreg { color:#1373be; }' +
-      '.stat-accept { color:#259a54; }' +
-      '.stat-attente { color:#d39213; }' +
-      '.stat-refus { color:#b23b3b; }' +
-      '@media(max-width:850px) { .stat-cards { flex-direction:column; gap:12px; } }' +
-    '</style>' +
+    `<style>
+      .stat-cards { display:flex; gap:18px; margin-bottom:18px; }
+      .stat-card { min-width:190px; flex:1; background:#f9fafb; border-radius:11px;
+        box-shadow:0 3px 12px #0001; padding:18px 20px 12px 20px; display:flex;
+        flex-direction:column; align-items:center; font-family:Arial,sans-serif;
+        font-size:1.17em;
+      }
+      .stat-title { font-size:1em; font-weight:bold; margin-bottom:12px; }
+      .stat-num { font-size:2.1em; font-weight:bold; margin-bottom:2px; }
+      .stat-enreg { color:#1373be; }
+      .stat-accept { color:#259a54; }
+      .stat-attente { color:#d39213; }
+      .stat-refus { color:#b23b3b; }
+      @media(max-width:850px) { .stat-cards { flex-direction:column; gap:12px; } }
+    </style>
 
-    '<a href="/logout" style="float:right;">Déconnexion</a>' +
-    '<form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" ' +
-          'style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee;' +
-                 'padding:8px 12px; border-radius:6px;">' +
-      '<label>🔁 Importer une sauvegarde (.zip):</label>' +
-      '<input type="file" name="backupzip" accept=".zip" required>' +
-      '<button type="submit">Importer</button>' +
-    '</form>' +
-    '<a href="/admin/export" style="display:inline-block; margin-bottom:15px;' +
-       'background:#006e90; color:#fff; padding:8px 16px; border-radius:5px;' +
-       'text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>' +
+    <a href="/logout" style="float:right;">Déconnexion</a>
+    <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data"
+          style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee;
+                 padding:8px 12px; border-radius:6px;">
+      <label>🔁 Importer une sauvegarde (.zip):</label>
+      <input type="file" name="backupzip" accept=".zip" required>
+      <button type="submit">Importer</button>
+    </form>
+    <a href="/admin/export" style="display:inline-block; margin-bottom:15px;
+       background:#006e90; color:#fff; padding:8px 16px; border-radius:5px;
+       text-decoration:none;">⏬ Exporter toutes les données (.zip)</a>
 
-    '<h2>Tableau de bord dossiers</h2>' +
-    '<div style="margin-bottom:10px;">' +
-      magasins.map(function(m,i){
-        return '<button class="onglet-magasin" data-magasin="' + m + '" ' +
-                'style="padding:7px 18px; margin-right:7px;' +
-                'background:#' + (i===0?'006e90':'eee') + ';' +
-                'color:#' + (i===0?'fff':'222') + '; border:none;' +
-                'border-radius:6px; cursor:pointer;">' +
-          m + '</button>';
-      }).join('') +
-    '</div>' +
+    <h2>Tableau de bord dossiers</h2>
+    <div style="margin-bottom:10px;">
+      ${magasins.map((m,i)=>`
+        <button class="onglet-magasin" data-magasin="${m}"
+          style="padding:7px 18px; margin-right:7px;
+            background:#${i===0?'006e90':'eee'};
+            color:#${i===0?'fff':'222'}; border:none;
+            border-radius:6px; cursor:pointer;">
+          ${m}
+        </button>
+      `).join('')}
+    </div>
 
-    '<div style="margin-bottom:10px;">' +
-      '<label>Mois : ' +
-        '<select id="moisFilter">' +
-          '<option value="">Tous</option>' +
-          ["01","02","03","04","05","06","07","08","09","10","11","12"].map(function(m){
-            return '<option value="' + m + '">' + m + '</option>';
-          }).join('') +
-        '</select>' +
-      '</label>' +
-      '<label style="margin-left:24px;">Année : ' +
-        '<select id="anneeFilter">' +
-          '<option value="">Toutes</option>' +
-          allYears.map(function(y){ return '<option value="'+y+'">'+y+'</option>'; }).join('') +
-        '</select>' +
-      '</label>' +
-    '</div>' +
+    <div style="margin-bottom:10px;">
+      <label>Mois :
+        <select id="moisFilter">
+          <option value="">Tous</option>
+          ${["01","02","03","04","05","06","07","08","09","10","11","12"].map(m=>
+            `<option value="${m}">${m}</option>`
+          ).join('')}
+        </select>
+      </label>
+      <label style="margin-left:24px;">Année :
+        <select id="anneeFilter">
+          <option value="">Toutes</option>
+          ${allYears.map(y=>`<option value="${y}">${y}</option>`).join('')}
+        </select>
+      </label>
+    </div>
 
-    '<div id="statistiques"></div>' +
-    '<div id="contenu-admin"></div>' +
+    <div id="statistiques"></div>
+    <div id="contenu-admin"></div>
 
-    '<script>' +
-      'const demandes = ' + JSON.stringify(demandes) + ';' +
-      'const magasins = ' + JSON.stringify(magasins) + ';' +
-      'let activeMagasin = magasins[0];' +
-      'let moisFilter = "", anneeFilter = "";' +
+    <script>
+      const demandes = ${JSON.stringify(demandes)};
+      const magasins = ${JSON.stringify(magasins)};
+      let activeMagasin = magasins[0];
+      let moisFilter = "", anneeFilter = "";
 
-      'function renderStats(mag, mois, an) {' +
-        'let d = demandes.filter(function(x){ return x.magasin === mag; });' +
-        'if (mois) d = d.filter(function(x){' +
-          'const dd = new Date(x.date||"");' +
-          'return ("0"+(dd.getMonth()+1)).slice(-2) === mois;' +
-        '});' +
-        'if (an) d = d.filter(function(x){' +
-          'const dd = new Date(x.date||"");' +
-          'return dd.getFullYear().toString() === an;' +
-        '});' +
-        'const nbEnreg  = d.filter(function(x){return x.statut==="Enregistré"}).length;' +
-        'const nbAccept = d.filter(function(x){return x.statut==="Accepté"}).length;' +
-        'const nbAtt    = d.filter(function(x){return x.statut==="En attente info"}).length;' +
-        'const nbRef    = d.filter(function(x){return x.statut==="Refusé"}).length;' +
-        'document.getElementById("statistiques").innerHTML = ' +
-          \'<div class="stat-cards">\' + ' +
-            \'<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">\' + nbEnreg + \'</div></div>\' +' +
-            \'<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">\' + nbAccept + \'</div></div>\' +' +
-            \'<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">\' + nbAtt + \'</div></div>\' +' +
-            \'<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">\' + nbRef + \'</div></div>\' +' +
-          \'</div>\';' +
-      '}' +
+      function renderStats(mag, mois, an) {
+        let d = demandes.filter(x=>x.magasin === mag);
+        if (mois) d = d.filter(x=>{
+          const dd = new Date(x.date||"");
+          return ("0"+(dd.getMonth()+1)).slice(-2) === mois;
+        });
+        if (an) d = d.filter(x=>{
+          const dd = new Date(x.date||"");
+          return dd.getFullYear().toString() === an;
+        });
+        const nbEnreg  = d.filter(x=>x.statut==="Enregistré").length;
+        const nbAccept = d.filter(x=>x.statut==="Accepté").length;
+        const nbAtt    = d.filter(x=>x.statut==="En attente info").length;
+        const nbRef    = d.filter(x=>x.statut==="Refusé").length;
+        document.getElementById("statistiques").innerHTML =
+          '<div class="stat-cards">' +
+            '<div class="stat-card"><div class="stat-title">Dossiers enregistrés</div><div class="stat-num stat-enreg">' + nbEnreg + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers acceptés</div><div class="stat-num stat-accept">' + nbAccept + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers en attente info</div><div class="stat-num stat-attente">' + nbAtt + '</div></div>' +
+            '<div class="stat-card"><div class="stat-title">Dossiers refusés</div><div class="stat-num stat-refus">' + nbRef + '</div></div>' +
+          '</div>';
+      }
 
       'function renderTable(mag, mois, an) {' +
         'activeMagasin = mag;' +
