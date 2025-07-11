@@ -1,3 +1,4 @@
+import express from "express";
 import multer from "multer";
 import cors from "cors";
 import fs from "fs";
@@ -70,7 +71,7 @@ function checkAdmin(req, res, next) {
 }
 
 app.get("/admin-login", (req, res) => {
-  res.send(
+  res.send(`
     <h2>Connexion Admin</h2>
     <form method="POST" action="/admin-login" style="max-width:350px;margin:auto;padding:16px;border:1px solid #ccc">
       <label>Utilisateur : <input name="user" /></label><br><br>
@@ -78,7 +79,7 @@ app.get("/admin-login", (req, res) => {
       <button type="submit">Connexion</button>
       ${req.query.err ? "<div style='color:red;'>Identifiants incorrects</div>" : ""}
     </form>
-  );
+  `);
 });
 app.post("/admin-login", express.urlencoded({extended:true}), (req, res) => {
   const {user, pass} = req.body;
@@ -116,10 +117,10 @@ app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, re
     .pipe(unzipper.Extract({ path: extractPath }))
     .on('close', () => {
       fs.unlinkSync(backupPath);
-      res.send(<p style="color:green;">Sauvegarde restaurée avec succès ! <a href="/admin">Retour admin</a></p>);
+      res.send(`<p style="color:green;">Sauvegarde restaurée avec succès ! <a href="/admin">Retour admin</a></p>`);
     })
     .on('error', (err) => {
-      res.send(<p style="color:red;">Erreur lors de la restauration : ${err.message}</p>);
+      res.send(`<p style="color:red;">Erreur lors de la restauration : ${err.message}</p>`);
     });
 });
 
@@ -157,10 +158,10 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
 
     const destinataire = MAGASIN_MAILS[magasin] || GMAIL_USER;
     transporter.sendMail({
-      from: "Garantie" <${GMAIL_USER}>,
+      from: `"Garantie" <${GMAIL_USER}>`,
       to: destinataire,
       subject: "Nouvelle demande de garantie",
-      text: Bonjour,
+      text: `Bonjour,
 
 Un client vient d'enregistrer un dossier de garantie.
 
@@ -168,7 +169,7 @@ Nom : ${nom}
 Email client : ${email}
 Marque du produit : ${marque_produit}
 Date : ${new Date().toLocaleDateString("fr-FR")}
-
+`
     }, (err, info) => {
       if(err) console.log("Erreur envoi mail magasin:", err);
       else console.log("Mail envoyé magasin", info.messageId);
@@ -232,10 +233,10 @@ app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10),
 
     if(d.email){
       transporter.sendMail({
-        from: "Garantie Durand Services" <${GMAIL_USER}>,
+        from: `"Garantie Durand Services" <${GMAIL_USER}>`,
         to: d.email,
         subject: "Mise à jour dossier garantie Durand Services",
-        text: 
+        text: `
 Une mise à jour a été apportée à un dossier de garantie, merci de consulter votre suivi.
 
 Produit : ${d.produit_concerne}
@@ -243,7 +244,7 @@ Statut : ${d.statut}
 Date : ${new Date().toLocaleDateString("fr-FR")}
 
 Merci de ne pas répondre à cet email.
-
+`
       }, (err, info) => {
         if(err) console.log("Erreur envoi mail client:", err);
         else console.log("Mail envoyé client", info.messageId);
@@ -253,6 +254,7 @@ Merci de ne pas répondre à cet email.
     res.json({ success: true });
 });
 
+// ---------- PAGE ADMIN AVEC BANNIERE ----------
 app.get("/admin", checkAdmin, (req, res) => {
     let demandes = loadDemandes();
     const magasins = ["Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu", "Gleize", "La Motte-Servolex", "Les Echets", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Saint-Priest", "Seynod"];
@@ -268,8 +270,8 @@ app.get("/admin", checkAdmin, (req, res) => {
     allMonths = Array.from(allMonths).sort();
     allYears = Array.from(allYears).sort();
 
-    let html = 
-    <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière"
+    let html = `
+    <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/assets/banniere.png" alt="Bannière"
       style="display:block; width:100%; max-width:980px; margin:25px auto 8px auto; border-radius:14px; box-shadow:0 4px 20px #0002;">
     <a href="/logout" style="float:right;">Déconnexion</a>
     <form id="importForm" action="/admin/import" method="post" enctype="multipart/form-data" style="display:inline-block; margin-bottom:15px; margin-right:18px; background:#eee; padding:8px 12px; border-radius:6px;">
@@ -281,20 +283,20 @@ app.get("/admin", checkAdmin, (req, res) => {
     <h2>Tableau de bord dossiers</h2>
     <div style="margin-bottom:10px;">
       ${magasins.map((m, i) =>
-        <button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>
+        `<button class="onglet-magasin" data-magasin="${m}" style="padding:7px 18px; margin-right:7px; background:#${i==0?'006e90':'eee'}; color:#${i==0?'fff':'222'}; border:none; border-radius:6px; cursor:pointer;">${m}</button>`
       ).join('')}
     </div>
     <div style="margin-bottom:10px;">
       <label>Mois :
         <select id="moisFilter">
           <option value="">Tous</option>
-          ${["01","02","03","04","05","06","07","08","09","10","11","12"].map(m=><option value="${m}">${m}</option>).join('')}
+          ${["01","02","03","04","05","06","07","08","09","10","11","12"].map(m=>`<option value="${m}">${m}</option>`).join('')}
         </select>
       </label>
       <label style="margin-left:24px;">Année :
         <select id="anneeFilter">
           <option value="">Toutes</option>
-          ${allYears.map(y=><option value="${y}">${y}</option>).join('')}
+          ${allYears.map(y=>`<option value="${y}">${y}</option>`).join('')}
         </select>
       </label>
     </div>
@@ -319,7 +321,7 @@ app.get("/admin", checkAdmin, (req, res) => {
     <script>
       // ... (JS de gestion du tableau, filtres, voirDossier, identique à ta version précédente)
     </script>
-    ;
+    `;
     res.send(html);
 });
 
@@ -339,7 +341,7 @@ app.get("/download/:fileid", (req, res) => {
   const filePath = path.join(UPLOADS_DIR, fileid);
   const contentType = mime.lookup(found.original) || "application/octet-stream";
   res.setHeader("Content-Type", contentType);
-  res.setHeader("Content-Disposition", inline; filename="${found.original}");
+  res.setHeader("Content-Disposition", `inline; filename="${found.original}"`);
   fs.createReadStream(filePath).pipe(res);
 });
 
