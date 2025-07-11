@@ -48,7 +48,7 @@ if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-app.use("/uploads", express.static(UPLOADS_DIR));
+app.use("/uploads", express.static(UPLOADS_DIR)); // Sert à l'affichage direct des images uniquement (pas pour download !)
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -163,11 +163,14 @@ app.get("/api/mes-dossiers", (req, res) => {
   res.json(dossiers);
 });
 
+// TELECHARGEMENT FORCE sécurisé (ne jamais utiliser /uploads dans les liens de téléchargement)
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const filePath = path.join(UPLOADS_DIR, file);
   if (!fs.existsSync(filePath)) return res.status(404).send("Fichier introuvable");
-  res.download(filePath);
+  res.download(filePath, undefined, (err)=>{
+    if (err) res.status(500).send("Erreur lors du téléchargement");
+  });
 });
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
