@@ -16,6 +16,7 @@ const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 
+// Associe chaque magasin à une adresse mail responsable
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
@@ -31,14 +32,14 @@ const MAGASIN_MAILS = {
   "Seynod": "magasin5seynod@durandservices.fr"
 };
 
-// Mailer (adapte l'auth SMTP à ton serveur si besoin)
+// Mailer (avec GMAIL_USER / GMAIL_PASS)
 const mailer = nodemailer.createTransport({
-  host: process.env.MAIL_HOST || "smtp.gmail.com",
-  port: process.env.MAIL_PORT || 465,
+  host: "smtp.gmail.com",
+  port: 465,
   secure: true,
   auth: {
-    user: process.env.MAIL_USER || "xxxx@gmail.com",
-    pass: process.env.MAIL_PASS || "xxxx"
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
   }
 });
 
@@ -51,6 +52,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(UPLOADS_DIR));
 
+// Multer pour upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -60,9 +62,13 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Helpers
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
+// --- ROUTES ---
+
+// Soumission demande client (avec fichiers)
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let d = req.body;
@@ -79,10 +85,11 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     data.push(d);
     writeData(data);
 
+    // Envoi mail responsable magasin
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       await mailer.sendMail({
-        from: process.env.MAIL_FROM || '"Garantie Durand" <no-reply@durandservices.fr>',
+        from: process.env.GMAIL_USER,
         to: respMail,
         subject: `Nouvelle demande garantie (${d.magasin})`,
         html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
@@ -135,11 +142,10 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
         ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
         ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
       </ul>
-      <a href="[SUIVI_URL]">Accéder à votre suivi de dossier</a>
       <br><br>L'équipe Garantie Durand
     </div>`;
     await mailer.sendMail({
-      from: process.env.MAIL_FROM || '"Garantie Durand" <no-reply@durandservices.fr>',
+      from: process.env.GMAIL_USER,
       to: dossier.email,
       subject: `Votre dossier garantie - mise à jour`,
       html,
@@ -150,7 +156,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   res.json({success:true});
 });
 
-// Auth admin (cookie sécurisé)
 app.post("/api/admin/login", (req, res) => {
   let pw = "";
   if (req.body && req.body.password) pw = req.body.password;
@@ -158,14 +163,12 @@ app.post("/api/admin/login", (req, res) => {
   res.json({success:false, message:"Mot de passe incorrect"});
 });
 
-// Dossiers du client (email)
 app.get("/api/mes-dossiers", (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
 
-// Télécharger fichier joint (sécurité)
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const filePath = path.join(UPLOADS_DIR, file);
@@ -173,7 +176,6 @@ app.get("/download/:file", (req, res) => {
   res.download(filePath);
 });
 
-// Pour les autres pages html
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
