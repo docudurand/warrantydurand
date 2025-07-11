@@ -130,7 +130,7 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
       nom, email, magasin,
       marque_produit, produit_concerne, reference_piece, quantite_posee,
       immatriculation, marque_vehicule, modele_vehicule, num_serie, premiere_immat,
-      date_pose, date_constat, km_pose, km_constat, probleme_rencontre
+      date_pose, date_constat, km_pose, km_constat, bl_pose, bl_constat, probleme_rencontre
     } = req.body;
     let id = genId();
     let now = new Date().toISOString();
@@ -148,7 +148,7 @@ app.post("/api/demandes", upload.array("document", 10), (req, res) => {
       id, nom, email, magasin,
       marque_produit, produit_concerne, reference_piece, quantite_posee,
       immatriculation, marque_vehicule, modele_vehicule, num_serie, premiere_immat,
-      date_pose, date_constat, km_pose, km_constat, probleme_rencontre,
+      date_pose, date_constat, km_pose, km_constat, bl_pose, bl_constat, probleme_rencontre,
       files, date: now,
       statut: "Enregistré",
       historique: [{ date: now, action: "Demande créée" }]
