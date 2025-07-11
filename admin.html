@@ -166,13 +166,13 @@
       });
     }
 
-    function afficherOnglets() {
-      let t = '';
-      MAGASINS.forEach(m=>{
-        t += `<div class="tab${m===currentMagasin?" active":""}" onclick="afficherDossiers('${m}')">${m}</div>`;
-      });
-      document.getElementById('tabs').innerHTML = t;
-    }
+function afficherOnglets() {
+  let t = '';
+  MAGASINS.forEach(m=>{
+    t += `<div class="tab${m===currentMagasin?" active":""}" onclick="afficherDossiers(decodeURIComponent('${encodeURIComponent(m)}'))">${m}</div>`;
+  });
+  document.getElementById('tabs').innerHTML = t;
+}
 
     function afficherCompteurs(dossiers) {
       const stats = [
