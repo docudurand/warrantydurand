@@ -281,8 +281,9 @@ app.get("/admin", checkAdmin, (req, res) => {
   allMonths = Array.from(allMonths).sort();
   allYears  = Array.from(allYears).sort();
 
-  res.send(
-    `<style>
+  // LA BONNE VERSION, AVEC SEULEMENT DU TEMPLATE STRING
+  res.send(`
+    <style>
       .stat-cards { display:flex; gap:18px; margin-bottom:18px; }
       .stat-card { min-width:190px; flex:1; background:#f9fafb; border-radius:11px;
         box-shadow:0 3px 12px #0001; padding:18px 20px 12px 20px; display:flex;
@@ -372,142 +373,159 @@ app.get("/admin", checkAdmin, (req, res) => {
           '</div>';
       }
 
-      'function renderTable(mag, mois, an) {' +
-        'activeMagasin = mag;' +
-        'let d = demandes.filter(function(x){ return x.magasin === mag; });' +
-        'if (mois) d = d.filter(function(x){return ("0"+(new Date(x.date||"").getMonth()+1)).slice(-2) === mois;});' +
-        'if (an)  d = d.filter(function(x){return new Date(x.date||"").getFullYear().toString() === an;});' +
+      function renderTable(mag, mois, an) {
+        activeMagasin = mag;
+        let d = demandes.filter(x=>x.magasin === mag);
+        if (mois) d = d.filter(x=>("0"+(new Date(x.date||"").getMonth()+1)).slice(-2) === mois);
+        if (an)  d = d.filter(x=>new Date(x.date||"").getFullYear().toString() === an);
 
-        'renderStats(mag, mois, an);' +
+        renderStats(mag, mois, an);
 
-        'let table = "<table border=\\"1\\" cellpadding=\\"5\\" style=\\"border-collapse:collapse; width:100%\\"><tr>' +
+        let table = '<table border="1" cellpadding="5" style="border-collapse:collapse; width:100%"><tr>' +
             '<th>Date</th><th>Nom</th><th>Email</th><th>Produit</th>' +
             '<th>Immatriculation</th><th>Statut</th><th>Pièces jointes</th>' +
-            '<th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>";' +
-        'table += d.map(function(x){' +
-          'var filesHtml = "";' +
-          'if (x.files && x.files.length) {' +
-            'for (var i = 0; i < x.files.length; i++) {' +
-              'var f = x.files[i];' +
-              'var ext = (f.original.split(".").pop() || "").toLowerCase();' +
-              'if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext) !== -1) {' +
-                'filesHtml += \'<a href="/download/\' + f.url + \'" target="_blank"><img src="/download/\' + f.url + \'" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;"></a>\';' +
-              '} else {' +
-                'filesHtml += \'<a href="/download/\' + f.url + \'" target="_blank">\' + f.original + \'</a>\';' +
-              '}' +
-              'if (i < x.files.length - 1) filesHtml += "<br>";' +
-            '}' +
-          '} else { filesHtml = "—"; }' +
+            '<th>Réponse / Docs admin</th><th>Actions</th><th>Voir</th></tr>';
+        table += d.map(x=>{
+          var filesHtml = "";
+          if (x.files && x.files.length) {
+            for (var i = 0; i < x.files.length; i++) {
+              var f = x.files[i];
+              var ext = (f.original.split(".").pop() || "").toLowerCase();
+              if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext) !== -1) {
+                filesHtml += '<a href="/download/' + f.url + '" target="_blank"><img src="/download/' + f.url + '" style="max-width:80px;max-height:60px;border-radius:4px;box-shadow:0 1px 3px #0002;margin-bottom:2px;"></a>';
+              } else {
+                filesHtml += '<a href="/download/' + f.url + '" target="_blank">' + f.original + '</a>';
+              }
+              if (i < x.files.length - 1) filesHtml += "<br>";
+            }
+          } else { filesHtml = "—"; }
 
-          'var respHtml = "";' +
-          'if (x.reponse) { respHtml += "<div>" + x.reponse + "</div>"; }' +
-          'if (x.reponseFiles && x.reponseFiles.length) {' +
-            'x.reponseFiles.forEach(function(fr, idx) {' +
-              'respHtml += \'<a href="/download/\' + fr.url + \'">\' + fr.original + \'</a>\';' +
-              'if (idx < x.reponseFiles.length - 1) respHtml += "<br>";' +
-            '});' +
-          '}' +
+          var respHtml = "";
+          if (x.reponse) { respHtml += "<div>" + x.reponse + "</div>"; }
+          if (x.reponseFiles && x.reponseFiles.length) {
+            x.reponseFiles.forEach(function(fr, idx) {
+              respHtml += '<a href="/download/' + fr.url + '">' + fr.original + '</a>';
+              if (idx < x.reponseFiles.length - 1) respHtml += "<br>";
+            });
+          }
 
-          'return "<tr>" +' +
-            "<td>" + new Date(x.date).toLocaleDateString("fr-FR") + "</td>" +' +
-            "<td>" + (x.nom||"") + "</td>" +' +
-            "<td>" + (x.email||"") + "</td>" +' +
-            "<td>" + (x.produit_concerne||"") + "</td>" +' +
-            "<td>" + (x.immatriculation||"") + "</td>" +' +
-            "<td>" + x.statut + "</td>" +' +
-            "<td>" + filesHtml + "</td>" +' +
-            "<td>" + respHtml + "</td>" +' +
-            "<td>" +' +
-              \'<form class="admin-form" action="/api/dossier/\' + x.id + \'/admin" method="post" enctype="multipart/form-data">\' +' +
-                \'<select name="statut">\' +' +
-                  \'<option\' + (x.statut==="Enregistré"?" selected":"") + \'>Enregistré</option>\' +' +
-                  \'<option\' + (x.statut==="Accepté"?" selected":"") + \'>Accepté</option>\' +' +
-                  \'<option\' + (x.statut==="Refusé"?" selected":"") + \'>Refusé</option>\' +' +
-                  \'<option\' + (x.statut==="En attente info"?" selected":"") + \'>En attente info</option>\' +' +
-                \'</select>\' +' +
-                \'<input type="text" name="reponse" placeholder="Message..." style="width:120px;">\' +' +
-                \'<input type="file" name="reponseFiles" multiple>\' +' +
-                \'<button type="submit">Valider</button>\' +' +
-              \'</form>\' +' +
-            "</td>" +' +
-            "<td><button onclick=\\"voirDossier(\'" + x.id + "\')\\">Voir</button></td>" +' +
-          "</tr>";' +
-        '}).join("");' +
-        'table += "</table>";' +
-        'document.getElementById("contenu-admin").innerHTML = table;' +
+          return "<tr>" +
+            "<td>" + new Date(x.date).toLocaleDateString("fr-FR") + "</td>" +
+            "<td>" + (x.nom||"") + "</td>" +
+            "<td>" + (x.email||"") + "</td>" +
+            "<td>" + (x.produit_concerne||"") + "</td>" +
+            "<td>" + (x.immatriculation||"") + "</td>" +
+            "<td>" + x.statut + "</td>" +
+            "<td>" + filesHtml + "</td>" +
+            "<td>" + respHtml + "</td>" +
+            "<td>" +
+              '<form class="admin-form" action="/api/dossier/' + x.id + '/admin" method="post" enctype="multipart/form-data">' +
+                '<select name="statut">' +
+                  '<option' + (x.statut==="Enregistré"?" selected":"") + '>Enregistré</option>' +
+                  '<option' + (x.statut==="Accepté"?" selected":"") + '>Accepté</option>' +
+                  '<option' + (x.statut==="Refusé"?" selected":"") + '>Refusé</option>' +
+                  '<option' + (x.statut==="En attente info"?" selected":"") + '>En attente info</option>' +
+                '</select>' +
+                '<input type="text" name="reponse" placeholder="Message..." style="width:120px;">' +
+                '<input type="file" name="reponseFiles" multiple>' +
+                '<button type="submit">Valider</button>' +
+              '</form>' +
+            "</td>" +
+            "<td><button onclick=\"voirDossier('" + x.id + "')\">Voir</button></td>" +
+          "</tr>";
+        }).join("");
+        table += "</table>";
+        document.getElementById("contenu-admin").innerHTML = table;
 
-        'document.querySelectorAll(".admin-form").forEach(function(form){' +
-          'form.onsubmit = async function(e){' +
-            'e.preventDefault();' +
-            'const fd = new FormData(form);' +
-            'const res = await fetch(form.action, { method: "POST", body: fd });' +
-            'const j = await res.json();' +
-            'alert(j.success ? "Modification enregistrée !" : "Erreur lors de la modification.");' +
-            'if (j.success) location.reload();' +
-          '};' +
-        '});' +
-      '}' +
+        document.querySelectorAll(".admin-form").forEach(function(form){
+          form.onsubmit = async function(e){
+            e.preventDefault();
+            const fd = new FormData(form);
+            const res = await fetch(form.action, { method: "POST", body: fd });
+            const j = await res.json();
+            alert(j.success ? "Modification enregistrée !" : "Erreur lors de la modification.");
+            if (j.success) location.reload();
+          };
+        });
+      }
 
-      'document.querySelectorAll(".onglet-magasin").forEach(function(btn){' +
-        'btn.onclick = function(){' +
-          'document.querySelectorAll(".onglet-magasin").forEach(function(b){ b.style.background = "#eee"; b.style.color = "#222"; });' +
-          'btn.style.background = "#006e90"; btn.style.color = "#fff";' +
-          'renderTable(btn.dataset.magasin, moisFilter, anneeFilter);' +
-        '};' +
-      '});' +
-      'document.getElementById("moisFilter").onchange = function(){ moisFilter = this.value; renderTable(activeMagasin, moisFilter, anneeFilter); };' +
-      'document.getElementById("anneeFilter").onchange = function(){ anneeFilter = this.value; renderTable(activeMagasin, moisFilter, anneeFilter); };' +
-      'renderTable(activeMagasin, moisFilter, anneeFilter);' +
+      document.querySelectorAll(".onglet-magasin").forEach(function(btn){
+        btn.onclick = function(){
+          document.querySelectorAll(".onglet-magasin").forEach(function(b){ b.style.background = "#eee"; b.style.color = "#222"; });
+          btn.style.background = "#006e90"; btn.style.color = "#fff";
+          renderTable(btn.dataset.magasin, moisFilter, anneeFilter);
+        };
+      });
+      document.getElementById("moisFilter").onchange = function(){ moisFilter = this.value; renderTable(activeMagasin, moisFilter, anneeFilter); };
+      document.getElementById("anneeFilter").onchange = function(){ anneeFilter = this.value; renderTable(activeMagasin, moisFilter, anneeFilter); };
+      renderTable(activeMagasin, moisFilter, anneeFilter);
 
-      'window.voirDossier = function(id) {' +
-        'const d = demandes.find(function(x){ return x.id === id; });' +
-        'if (!d) return alert("Dossier introuvable !");' +
-        'let detail = "<html><head><meta charset=\\"UTF-8\\"><title>Détail dossier</title>" +' +
-            \'<style>\' +' +
-              "body { font-family:\'Segoe UI\',Arial,sans-serif;background:#f9fafb;margin:0; }" +' +
-              ".fiche-table { max-width:700px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px; }" +' +
-              ".fiche-table th { color:#194e72;font-size:1.06em;text-align:left;width:220px; }" +' +
-              ".fiche-title { font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em; }" +' +
-              ".pj-img { max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002; }" +' +
-            \'</style>\' +' +
-          "</head><body>" +' +
-            "<div class=\\"fiche-table\\"><table>" +' +
-              "<tr><th>Nom du client</th><td>" + (d.nom||"") + "</td></tr>" +' +
-              "<tr><th>Email</th><td>" + (d.email||"") + "</td></tr>" +' +
-              "<tr><th>Magasin</th><td>" + (d.magasin||"") + "</td></tr>" +' +
-              "<tr><td colspan=\\"2\\" class=\\"fiche-title\\">Produit</td></tr>" +' +
-              "<tr><th>Marque</th><td>" + (d.marque_produit||"") + "</td></tr>" +' +
-              "<tr><th>Produit</th><td>" + (d.produit_concerne||"") + "</td></tr>" +' +
-              "<tr><th>Réf. pièce</th><td>" + (d.reference_piece||"") + "</td></tr>" +' +
-              "<tr><th>Quantité posée</th><td>" + (d.quantite_posee||"") + "</td></tr>" +' +
-              "<tr><td colspan=\\"2\\" class=\\"fiche-title\\">Véhicule</td></tr>" +' +
-              "<tr><th>Immatriculation</th><td>" + (d.immatriculation||"") + "</td></tr>" +' +
-              "<tr><th>Marque</th><td>" + (d.marque_vehicule||"") + "</td></tr>" +' +
-              "<tr><th>Modèle</th><td>" + (d.modele_vehicule||"") + "</td></tr>" +' +
-              "<tr><th>Num. de série</th><td>" + (d.num_serie||"") + "</td></tr>" +' +
-              "<tr><th>1ère immat.</th><td>" + (d.premiere_immat||"") + "</td></tr>" +' +
-              "<tr><td colspan=\\"2\\" class=\\"fiche-title\\">Problème</td></tr>" +' +
-              "<tr><th>Date pose</th><td>" + (d.date_pose||"") + "</td></tr>" +' +
-              "<tr><th>Date constat</th><td>" + (d.date_constat||"") + "</td></tr>" +' +
-              "<tr><th>KM pose</th><td>" + (d.km_pose||"") + "</td></tr>" +' +
-              "<tr><th>KM constat</th><td>" + (d.km_constat||"") + "</td></tr>" +' +
-              "<tr><th>Problème</th><td>" + (d.probleme_rencontre||"") + "</td></tr>" +' +
-              "<tr><th>Création dossier</th><td>" + new Date(d.date).toLocaleDateString("fr-FR") + "</td></tr>" +' +
-              "<tr><th>Statut</th><td>" + (d.statut||"") + "</td></tr>" +' +
-              "<tr><th>Pièces jointes</th><td>";' +
-        'if ((d.files||[]).length === 0) { detail += "Aucune"; }' +
-        'else { for (var i = 0; i < d.files.length; i++) { var f = d.files[i]; var ext = (f.original.split(".").pop() || "").toLowerCase(); if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext) !== -1) { detail += \'<a href="/download/\' + f.url + \'" target="_blank"><img src="/download/\' + f.url + \'" class="pj-img"></a>\'; } else { detail += \'<a href="/download/\' + f.url + \'" target="_blank">\' + f.original + \'</a>\'; } if (i < d.files.length - 1) detail += "<br>"; } }' +
-        'detail += "</td></tr><tr><th>Réponse / docs admin</th><td>";' +
-        'if (d.reponse) detail += d.reponse + "<br>";' +
-        'if (d.reponseFiles && d.reponseFiles.length) { for (var i=0; i<d.reponseFiles.length; i++) { var fr = d.reponseFiles[i]; detail += \'<a href="/download/\' + fr.url + \'">\' + fr.original + \'</a>\'; if (i < d.reponseFiles.length - 1) detail += "<br>"; } }' +
-        'detail += "</td></tr></table></div></body></html>";' +
-        'const w = window.open("", "_blank", "width=820,height=900");' +
-        'w.document.write(detail); w.document.close();' +
-      '};' +
+      window.voirDossier = function(id) {
+        const d = demandes.find(function(x){ return x.id === id; });
+        if (!d) return alert("Dossier introuvable !");
+        let detail = '<html><head><meta charset="UTF-8"><title>Détail dossier</title>' +
+          '<style>' +
+            "body { font-family:'Segoe UI',Arial,sans-serif;background:#f9fafb;margin:0; }" +
+            ".fiche-table { max-width:700px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px; }" +
+            ".fiche-table th { color:#194e72;font-size:1.06em;text-align:left;width:220px; }" +
+            ".fiche-title { font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em; }" +
+            ".pj-img { max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002; }" +
+          '</style>' +
+          "</head><body>" +
+            '<div class="fiche-table"><table>' +
+              '<tr><th>Nom du client</th><td>' + (d.nom||"") + "</td></tr>" +
+              '<tr><th>Email</th><td>' + (d.email||"") + "</td></tr>" +
+              '<tr><th>Magasin</th><td>' + (d.magasin||"") + "</td></tr>" +
+              '<tr><td colspan="2" class="fiche-title">Produit</td></tr>' +
+              '<tr><th>Marque</th><td>' + (d.marque_produit||"") + "</td></tr>" +
+              '<tr><th>Produit</th><td>' + (d.produit_concerne||"") + "</td></tr>" +
+              '<tr><th>Réf. pièce</th><td>' + (d.reference_piece||"") + "</td></tr>" +
+              '<tr><th>Quantité posée</th><td>' + (d.quantite_posee||"") + "</td></tr>" +
+              '<tr><td colspan="2" class="fiche-title">Véhicule</td></tr>' +
+              '<tr><th>Immatriculation</th><td>' + (d.immatriculation||"") + "</td></tr>" +
+              '<tr><th>Marque</th><td>' + (d.marque_vehicule||"") + "</td></tr>" +
+              '<tr><th>Modèle</th><td>' + (d.modele_vehicule||"") + "</td></tr>" +
+              '<tr><th>Num. de série</th><td>' + (d.num_serie||"") + "</td></tr>" +
+              '<tr><th>1ère immat.</th><td>' + (d.premiere_immat||"") + "</td></tr>" +
+              '<tr><td colspan="2" class="fiche-title">Problème</td></tr>' +
+              '<tr><th>Date pose</th><td>' + (d.date_pose||"") + "</td></tr>" +
+              '<tr><th>Date constat</th><td>' + (d.date_constat||"") + "</td></tr>" +
+              '<tr><th>KM pose</th><td>' + (d.km_pose||"") + "</td></tr>" +
+              '<tr><th>KM constat</th><td>' + (d.km_constat||"") + "</td></tr>" +
+              '<tr><th>Problème</th><td>' + (d.probleme_rencontre||"") + "</td></tr>" +
+              '<tr><th>Création dossier</th><td>' + new Date(d.date).toLocaleDateString("fr-FR") + "</td></tr>" +
+              '<tr><th>Statut</th><td>' + (d.statut||"") + "</td></tr>" +
+              '<tr><th>Pièces jointes</th><td>';
+        if ((d.files||[]).length === 0) { detail += "Aucune"; }
+        else {
+          for (var i = 0; i < d.files.length; i++) {
+            var f = d.files[i];
+            var ext = (f.original.split(".").pop() || "").toLowerCase();
+            if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext) !== -1) {
+              detail += '<a href="/download/' + f.url + '" target="_blank"><img src="/download/' + f.url + '" class="pj-img"></a>';
+            } else {
+              detail += '<a href="/download/' + f.url + '" target="_blank">' + f.original + '</a>';
+            }
+            if (i < d.files.length - 1) detail += "<br>";
+          }
+        }
+        detail += '</td></tr><tr><th>Réponse / docs admin</th><td>';
+        if (d.reponse) detail += d.reponse + "<br>";
+        if (d.reponseFiles && d.reponseFiles.length) {
+          for (var i=0; i<d.reponseFiles.length; i++) {
+            var fr = d.reponseFiles[i];
+            detail += '<a href="/download/' + fr.url + '">' + fr.original + '</a>';
+            if (i < d.reponseFiles.length - 1) detail += "<br>";
+          }
+        }
+        detail += '</td></tr></table></div></body></html>';
+        const w = window.open("", "_blank", "width=820,height=900");
+        w.document.write(detail); w.document.close();
+      };
 
-      'document.getElementById("importForm").onsubmit = function(){ setTimeout(function(){ alert("Import en cours... Actualisez la page admin dans quelques secondes pour voir le résultat."); }, 200); };' +
-    '</script>'
-  );
+      document.getElementById("importForm").onsubmit = function(){ setTimeout(function(){ alert("Import en cours... Actualisez la page admin dans quelques secondes pour voir le résultat."); }, 200); };
+    </script>
+  `);
 });
 
 // ----- FILE DOWNLOAD -----
