@@ -21,7 +21,6 @@
       min-width: 320px;
     }
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
-    .top-bar {display:flex; justify-content:center; gap:25px; margin-bottom:25px;}
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab {
       padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer;
@@ -72,9 +71,34 @@
       .counter-card { min-width: 160px; padding:13px 1vw;}
       .reponse-form textarea { min-width:80vw; }
     }
+    /* BOUTONS LATERAUX */
+    #side-tools { position:fixed; top:110px; right:0; z-index:99; display:flex; flex-direction:column; gap:14px; }
+    #side-tools button, #side-tools label {
+      background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none;
+      box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block;
+      transition: background 0.13s, color 0.13s;
+    }
+    #side-tools label { background:#c4d4ea; color:#1780b0; }
+    #side-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
+    @media (max-width:900px) {
+      #side-tools { top:auto; bottom:10px; right:0; flex-direction:row; gap:10px;}
+      #side-tools button, #side-tools label { font-size:0.98em; padding:7px 10px 7px 10px; border-radius:13px;}
+    }
   </style>
 </head>
 <body>
+  <!-- Boutons latéraux ZIP -->
+  <div id="side-tools">
+    <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
+    <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
+      <label for="import-zip" title="Restaurer une sauvegarde">
+        ⬆️ Restaurer
+        <input type="file" id="import-zip" name="backupzip" accept=".zip" style="display:none;">
+      </label>
+    </form>
+    <span id="importzip-msg"></span>
+  </div>
+
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
@@ -84,23 +108,37 @@
 
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
-    <div class="top-bar">
-      <button id="btn-export" class="bouton" style="background:#1780b0;">Sauvegarder (exporter)</button>
-      <form id="form-import" style="display:inline;" enctype="multipart/form-data">
-        <label for="import-backup" style="cursor:pointer;" class="bouton" title="Restaurer à partir d'une sauvegarde">
-          Importer sauvegarde
-          <input type="file" id="import-backup" name="backup" accept="application/json" style="display:none;">
-        </label>
-      </form>
-      <span id="import-msg" style="font-size:1.03em; color:#1780b0; margin-left:8px;"></span>
-    </div>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
     <div id="dossier-list"></div>
   </div>
 
   <script>
-    const BASE_URL = "";
+    // Sauvegarde/Restaurer ZIP
+    document.getElementById("btn-exportzip").onclick = function(){
+      window.open("/api/admin/exportzip", "_blank");
+    };
+    document.getElementById("import-zip").onchange = function(){
+      let file = this.files[0];
+      if (!file) return;
+      let fd = new FormData();
+      fd.append("backupzip", file);
+      document.getElementById("importzip-msg").textContent = "Importation...";
+      fetch("/api/admin/importzip", {
+        method:"POST",
+        body:fd
+      }).then(r=>r.json()).then(json=>{
+        if(json.success){
+          document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
+          if(typeof chargerDossiers==="function") chargerDossiers();
+        } else {
+          document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
+        }
+        setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
+      });
+    };
+
+    // --- Interface admin ---
     const MAGASINS = [
       "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
     ];
@@ -125,37 +163,6 @@
         }
       });
     }
-
-    // Bouton export
-    document.addEventListener('DOMContentLoaded', ()=>{
-      if(document.getElementById("btn-export")){
-        document.getElementById("btn-export").onclick = function(){
-          window.open("/api/admin/export", "_blank");
-        };
-      }
-      // Import
-      if(document.getElementById("import-backup")){
-        document.getElementById("import-backup").onchange = function(){
-          let file = this.files[0];
-          if (!file) return;
-          let fd = new FormData();
-          fd.append("backup", file);
-          document.getElementById("import-msg").textContent = "Importation...";
-          fetch("/api/admin/import", {
-            method:"POST",
-            body:fd
-          }).then(r=>r.json()).then(json=>{
-            if(json.success){
-              document.getElementById("import-msg").textContent = "Importation réussie ✔";
-              chargerDossiers();
-            } else {
-              document.getElementById("import-msg").textContent = "Erreur : " + (json.message||"Format invalide");
-            }
-            setTimeout(()=>{document.getElementById("import-msg").textContent="";}, 2800);
-          });
-        };
-      }
-    });
 
     function chargerDossiers() {
       fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{

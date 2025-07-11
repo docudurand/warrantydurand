@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
+import unzipper from "unzipper";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -16,6 +17,7 @@ const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 
+// Associe chaque magasin à une adresse mail responsable
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
@@ -184,25 +186,53 @@ app.get("/download/:file", (req, res) => {
 // Page admin seulement (héberger admin.html à côté du server.js)
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
-// === FONCTION EXPORT / IMPORT ===
-
-// Télécharger la base des dossiers (backup)
-app.get("/api/admin/export", (req, res) => {
-  res.setHeader('Content-Disposition', 'attachment; filename="demandes-backup.json"');
-  res.setHeader('Content-Type', 'application/json');
-  res.send(fs.readFileSync(DATA_FILE));
+// === EXPORT ZIP (json + uploads) ===
+app.get("/api/admin/exportzip", async (req, res) => {
+  try {
+    res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde-garantie.zip"');
+    res.setHeader('Content-Type', 'application/zip');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', err => res.status(500).send({error: err.message}));
+    archive.pipe(res);
+    archive.file(DATA_FILE, { name: "demandes.json" });
+    if (fs.existsSync(UPLOADS_DIR)) {
+      archive.directory(UPLOADS_DIR, "uploads");
+    }
+    archive.finalize();
+  } catch (e) {
+    res.status(500).send({error: e.message});
+  }
 });
 
-// Importer un fichier de sauvegarde (backup)
-app.post("/api/admin/import", upload.single("backup"), (req, res) => {
+// === IMPORT ZIP (restaure json + uploads) ===
+app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
-    const imported = JSON.parse(fs.readFileSync(req.file.path, "utf8"));
-    if (!Array.isArray(imported)) throw new Error("Format invalide");
-    writeData(imported);
-    fs.unlinkSync(req.file.path);
+    const zipPath = req.file.path;
+    // Dézippe dans un dossier temporaire
+    await fs.createReadStream(zipPath)
+      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
+      .promise();
+    // Copie le json
+    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
+    if (fs.existsSync(jsonSrc)) {
+      fs.copyFileSync(jsonSrc, DATA_FILE);
+    } else {
+      throw new Error("Le fichier demandes.json est manquant dans l'archive");
+    }
+    // Remplace le dossier uploads/
+    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
+    if (fs.existsSync(newUploads)) {
+      if (fs.existsSync(UPLOADS_DIR)) {
+        fs.rmSync(UPLOADS_DIR, { recursive: true, force: true });
+      }
+      fs.renameSync(newUploads, UPLOADS_DIR);
+    }
+    // Nettoie
+    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
+    fs.unlinkSync(zipPath);
     res.json({success:true});
-  } catch(e) {
+  } catch (e) {
     res.json({success:false, message:e.message});
   }
 });
