@@ -32,7 +32,7 @@ const MAGASIN_MAILS = {
   "Seynod": "magasin5seynod@durandservices.fr"
 };
 
-// Mailer (avec GMAIL_USER / GMAIL_PASS)
+// Nodemailer (GMAIL_USER / GMAIL_PASS)
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -49,7 +49,7 @@ if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+// On n'utilise plus app.use(express.static('public'));
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 // Multer pour upload
@@ -106,10 +106,12 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
   }
 });
 
+// Liste dossiers pour admin
 app.get("/api/admin/dossiers", (req, res) => {
   res.json(readData());
 });
 
+// Changement statut, ajout réponse et/ou fichiers (ADMIN)
 app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
   let { id } = req.params;
   let data = readData();
@@ -117,6 +119,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
   let oldStatut = dossier.statut;
 
+  // On accepte : soit changement de statut, soit réponse, soit fichier
   if (req.body.statut) dossier.statut = req.body.statut;
   if (req.body.reponse) dossier.reponse = req.body.reponse;
   if (req.files && req.files.length) {
@@ -126,6 +129,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   }
   writeData(data);
 
+  // Email client à chaque changement (statut, réponse ou pièce jointe)
   let changes = [];
   if (req.body.statut && req.body.statut !== oldStatut) changes.push("statut");
   if (req.body.reponse) changes.push("réponse");
@@ -136,7 +140,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
     }));
     let html = `<div style="font-family:sans-serif;">
       Bonjour,<br>
-      Votre dossier de garantie <b>${d.produit_concerne||""}</b> (${d.magasin}) a été mis à jour.<br>
+      Votre dossier de garantie <b>${dossier.produit_concerne||""}</b> (${dossier.magasin}) a été mis à jour.<br>
       <ul>
         ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
         ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
@@ -156,6 +160,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   res.json({success:true});
 });
 
+// Auth admin (cookie sécurisé)
 app.post("/api/admin/login", (req, res) => {
   let pw = "";
   if (req.body && req.body.password) pw = req.body.password;
@@ -163,12 +168,14 @@ app.post("/api/admin/login", (req, res) => {
   res.json({success:false, message:"Mot de passe incorrect"});
 });
 
+// Dossiers du client (email)
 app.get("/api/mes-dossiers", (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
 
+// Télécharger fichier joint (sécurité)
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const filePath = path.join(UPLOADS_DIR, file);
@@ -176,7 +183,7 @@ app.get("/download/:file", (req, res) => {
   res.download(filePath);
 });
 
+// Page admin seulement (héberger admin.html à côté du server.js)
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));
