@@ -425,8 +425,16 @@ app.get("/admin", checkAdmin, (req, res) => {
             }
           }).join("<br>") || "—";
 
-          const respHtml = (x.reponse ? `<div>\${x.reponse}</div>` : "")
-                         + ((x.reponseFiles||[]).map(f => `<a href="/download/\${f.url}">\${f.original}</a>`).join("<br>") || "");
+          var respHtml = '';
++ if (x.reponse) {
++   respHtml += '<div>' + x.reponse + '</div>';
++ }
++ if (x.reponseFiles && x.reponseFiles.length) {
++   x.reponseFiles.forEach(function(fr, idx) {
++     respHtml += '<a href="/download/' + fr.url + '">' + fr.original + '</a>';
++     if (idx < x.reponseFiles.length - 1) respHtml += '<br>';
++   });
++ }
 
           return \`
             <tr>
