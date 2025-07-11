@@ -195,7 +195,7 @@
           d.files.forEach(f=>{
             let ext = f.original.split('.').pop().toLowerCase();
             if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-              html += `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+              html += `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
             } else {
               html += `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
             }
@@ -206,7 +206,7 @@
             ${d.reponseFiles && d.reponseFiles.length ? d.reponseFiles.map(f=>{
               let ext = f.original.split('.').pop().toLowerCase();
               if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
               } else {
                 return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
               }
@@ -312,7 +312,7 @@
                   : d.files.map(f=>{
                       let ext = f.original.split('.').pop().toLowerCase();
                       if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                        return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                        return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
                       } else {
                         return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                       }
@@ -322,7 +322,14 @@
             <tr><th>Réponse</th><td>
               ${(d.reponse||"")}
               ${(d.reponseFiles||[]).length
-                  ? "<br>"+d.reponseFiles.map(f=>`<a href="/download/${f.url}" target="_blank">${f.original}</a>`).join("<br>")
+                  ? "<br>"+d.reponseFiles.map(f=>{
+                    let ext = f.original.split('.').pop().toLowerCase();
+                    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                      return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                    } else {
+                      return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                    }
+                  }).join("<br>")
                   : ""}
             </td></tr>
           </table>

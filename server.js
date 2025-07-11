@@ -16,20 +16,19 @@ const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
 
-// Associe chaque magasin à une adresse mail responsable
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
   "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
-  "Chassieu": "magasin5chassieu@durandservices.fr",
-  "Gleize": "mag5gleize@durandservices.fr",
-  "La Motte-Servolex": "magasinlms@durandservices.fr",
-  "Les Echets": "magasin5echets@durandservices.fr",
-  "Rives": "magasin5rives@durandservices.fr",
-  "Saint-Egreve": "mag5stegreve@durandservices.fr",
-  "Saint-Jean-Bonnefonds": "magasin5sjbf@durandservices.fr",
-  "Saint-martin-d'heres": "magasin5smh@durandservices.fr",
-  "Seynod": "magasin5seynod@durandservices.fr"
+  "Chassieu": "respmagchassieu@durandservices.fr",
+  "Gleize": "magvl4gleize@durandservices.fr",
+  "La Motte-Servolex": "respmaglms@durandservices.fr",
+  "Les Echets": "magvlmiribel@durandservices.fr",
+  "Rives": "magvl3rives@durandservices.fr",
+  "Saint-Egreve": "magvlstegreve@durandservices.fr",
+  "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
+  "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
+  "Seynod": "respmagseynod@durandservices.fr"
 };
 
 // Nodemailer (GMAIL_USER / GMAIL_PASS)
