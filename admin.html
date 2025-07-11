@@ -7,42 +7,113 @@
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
-    #admin-content { display:none; max-width:1350px; margin:34px auto 0 auto; background:#fff; border-radius:14px; box-shadow:0 3px 20px #0001; padding:38px 22px;}
-    h2 { color:#006e90; font-size:2.05em; font-weight:bold; text-align:center; margin-bottom:28px;}
-    .tabs { display:flex; gap:7px; justify-content:center; margin-bottom:27px;}
-    .tab { padding:9px 23px; border-radius:6px 6px 0 0; cursor:pointer; background:#f0f6f9; font-weight:600; color:#146083; font-size:1.06em; border:1px solid #cbe7f6; border-bottom:0;}
-    .tab.active { background:#006e90; color:#fff;}
-    #status-counters {display:flex; gap:30px; justify-content:center; margin-bottom:20px;}
+    #admin-content {
+      display:none;
+      width: 98vw;        /* Utilise quasiment toute la largeur */
+      max-width: 1620px;  /* Très large, pour contenir tous les onglets */
+      margin:34px auto 0 auto;
+      background:#fff;
+      border-radius:24px;
+      box-shadow:0 3px 20px #0001;
+      padding:44px 32px 38px 32px;
+      box-sizing: border-box;
+      overflow-x: auto;   /* Pour éviter les coupures */
+      min-width: 320px;
+    }
+    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
+    .tabs {
+      display:flex;
+      gap:11px;
+      justify-content:center;
+      margin-bottom:34px;
+      flex-wrap:wrap;
+    }
+    .tab {
+      padding: 12px 34px;
+      border-radius: 10px 10px 0 0;
+      cursor: pointer;
+      background: #f0f6f9;
+      font-weight: 600;
+      color: #146083;
+      font-size: 1.14em;
+      border: 1.5px solid #cbe7f6;
+      border-bottom: 0;
+      min-width: 182px;
+      text-align: center;
+      transition: background 0.18s, color 0.18s;
+      box-sizing: border-box;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .tab.active {
+      background: #006e90;
+      color: #fff;
+      z-index: 1;
+    }
+    #status-counters {
+      display:flex;
+      gap:35px;
+      justify-content:center;
+      margin-bottom:22px;
+      flex-wrap: wrap;
+    }
     .counter-card {
       background: #fff;
-      border-radius: 11px;
-      box-shadow: 0 2px 9px #0001;
-      padding: 28px 34px 22px 34px;
+      border-radius: 13px;
+      box-shadow: 0 2px 12px #0001;
+      padding: 32px 40px 26px 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-width: 210px;
+      min-width: 220px;
       margin-bottom: 7px;
     }
-    .counter-card .counter-label { font-size: 1.08em; color:#234156; margin-bottom:10px; }
+    .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
     .counter-card .counter-label.orange { color: #f8a900; }
     .counter-card .counter-label.green { color: #168b3e; }
     .counter-card .counter-label.red { color: #bb1810; }
     .counter-card .counter-value {
-      font-size: 2.4em; font-weight: bold; margin-bottom:2px;
+      font-size: 2.45em; font-weight: bold; margin-bottom:2px;
     }
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; }
-    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.05em;}
-    th { background:#006e90; color:#fff; font-size:1.10em; font-weight:600;}
+    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
+    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
-    .statut-select { padding:5px 10px; border-radius:4px; border:1px solid #b4c8d8; }
-    .bouton, .voir-btn { background:#006e90; color:#fff; border:none; padding:6px 16px; border-radius:5px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
+    .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
+    .bouton, .voir-btn {
+      background:#006e90;
+      color:#fff;
+      border:none;
+      padding:7px 20px;
+      border-radius:6px;
+      cursor:pointer;
+      font-size:1em;
+      box-shadow:0 1px 4px #0002;
+      transition:background 0.15s;
+    }
     .bouton:hover, .voir-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
-    @media (max-width:900px) { #admin-content {padding:12px 1vw;} th,td {font-size:0.95em;} #status-counters {flex-direction:column;align-items:center;gap:10px;}}
+    #dossier-list p {margin-top:15px;}
+    @media (max-width:1700px) {
+      #admin-content { max-width: 98vw; }
+      .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; }
+    }
+    @media (max-width:1050px) {
+      .tab { min-width: 100px; padding: 8px 8px; font-size: 0.99em; }
+      #admin-content { padding: 10px 2vw 10px 2vw;}
+      .counter-card { padding:18px 7vw;}
+      h2 { font-size: 1.28em;}
+    }
+    @media (max-width:700px) {
+      #admin-content {max-width: 99vw; padding: 2vw 1vw;}
+      .tabs { gap:4px;}
+      .tab { min-width: 86px; font-size:0.94em;}
+      #status-counters {flex-direction:column;align-items:center;gap:13px;}
+      .counter-card { min-width: 160px; padding:13px 1vw;}
+    }
   </style>
 </head>
 <body>
@@ -105,10 +176,10 @@
 
     function afficherCompteurs(dossiers) {
       const stats = [
-        { label: "En attente de traitement <span title='Enregistré'>&#x23F3;</span>", val: "enregistré", color:"orange" },
-        { label: "Acceptés <span>&#x1F44D;</span>", val: "accepté", color:"green" },
+        { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
+        { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
         { label: "En attente d'info", val: "en attente d'info", color:"green" },
-        { label: "Refusés <span>&#x1F44E;</span>", val: "refusé", color:"red" }
+        { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
       ];
       let html = "";
       stats.forEach(stat => {
@@ -129,7 +200,7 @@
       let dossiers = allDossiers.filter(d=>d.magasin===magasin);
       afficherCompteurs(dossiers);
       if(!dossiers.length){
-        document.getElementById('dossier-list').innerHTML = `<p style='color:#d23b33;font-size:1.15em;text-align:center;'>Aucun dossier pour ce magasin</p>`;
+        document.getElementById('dossier-list').innerHTML = `<p style='color:#d23b33;font-size:1.18em;text-align:center;'>Aucun dossier pour ce magasin</p>`;
         return;
       }
       let html = `<table>
