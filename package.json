@@ -1,24 +1,17 @@
 {
-  "name": "warranty-backend",
+  "name": "garantie-durandservices",
   "version": "1.0.0",
-  "description": "Serveur Express pour la gestion des garanties (PC Durand)",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js"
   },
-  "engines": {
-    "node": ">=20.0.0"
-  },
   "dependencies": {
-    "archiver": "^6.0.2",
-    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "express": "^4.19.2",
-    "mime-types": "^2.1.35",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.13",
-    "unzipper": "^0.10.14"
+    "cookie-parser": "^1.4.6",
+    "mime-types": "^2.1.35"
   }
 }
