@@ -70,6 +70,7 @@ function checkAdmin(req, res, next) {
   }
 }
 
+// Page de login admin
 app.get("/admin-login", (req, res) => {
   res.send(`
     <h2>Connexion Admin</h2>
@@ -82,6 +83,7 @@ app.get("/admin-login", (req, res) => {
   `);
 });
 
+// Traitement du login admin
 app.post("/admin-login", express.urlencoded({ extended: true }), (req, res) => {
   const { user, pass } = req.body;
   if (user === ADMIN_USER && pass === ADMIN_PASS) {
@@ -100,6 +102,7 @@ app.get("/logout", (req, res) => {
   res.redirect("/admin-login");
 });
 
+// Export sauvegarde (zip)
 app.get("/admin/export", checkAdmin, (req, res) => {
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde_garantie.zip"');
@@ -110,6 +113,7 @@ app.get("/admin/export", checkAdmin, (req, res) => {
   archive.finalize();
 });
 
+// Import sauvegarde (zip)
 app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.send("Aucun fichier reçu !");
   const unzipper = await import('unzipper');
@@ -126,6 +130,7 @@ app.post("/admin/import", checkAdmin, upload.single("backupzip"), async (req, re
     });
 });
 
+// Création d'une demande (avec pièces jointes)
 app.post("/api/demandes", upload.array("document", 10), (req, res) => {
   let demandes = loadDemandes();
   let {
@@ -180,6 +185,7 @@ Date : ${new Date().toLocaleDateString("fr-FR")}
   res.json({ success: true, id });
 });
 
+// Liste de mes dossiers
 app.get("/api/mes-dossiers", (req, res) => {
   let { email } = req.query;
   if (!email) return res.json([]);
@@ -191,12 +197,14 @@ app.get("/api/mes-dossiers", (req, res) => {
   })));
 });
 
+// Voir un dossier (admin)
 app.get("/api/dossier/:id", checkAdmin, (req, res) => {
   let d = loadDemandes().find(d => d.id === req.params.id);
   if (!d) return res.status(404).json({ error: "Not found" });
   res.json(d);
 });
 
+// Ajout de docs à un dossier (par le client)
 app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) => {
   let demandes = loadDemandes();
   let d = demandes.find(d => d.id === req.params.id);
@@ -213,6 +221,7 @@ app.post("/api/dossier/:id/add-doc", upload.array("document", 10), (req, res) =>
   res.json({ success: true });
 });
 
+// MAJ dossier (statut/réponse, côté admin)
 app.post("/api/dossier/:id/admin", checkAdmin, upload.array("reponseFiles", 10), (req, res) => {
   let demandes = loadDemandes();
   let d = demandes.find(d => d.id === req.params.id);
@@ -255,6 +264,7 @@ Merci de ne pas répondre à cet email.
   res.json({ success: true });
 });
 
+// Page admin (tableau de bord)
 app.get("/admin", checkAdmin, (req, res) => {
   let demandes = loadDemandes();
   const magasins = [
@@ -536,6 +546,7 @@ app.get("/admin", checkAdmin, (req, res) => {
   res.send(html);
 });
 
+// Téléchargement fichiers
 app.get("/download/:fileid", (req, res) => {
   const fileid = req.params.fileid;
   const demandes = loadDemandes();
