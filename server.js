@@ -48,7 +48,6 @@ if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-// On n'utilise plus app.use(express.static('public'));
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 // Multer pour upload
@@ -184,5 +183,28 @@ app.get("/download/:file", (req, res) => {
 
 // Page admin seulement (héberger admin.html à côté du server.js)
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
+
+// === FONCTION EXPORT / IMPORT ===
+
+// Télécharger la base des dossiers (backup)
+app.get("/api/admin/export", (req, res) => {
+  res.setHeader('Content-Disposition', 'attachment; filename="demandes-backup.json"');
+  res.setHeader('Content-Type', 'application/json');
+  res.send(fs.readFileSync(DATA_FILE));
+});
+
+// Importer un fichier de sauvegarde (backup)
+app.post("/api/admin/import", upload.single("backup"), (req, res) => {
+  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
+  try {
+    const imported = JSON.parse(fs.readFileSync(req.file.path, "utf8"));
+    if (!Array.isArray(imported)) throw new Error("Format invalide");
+    writeData(imported);
+    fs.unlinkSync(req.file.path);
+    res.json({success:true});
+  } catch(e) {
+    res.json({success:false, message:e.message});
+  }
+});
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));

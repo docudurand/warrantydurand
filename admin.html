@@ -20,7 +20,8 @@
       overflow-x: auto;
       min-width: 320px;
     }
-    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
+    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
+    .top-bar {display:flex; justify-content:center; gap:25px; margin-bottom:25px;}
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab {
       padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer;
@@ -83,6 +84,16 @@
 
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
+    <div class="top-bar">
+      <button id="btn-export" class="bouton" style="background:#1780b0;">Sauvegarder (exporter)</button>
+      <form id="form-import" style="display:inline;" enctype="multipart/form-data">
+        <label for="import-backup" style="cursor:pointer;" class="bouton" title="Restaurer à partir d'une sauvegarde">
+          Importer sauvegarde
+          <input type="file" id="import-backup" name="backup" accept="application/json" style="display:none;">
+        </label>
+      </form>
+      <span id="import-msg" style="font-size:1.03em; color:#1780b0; margin-left:8px;"></span>
+    </div>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
     <div id="dossier-list"></div>
@@ -114,6 +125,37 @@
         }
       });
     }
+
+    // Bouton export
+    document.addEventListener('DOMContentLoaded', ()=>{
+      if(document.getElementById("btn-export")){
+        document.getElementById("btn-export").onclick = function(){
+          window.open("/api/admin/export", "_blank");
+        };
+      }
+      // Import
+      if(document.getElementById("import-backup")){
+        document.getElementById("import-backup").onchange = function(){
+          let file = this.files[0];
+          if (!file) return;
+          let fd = new FormData();
+          fd.append("backup", file);
+          document.getElementById("import-msg").textContent = "Importation...";
+          fetch("/api/admin/import", {
+            method:"POST",
+            body:fd
+          }).then(r=>r.json()).then(json=>{
+            if(json.success){
+              document.getElementById("import-msg").textContent = "Importation réussie ✔";
+              chargerDossiers();
+            } else {
+              document.getElementById("import-msg").textContent = "Erreur : " + (json.message||"Format invalide");
+            }
+            setTimeout(()=>{document.getElementById("import-msg").textContent="";}, 2800);
+          });
+        };
+      }
+    });
 
     function chargerDossiers() {
       fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
