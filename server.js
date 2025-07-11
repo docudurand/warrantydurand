@@ -9,6 +9,8 @@ import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
 import { fileURLToPath } from "url";
+import { google } from "googleapis";
+import cron from "node-cron";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -16,8 +18,10 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+const CREDENTIALS_PATH = path.join(__dirname, "credentials.json");
 
-// Associe chaque magasin à une adresse mail responsable
+const DRIVE_FOLDER_ID = process.env.DRIVE_FOLDER_ID || "https://drive.google.com/drive/folders/1o8DdCgX8qRduD-bJjfDkGoVYOejCT8mY?usp=drive_link";
+
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
@@ -33,7 +37,6 @@ const MAGASIN_MAILS = {
   "Seynod": "respmagseynod@durandservices.fr"
 };
 
-// Nodemailer (GMAIL_USER / GMAIL_PASS)
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -52,7 +55,6 @@ app.use(cookieParser());
 app.use(express.json());
 app.use("/uploads", express.static(UPLOADS_DIR));
 
-// Multer pour upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename: (req, file, cb) => {
@@ -62,13 +64,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Helpers
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
-// --- ROUTES ---
-
-// Soumission demande client (avec fichiers)
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let d = req.body;
@@ -86,18 +84,18 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     writeData(data);
 
     const respMail = MAGASIN_MAILS[d.magasin] || "";
-if (respMail) {
-  await mailer.sendMail({
-    from: "Garantie <" + process.env.GMAIL_USER + ">",
-    to: respMail,
-    subject: `Nouvelle demande de garantie`,
-    html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
-      Client : ${d.nom} (${d.email})<br>
-      Marque du produit : ${d.marque_produit||""}<br>
-      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>`,
-    attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
-  });
-}
+    if (respMail) {
+      await mailer.sendMail({
+        from: "Garantie <" + process.env.GMAIL_USER + ">",
+        to: respMail,
+        subject: `Nouvelle demande de garantie`,
+        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
+          Client : ${d.nom} (${d.email})<br>
+          Marque du produit : ${d.marque_produit||""}<br>
+          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>`,
+        attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
+      });
+    }
 
     res.json({ success: true });
   } catch (err) {
@@ -105,7 +103,6 @@ if (respMail) {
   }
 });
 
-// Liste dossiers pour admin
 app.get("/api/admin/dossiers", (req, res) => {
   res.json(readData());
 });
@@ -117,7 +114,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
   let oldStatut = dossier.statut;
 
-  // On accepte : soit changement de statut, soit réponse, soit fichier
   if (req.body.statut) dossier.statut = req.body.statut;
   if (req.body.reponse) dossier.reponse = req.body.reponse;
   if (req.files && req.files.length) {
@@ -159,7 +155,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   res.json({success:true});
 });
 
-// Auth admin (cookie sécurisé)
 app.post("/api/admin/login", (req, res) => {
   let pw = "";
   if (req.body && req.body.password) pw = req.body.password;
@@ -167,14 +162,12 @@ app.post("/api/admin/login", (req, res) => {
   res.json({success:false, message:"Mot de passe incorrect"});
 });
 
-// Dossiers du client (email)
 app.get("/api/mes-dossiers", (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
 
-// Télécharger fichier joint (sécurité)
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const filePath = path.join(UPLOADS_DIR, file);
@@ -182,10 +175,8 @@ app.get("/download/:file", (req, res) => {
   res.download(filePath);
 });
 
-// Page admin seulement (héberger admin.html à côté du server.js)
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
-// === EXPORT ZIP (json + uploads) ===
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde-garantie.zip"');
@@ -203,23 +194,19 @@ app.get("/api/admin/exportzip", async (req, res) => {
   }
 });
 
-// === IMPORT ZIP (restaure json + uploads) ===
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
     const zipPath = req.file.path;
-    // Dézippe dans un dossier temporaire
     await fs.createReadStream(zipPath)
       .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
       .promise();
-    // Copie le json
     const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
     if (fs.existsSync(jsonSrc)) {
       fs.copyFileSync(jsonSrc, DATA_FILE);
     } else {
       throw new Error("Le fichier demandes.json est manquant dans l'archive");
     }
-    // Remplace le dossier uploads/
     const newUploads = path.join(__dirname, "tmp_restore", "uploads");
     if (fs.existsSync(newUploads)) {
       if (fs.existsSync(UPLOADS_DIR)) {
@@ -227,12 +214,63 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
       }
       fs.renameSync(newUploads, UPLOADS_DIR);
     }
-    // Nettoie
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     fs.unlinkSync(zipPath);
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
+  }
+});
+
+function createBackupZip() {
+  return new Promise((resolve, reject) => {
+    const ARCHIVE_PATH = path.join(__dirname, "backup.zip");
+    const output = fs.createWriteStream(ARCHIVE_PATH);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    output.on('close', () => resolve(ARCHIVE_PATH));
+    archive.on('error', reject);
+    archive.pipe(output);
+    archive.file(DATA_FILE, { name: "demandes.json" });
+    if (fs.existsSync(UPLOADS_DIR)) {
+      archive.directory(UPLOADS_DIR, "uploads");
+    }
+    archive.finalize();
+  });
+}
+
+async function uploadToDrive() {
+  if (!fs.existsSync(CREDENTIALS_PATH)) {
+    console.warn("Pas de credentials.json pour Google Drive, sauvegarde ignorée.");
+    return;
+  }
+  const auth = new google.auth.GoogleAuth({
+    keyFile: CREDENTIALS_PATH,
+    scopes: ["https://www.googleapis.com/auth/drive.file"],
+  });
+  const drive = google.drive({ version: "v3", auth });
+  const archivePath = await createBackupZip();
+  const fileMetadata = {
+    name: `sauvegarde_${new Date().toISOString().replace(/[:.]/g,'_')}.zip`,
+    parents: [DRIVE_FOLDER_ID]
+  };
+  const media = {
+    mimeType: "application/zip",
+    body: fs.createReadStream(archivePath)
+  };
+  await drive.files.create({
+    resource: fileMetadata,
+    media,
+    fields: "id"
+  });
+  fs.unlinkSync(archivePath);
+  console.log("Sauvegarde Drive effectuée :", fileMetadata.name);
+}
+
+cron.schedule('5 * * * *', async () => {
+  try {
+    await uploadToDrive();
+  } catch(e) {
+    console.error("Erreur sauvegarde Google Drive :", e);
   }
 });
 
