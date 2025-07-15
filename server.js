@@ -45,7 +45,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin";
+const ADMIN_PASSWORD = process.env['admin-pass'] || "admin";
 
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
