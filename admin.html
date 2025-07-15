@@ -162,6 +162,8 @@
     let filtres = { mois: "", annee: "", statut: "" };
     let formOpen = null;
 
+    const LOGO_URL = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+
     function adminLogin() {
       let pw = document.getElementById('admin-pass').value;
       fetch('/api/admin/login', {
@@ -237,7 +239,7 @@
           anneeSet.add(annee);
         }
       });
-      // Mois français
+
       const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
       const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
       moisSel.innerHTML = `<option value="">Tous</option>`;
@@ -266,7 +268,6 @@
       afficherCompteurs(dossiers);
       afficherFiltres(dossiers);
 
-      // Filtrage
       if(filtres.mois) {
         dossiers = dossiers.filter(d=>{
           let date = new Date(d.date);
@@ -338,7 +339,6 @@
       html += `</table>`;
       document.getElementById('dossier-list').innerHTML = html;
 
-      // Activer les boutons "Mettre à jour"
       document.querySelectorAll('.maj-btn').forEach(btn => {
         btn.onclick = function(){
           document.querySelectorAll('.mini-form-row').forEach(f=>f.style.display="none");
@@ -351,7 +351,6 @@
         };
       });
 
-      // Form submit
       document.querySelectorAll('.mini-form').forEach(form => {
         form.onsubmit = async function(e) {
           e.preventDefault();
@@ -380,12 +379,35 @@
     function voirDossier(id) {
       let d = allDossiers.find(x=>x.id===id);
       if (!d) return alert("Dossier introuvable !");
+      let serverUrl = window.location.origin;
       let detailHtml = `
         <html><head>
         <meta charset="UTF-8">
         <title>Détail dossier</title>
         <style>
           body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+          .fiche-header {
+            display: flex; align-items: center; justify-content: space-between;
+            max-width: 700px; margin: 24px auto 0 auto; padding-bottom:12px; border-bottom:1px solid #e5e7eb;
+          }
+          .fiche-header-left {
+            display: flex; align-items: center; gap: 18px;
+          }
+          .fiche-logo {
+            height: 62px; width: 62px; object-fit: contain; border-radius: 10px; background: #f8fafc; box-shadow: 0 2px 8px #0002;
+          }
+          .fiche-magasin {
+            font-weight: 700; color: #175789; font-size: 1.25em; margin-left: 5px;
+          }
+          .fiche-imprimer {
+            background: #006e90; color: #fff; border: none; border-radius: 7px; padding: 11px 24px; font-size: 1.05em; cursor: pointer; font-weight: 600; box-shadow:0 1px 5px #0001;
+            transition: background 0.13s;
+          }
+          .fiche-imprimer:hover { background: #1780b0; }
+          @media print {
+            .fiche-imprimer { display: none !important; }
+            .fiche-header { border-bottom: 1px solid #bbb; }
+          }
           .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
           .fiche-table table { width:100%; border-collapse:collapse; }
           .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
@@ -395,6 +417,13 @@
           .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
         </style>
         </head><body>
+        <div class="fiche-header">
+          <div class="fiche-header-left">
+            <img src="${LOGO_URL}" alt="Logo DSG" class="fiche-logo">
+            <span class="fiche-magasin">${d.magasin||""}</span>
+          </div>
+          <button class="fiche-imprimer" onclick="window.print()">Imprimer la fiche</button>
+        </div>
         <div class="fiche-table">
           <table>
             <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
@@ -427,10 +456,11 @@
                   ? 'Aucune'
                   : d.files.map(f=>{
                       let ext = f.original.split('.').pop().toLowerCase();
+                      let link = serverUrl + "/download/" + encodeURIComponent(f.url);
                       if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                        return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                        return `<a href="${link}" target="_blank"><img src="${serverUrl}/uploads/${encodeURIComponent(f.url)}" class="pj-img"></a>`;
                       } else {
-                        return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                        return `<a href="${link}" target="_blank">${f.original}</a>`;
                       }
                     }).join("<br>")
               }
@@ -440,10 +470,11 @@
               ${(d.reponseFiles||[]).length
                   ? "<br>"+d.reponseFiles.map(f=>{
                     let ext = f.original.split('.').pop().toLowerCase();
+                    let link = serverUrl + "/download/" + encodeURIComponent(f.url);
                     if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                      return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                      return `<a href="${link}" target="_blank"><img src="${serverUrl}/uploads/${encodeURIComponent(f.url)}" class="pj-img"></a>`;
                     } else {
-                      return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                      return `<a href="${link}" target="_blank">${f.original}</a>`;
                     }
                   }).join("<br>")
                   : ""}
