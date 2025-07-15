@@ -8,62 +8,78 @@ import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
+import axios from "axios";
+import FormData from "form-data";
 import { fileURLToPath } from "url";
 
-import { google } from "googleapis";
-const ENABLE_AUTO_BACKUP = process.env.ENABLE_AUTO_BACKUP === "true";
-const DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
-const SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-const SERVICE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-async function uploadBackupToDrive(backupPath, fileName = "sauvegarde-garantie.zip") {
-  if (!ENABLE_AUTO_BACKUP) return;
+
+const PCLOUD_USER = process.env.PCLOUD_USER;
+const PCLOUD_PASS = process.env.PCLOUD_PASS;
+const PCLOUD_FOLDER = process.env.PCLOUD_FOLDER || "/sauvegardes";
+
+let pcloudAuthToken = null;
+
+async function getPCloudToken() {
+  if (pcloudAuthToken) return pcloudAuthToken;
   try {
-    const jwtClient = new google.auth.JWT(
-      SERVICE_ACCOUNT_EMAIL,
-      null,
-      SERVICE_PRIVATE_KEY,
-      ['https://www.googleapis.com/auth/drive.file']
-    );
-    await jwtClient.authorize();
-    const drive = google.drive({ version: 'v3', auth: jwtClient });
-
-    const list = await drive.files.list({
-      q: `'${DRIVE_FOLDER_ID}' in parents and name='${fileName}' and trashed=false`,
-      fields: "files(id,name)"
+    const res = await axios.get("https://api.pcloud.com/login", {
+      params: {
+        getauth: 1,
+        username: PCLOUD_USER,
+        password: PCLOUD_PASS
+      }
     });
-    for (const f of list.data.files) {
-      await drive.files.delete({ fileId: f.id });
+    if (res.data && res.data.auth) {
+      pcloudAuthToken = res.data.auth;
+      return pcloudAuthToken;
+    } else {
+      throw new Error("Token pCloud non reçu");
     }
-
-    const fileMeta = { name: fileName, parents: [DRIVE_FOLDER_ID] };
-    const media = { mimeType: 'application/zip', body: fs.createReadStream(backupPath) };
-    await drive.files.create({
-      resource: fileMeta,
-      media,
-      fields: "id"
-    });
-    console.log("Backup uploaded to Google Drive.");
   } catch (err) {
-    console.error("Erreur sauvegarde Drive:", err.message);
+    console.error("Erreur login pCloud :", err.response?.data || err.message);
+    throw err;
   }
 }
-function createBackupZip(callback) {
-  const backupPath = path.join(__dirname, "backup_tmp.zip");
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  const output = fs.createWriteStream(backupPath);
-  output.on("close", () => callback(backupPath));
-  archive.pipe(output);
-  archive.file(DATA_FILE, { name: "demandes.json" });
-  if (fs.existsSync(UPLOADS_DIR)) {
-    archive.directory(UPLOADS_DIR, "uploads");
+
+async function uploadBackupToPcloud(localPath, fileName = "sauvegarde-garantie.zip") {
+  try {
+    const auth = await getPCloudToken();
+
+    await axios.get("https://api.pcloud.com/createfolderifnotexists", {
+      params: {
+        auth,
+        path: PCLOUD_FOLDER
+      }
+    });
+
+    try {
+      await axios.get("https://api.pcloud.com/deletefile", {
+        params: {
+          auth,
+          path: PCLOUD_FOLDER + "/" + fileName
+        }
+      });
+    } catch {}
+
+    const form = new FormData();
+    form.append("file", fs.createReadStream(localPath));
+    form.append("filename", fileName);
+    form.append("auth", auth);
+    form.append("path", PCLOUD_FOLDER);
+
+    const res = await axios.post(
+      "https://api.pcloud.com/uploadfile",
+      form,
+      { headers: form.getHeaders() }
+    );
+    if (res.data && res.data.result === 0) {
+      console.log("Backup envoyé sur pCloud !");
+    } else {
+      throw new Error("Echec upload pCloud : " + (res.data?.error || JSON.stringify(res.data)));
+    }
+  } catch (err) {
+    console.error("Erreur sauvegarde pCloud :", err.message);
   }
-  archive.finalize();
-}
-async function autoBackup() {
-  createBackupZip(async (zipPath) => {
-    await uploadBackupToDrive(zipPath);
-    fs.unlink(zipPath, ()=>{});
-  });
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -118,6 +134,25 @@ const upload = multer({ storage });
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
+function createBackupZip(callback) {
+  const backupPath = path.join(__dirname, "backup_tmp.zip");
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const output = fs.createWriteStream(backupPath);
+  output.on("close", () => callback(backupPath));
+  archive.pipe(output);
+  archive.file(DATA_FILE, { name: "demandes.json" });
+  if (fs.existsSync(UPLOADS_DIR)) {
+    archive.directory(UPLOADS_DIR, "uploads");
+  }
+  archive.finalize();
+}
+
+async function autoBackup() {
+  createBackupZip(async (zipPath) => {
+    await uploadBackupToPcloud(zipPath);
+    fs.unlink(zipPath, ()=>{});
+  });
+}
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
