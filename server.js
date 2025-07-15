@@ -10,6 +10,62 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import { fileURLToPath } from "url";
 
+import { google } from "googleapis";
+const ENABLE_AUTO_BACKUP = process.env.ENABLE_AUTO_BACKUP === "true";
+const DRIVE_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID || "";
+const SERVICE_ACCOUNT_EMAIL = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+const SERVICE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+async function uploadBackupToDrive(backupPath, fileName = "sauvegarde-garantie.zip") {
+  if (!ENABLE_AUTO_BACKUP) return;
+  try {
+    const jwtClient = new google.auth.JWT(
+      SERVICE_ACCOUNT_EMAIL,
+      null,
+      SERVICE_PRIVATE_KEY,
+      ['https://www.googleapis.com/auth/drive.file']
+    );
+    await jwtClient.authorize();
+    const drive = google.drive({ version: 'v3', auth: jwtClient });
+
+    const list = await drive.files.list({
+      q: `'${DRIVE_FOLDER_ID}' in parents and name='${fileName}' and trashed=false`,
+      fields: "files(id,name)"
+    });
+    for (const f of list.data.files) {
+      await drive.files.delete({ fileId: f.id });
+    }
+
+    const fileMeta = { name: fileName, parents: [DRIVE_FOLDER_ID] };
+    const media = { mimeType: 'application/zip', body: fs.createReadStream(backupPath) };
+    await drive.files.create({
+      resource: fileMeta,
+      media,
+      fields: "id"
+    });
+    console.log("Backup uploaded to Google Drive.");
+  } catch (err) {
+    console.error("Erreur sauvegarde Drive:", err.message);
+  }
+}
+function createBackupZip(callback) {
+  const backupPath = path.join(__dirname, "backup_tmp.zip");
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const output = fs.createWriteStream(backupPath);
+  output.on("close", () => callback(backupPath));
+  archive.pipe(output);
+  archive.file(DATA_FILE, { name: "demandes.json" });
+  if (fs.existsSync(UPLOADS_DIR)) {
+    archive.directory(UPLOADS_DIR, "uploads");
+  }
+  archive.finalize();
+}
+async function autoBackup() {
+  createBackupZip(async (zipPath) => {
+    await uploadBackupToDrive(zipPath);
+    fs.unlink(zipPath, ()=>{});
+  });
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -48,7 +104,7 @@ if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, "[]");
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-app.use("/uploads", express.static(UPLOADS_DIR)); // Sert à l'affichage direct des images uniquement (pas pour download !)
+app.use("/uploads", express.static(UPLOADS_DIR));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
@@ -61,6 +117,7 @@ const upload = multer({ storage });
 
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
+
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
@@ -92,6 +149,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
       });
     }
 
+    await autoBackup();
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -146,7 +204,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       attachments: att
     });
   }
-
+  await autoBackup();
   res.json({success:true});
 });
 
@@ -163,7 +221,6 @@ app.get("/api/mes-dossiers", (req, res) => {
   res.json(dossiers);
 });
 
-// TELECHARGEMENT FORCE sécurisé (ne jamais utiliser /uploads dans les liens de téléchargement)
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const filePath = path.join(UPLOADS_DIR, file);
@@ -214,6 +271,8 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+
+    await autoBackup();
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
