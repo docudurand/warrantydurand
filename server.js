@@ -46,6 +46,7 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 const ADMIN_PASSWORD = process.env['admin-pass'] || "admin";
+const SUPERADMIN_PASSWORD = process.env['superadmin-pass'] || "superadmin";
 
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
@@ -205,11 +206,43 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   res.json({success:true});
 });
 
+
 app.post("/api/admin/login", (req, res) => {
   let pw = "";
   if (req.body && req.body.password) pw = req.body.password;
-  if (pw === ADMIN_PASSWORD) return res.json({success:true});
+  if (pw === SUPERADMIN_PASSWORD) return res.json({success:true, isSuper:true});
+  if (pw === ADMIN_PASSWORD) return res.json({success:true, isSuper:false});
   res.json({success:false, message:"Mot de passe incorrect"});
+});
+
+
+app.delete("/api/admin/dossier/:id", (req, res) => {
+
+  if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
+  let { id } = req.params;
+  let data = readData();
+  let idx = data.findIndex(x=>x.id===id);
+  if (idx === -1) return res.json({success:false, message:"Introuvable"});
+
+  let dossier = data[idx];
+
+  if(dossier.files){
+    dossier.files.forEach(f=>{
+      let p = path.join(UPLOADS_DIR, f.url);
+      if(fs.existsSync(p)) try{fs.unlinkSync(p);}catch{}
+    });
+  }
+
+  if(dossier.reponseFiles){
+    dossier.reponseFiles.forEach(f=>{
+      let p = path.join(UPLOADS_DIR, f.url);
+      if(fs.existsSync(p)) try{fs.unlinkSync(p);}catch{}
+    });
+  }
+  data.splice(idx,1);
+  writeData(data);
+  autoBackup();
+  res.json({success:true});
 });
 
 app.get("/api/mes-dossiers", (req, res) => {

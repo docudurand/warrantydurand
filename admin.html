@@ -77,10 +77,12 @@
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
     th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
-    td.action, th.action { min-width: 215px; max-width: 330px; }
+    td.action, th.action { min-width: 130px; max-width: 330px; }
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
     .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
     .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
+    .suppr-btn { background: #bb1810 !important; }
+    .suppr-btn:hover { background: #e02511 !important; }
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
     .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
@@ -117,7 +119,6 @@
   </style>
 </head>
 <body>
-
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
 
   <div class="top-tools">
@@ -157,6 +158,8 @@
     <div id="dossier-list"></div>
   </div>
   <script>
+    let isSuperAdmin = false;
+
     document.getElementById("btn-exportzip").onclick = function(){
       const a = document.createElement('a');
       a.href = "/api/admin/exportzip";
@@ -203,6 +206,7 @@
       .then(resp=>resp.json())
       .then(json=>{
         if(json.success){
+          isSuperAdmin = json.isSuper;
           document.getElementById('login').style.display = "none";
           document.getElementById('admin-content').style.display = "block";
           chargerDossiers();
@@ -324,6 +328,7 @@
           <th>Fichiers réponse</th>
           <th class="action">Mettre à jour</th>
           <th class="action">Voir</th>
+          ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
         </tr>`;
       dossiers.forEach(d=>{
         let id = d.id;
@@ -346,9 +351,14 @@
           </td>
           <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
           <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+          ${
+            isSuperAdmin ?
+              `<td class="action"><button class="suppr-btn" data-id="${id}">Supprimer</button></td>`
+            : ''
+          }
         </tr>
         <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-          <td colspan="9">
+          <td colspan="${isSuperAdmin ? '10' : '9'}">
             <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
               <select class="statut-select" name="statut">
                 <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
@@ -399,6 +409,27 @@
           }
         };
       });
+
+      if (isSuperAdmin) {
+        document.querySelectorAll('.suppr-btn').forEach(btn => {
+          btn.onclick = function(){
+            let id = btn.getAttribute('data-id');
+            if(confirm("Voulez-vous vraiment supprimer ce dossier ?")) {
+              fetch(`/api/admin/dossier/${id}`, {
+                method: "DELETE",
+                headers: { "x-superadmin": "1" }
+              }).then(r => r.json())
+                .then(json => {
+                  if(json.success) {
+                    chargerDossiers();
+                  } else {
+                    alert("Erreur lors de la suppression !");
+                  }
+                });
+            }
+          };
+        });
+      }
     }
 
     function fermerMiniForm(id){
