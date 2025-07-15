@@ -6,6 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+    .banniere {
+      width: 100vw;
+      max-width: 100%;
+      margin: 0;
+      padding: 0;
+      display: block;
+      object-fit: cover;
+      min-height: 60px;
+      max-height: 180px;
+      background: #fff;
+      box-shadow: 0 2px 18px #0001;
+    }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
@@ -79,6 +91,7 @@
       #status-counters {flex-direction:column;align-items:center;gap:13px;}
       .counter-card { min-width: 160px; padding:13px 1vw;}
       .mini-form textarea { min-width: 60vw;}
+      .banniere { min-height: 32px; max-height: 80px;}
     }
     #side-tools { position:fixed; top:110px; right:0; z-index:99; display:flex; flex-direction:column; gap:14px; }
     #side-tools button, #side-tools label {
@@ -95,6 +108,9 @@
   </style>
 </head>
 <body>
+  <!-- Bannière sur toute la largeur -->
+  <img src="https://raw.githubusercontent.com/docudurand/mes-formulaires/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
+
   <div id="side-tools">
     <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
     <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
@@ -131,7 +147,6 @@
     <div id="dossier-list"></div>
   </div>
   <script>
-
     document.getElementById("btn-exportzip").onclick = function(){
       const a = document.createElement('a');
       a.href = "/api/admin/exportzip";
@@ -159,7 +174,6 @@
         setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
       });
     };
-
 
     const MAGASINS = [
       "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
