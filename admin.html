@@ -7,33 +7,12 @@
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere {
-      width: 100vw;
-      max-width: 100%;
-      margin: 0;
-      padding: 0;
-      display: block;
-      object-fit: cover;
-      min-height: 60px;
-      max-height: 180px;
-      background: #fff;
+      width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block;
+      object-fit: cover; min-height: 60px; max-height: 180px; background: #fff;
       box-shadow: 0 2px 18px #0001;
     }
-    .top-tools {
-      width: 100vw;
-      max-width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 18px;
-      margin-top: 30px;
-      margin-bottom: 30px;
-      padding-right: 2.5vw;
-    }
-    .top-tools button, .top-tools label {
-      background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none;
-      box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block;
-      transition: background 0.13s, color 0.13s;
-    }
+    .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
+    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
     .top-tools label { background:#c4d4ea; color:#1780b0; }
     .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
     #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
@@ -53,36 +32,17 @@
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
-    .filters-row {
-      display: flex;
-      gap: 22px;
-      align-items: center;
-      justify-content: flex-end;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .filters-row label {
-      font-size: 1.06em;
-      color: #195e7c;
-      margin-right: 6px;
-    }
-    .filters-row select {
-      padding: 5px 9px;
-      border-radius: 7px;
-      border: 1px solid #b4c8d8;
-      font-size: 1.05em;
-      margin-right: 14px;
-    }
+    .filters-row { display: flex; gap: 22px; align-items: center; justify-content: flex-end; margin-bottom: 12px; flex-wrap: wrap;}
+    .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
+    .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
     th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
-    td.action, th.action { min-width: 130px; max-width: 330px; }
+    td.action, th.action { min-width: 215px; max-width: 330px; }
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
     .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
     .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
-    .suppr-btn { background: #bb1810 !important; }
-    .suppr-btn:hover { background: #e02511 !important; }
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
     .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
@@ -93,12 +53,8 @@
     .mini-form .bouton { margin-left:7px;}
     .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
     .maj-btn { background: #1780b0; padding: 7px 12px;}
-    @media (max-width:1920px) {
-      #admin-content { max-width: 99vw;}
-    }
-    @media (max-width:1700px) {
-      .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; }
-    }
+    @media (max-width:1920px) { #admin-content { max-width: 99vw;} }
+    @media (max-width:1700px) { .tab { min-width: 130px; padding: 10px 20px; font-size: 1em; } }
     @media (max-width:1050px) {
       .tab { min-width: 100px; padding: 8px 8px; font-size: 0.99em; }
       #admin-content { padding: 10px 2vw 10px 2vw;}
@@ -121,7 +77,7 @@
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
 
-  <div class="top-tools">
+  <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
     <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
       <label for="import-zip" title="Restaurer une sauvegarde">
@@ -159,6 +115,10 @@
   </div>
   <script>
     let isSuperAdmin = false;
+
+    function toggleSuperAdminUI() {
+      document.getElementById("top-tools").style.display = isSuperAdmin ? "flex" : "none";
+    }
 
     document.getElementById("btn-exportzip").onclick = function(){
       const a = document.createElement('a');
@@ -206,9 +166,10 @@
       .then(resp=>resp.json())
       .then(json=>{
         if(json.success){
-          isSuperAdmin = json.isSuper;
+          isSuperAdmin = !!json.isSuper;
           document.getElementById('login').style.display = "none";
           document.getElementById('admin-content').style.display = "block";
+          toggleSuperAdminUI();
           chargerDossiers();
         } else {
           document.getElementById('login-msg').textContent = json.message || "Erreur";
@@ -351,14 +312,10 @@
           </td>
           <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
           <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-          ${
-            isSuperAdmin ?
-              `<td class="action"><button class="suppr-btn" data-id="${id}">Supprimer</button></td>`
-            : ''
-          }
+          ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
         </tr>
         <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-          <td colspan="${isSuperAdmin ? '10' : '9'}">
+          <td colspan="${isSuperAdmin ? 10 : 9}">
             <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
               <select class="statut-select" name="statut">
                 <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
@@ -409,31 +366,24 @@
           }
         };
       });
-
-      if (isSuperAdmin) {
-        document.querySelectorAll('.suppr-btn').forEach(btn => {
-          btn.onclick = function(){
-            let id = btn.getAttribute('data-id');
-            if(confirm("Voulez-vous vraiment supprimer ce dossier ?")) {
-              fetch(`/api/admin/dossier/${id}`, {
-                method: "DELETE",
-                headers: { "x-superadmin": "1" }
-              }).then(r => r.json())
-                .then(json => {
-                  if(json.success) {
-                    chargerDossiers();
-                  } else {
-                    alert("Erreur lors de la suppression !");
-                  }
-                });
-            }
-          };
-        });
-      }
     }
 
     function fermerMiniForm(id){
       document.getElementById('mini-row-'+id).style.display = "none";
+    }
+
+    function supprimerDossier(id) {
+      if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+      fetch(`/api/admin/dossier/${id}`, {
+        method: "DELETE",
+        headers: {'x-superadmin': '1'}
+      }).then(r=>r.json()).then(json=>{
+        if(json.success){
+          chargerDossiers();
+        } else {
+          alert(json.message || "Erreur lors de la suppression");
+        }
+      });
     }
 
     function voirDossier(id) {
