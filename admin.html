@@ -96,11 +96,7 @@
 </head>
 <body>
   <div id="side-tools">
-    <div id="iframe-warning" style="display:none;color:#d23b33;font-size:1.14em;margin-bottom:10px;text-align:center;">
-      ⚠️ Pour utiliser la fonction de sauvegarde, ouvrez cette page dans un nouvel onglet (pas dans une iframe Wix).
-    </div>
     <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
-    <a href="/api/admin/exportzip" download="sauvegarde-demandes.zip" id="download-link" style="display:none;margin-left:12px;font-size:1.05em;color:#006e90;">Lien direct de téléchargement</a>
     <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
       <label for="import-zip" title="Restaurer une sauvegarde">
         ⬆️ Restaurer
@@ -135,29 +131,15 @@
     <div id="dossier-list"></div>
   </div>
   <script>
-    // Affiche l'avertissement si la page est dans une iframe
-    if(window !== window.parent) {
-      document.getElementById('iframe-warning').style.display = 'block';
-    }
 
-    // Nouveau : Sauvegarde avec téléchargement auto + fallback lien
-    document.getElementById("btn-exportzip").onclick = function(e){
-      e.preventDefault();
-      // Essaie le téléchargement auto
+    document.getElementById("btn-exportzip").onclick = function(){
       const a = document.createElement('a');
       a.href = "/api/admin/exportzip";
       a.download = "sauvegarde-demandes.zip";
       document.body.appendChild(a);
       a.click();
       setTimeout(() => document.body.removeChild(a), 300);
-
-      // Affiche le lien manuel si pas de téléchargement
-      setTimeout(() => {
-        document.getElementById('download-link').style.display = 'inline-block';
-        document.getElementById('download-link').textContent = "Si le téléchargement ne démarre pas, cliquez ici";
-      }, 2000);
     };
-
     document.getElementById("import-zip").onchange = function(){
       let file = this.files[0];
       if (!file) return;
@@ -177,6 +159,7 @@
         setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
       });
     };
+
 
     const MAGASINS = [
       "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
@@ -261,7 +244,7 @@
           anneeSet.add(annee);
         }
       });
-      // Mois français
+
       const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
       const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
       moisSel.innerHTML = `<option value="">Tous</option>`;
@@ -290,7 +273,6 @@
       afficherCompteurs(dossiers);
       afficherFiltres(dossiers);
 
-      // Filtrage
       if(filtres.mois) {
         dossiers = dossiers.filter(d=>{
           let date = new Date(d.date);
@@ -362,7 +344,6 @@
       html += `</table>`;
       document.getElementById('dossier-list').innerHTML = html;
 
-      // Activer les boutons "Mettre à jour"
       document.querySelectorAll('.maj-btn').forEach(btn => {
         btn.onclick = function(){
           document.querySelectorAll('.mini-form-row').forEach(f=>f.style.display="none");
@@ -375,7 +356,6 @@
         };
       });
 
-      // Form submit
       document.querySelectorAll('.mini-form').forEach(form => {
         form.onsubmit = async function(e) {
           e.preventDefault();
@@ -404,6 +384,7 @@
     function voirDossier(id) {
       let d = allDossiers.find(x=>x.id===id);
       if (!d) return alert("Dossier introuvable !");
+
       let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
       let detailHtml = `
         <html><head>
@@ -411,8 +392,9 @@
         <title>Détail dossier</title>
         <style>
           body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-          .fiche-header { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
-          .fiche-header img { height: 56px; width: auto; }
+          .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px;}
+          .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
+          .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
           .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
           .fiche-table table { width:100%; border-collapse:collapse; }
           .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
@@ -420,18 +402,18 @@
           .fiche-table tr { border-bottom:1px solid #f0f0f0;}
           .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
           .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
-          .fiche-actions { text-align:right; margin-bottom:12px; }
-          .print-btn { background: #006e90; color: #fff; border: none; border-radius: 6px; padding: 7px 18px; font-size: 1em; cursor: pointer; margin-top:6px;}
-          .print-btn:hover { background: #1780b0;}
+          .fiche-actions { text-align:right; margin-bottom:14px;}
+          .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
+          .print-btn:hover { background:#1780b0; }
         </style>
         </head><body>
         <div class="fiche-table">
           <div class="fiche-header">
             <img src="${logoUrl}" alt="Logo DSG">
-            <span style="font-size:1.21em; font-weight:600; color:#195e7c;">${d.magasin||""}</span>
+            <span class="magasin-title">${d.magasin||""}</span>
           </div>
           <div class="fiche-actions">
-            <button class="print-btn" onclick="window.print()">🖨️ Imprimer la fiche</button>
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimer</button>
           </div>
           <table>
             <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
