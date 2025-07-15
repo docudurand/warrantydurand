@@ -8,78 +8,36 @@ import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
-import axios from "axios";
-import FormData from "form-data";
+import fetch from "node-fetch";
 import { fileURLToPath } from "url";
 
+const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
+const DROPBOX_BACKUP_FOLDER = process.env.DROPBOX_BACKUP_FOLDER || "/sauvegardes";
 
-const PCLOUD_USER = process.env.PCLOUD_USER;
-const PCLOUD_PASS = process.env.PCLOUD_PASS;
-const PCLOUD_FOLDER = process.env.PCLOUD_FOLDER || "/sauvegardes";
+async function uploadBackupToDropbox(localPath, fileName = "sauvegarde-garantie.zip") {
+  const dropboxPath = `${DROPBOX_BACKUP_FOLDER}/${fileName}`;
+  const content = fs.readFileSync(localPath);
 
-let pcloudAuthToken = null;
+  const res = await fetch("https://content.dropboxapi.com/2/files/upload", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${DROPBOX_TOKEN}`,
+      "Content-Type": "application/octet-stream",
+      "Dropbox-API-Arg": JSON.stringify({
+        path: dropboxPath,
+        mode: "overwrite",
+        autorename: false,
+        mute: false
+      })
+    },
+    body: content
+  });
 
-async function getPCloudToken() {
-  if (pcloudAuthToken) return pcloudAuthToken;
-  try {
-    const res = await axios.get("https://api.pcloud.com/login", {
-      params: {
-        getauth: 1,
-        username: PCLOUD_USER,
-        password: PCLOUD_PASS
-      }
-    });
-    if (res.data && res.data.auth) {
-      pcloudAuthToken = res.data.auth;
-      return pcloudAuthToken;
-    } else {
-      throw new Error("Token pCloud non reçu");
-    }
-  } catch (err) {
-    console.error("Erreur login pCloud :", err.response?.data || err.message);
-    throw err;
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error("Upload Dropbox failed: " + err);
   }
-}
-
-async function uploadBackupToPcloud(localPath, fileName = "sauvegarde-garantie.zip") {
-  try {
-    const auth = await getPCloudToken();
-
-    await axios.get("https://api.pcloud.com/createfolderifnotexists", {
-      params: {
-        auth,
-        path: PCLOUD_FOLDER
-      }
-    });
-
-    try {
-      await axios.get("https://api.pcloud.com/deletefile", {
-        params: {
-          auth,
-          path: PCLOUD_FOLDER + "/" + fileName
-        }
-      });
-    } catch {}
-
-    const form = new FormData();
-    form.append("file", fs.createReadStream(localPath));
-    form.append("filename", fileName);
-    form.append("auth", auth);
-    form.append("path", PCLOUD_FOLDER);
-
-    const res = await axios.post(
-      "https://api.pcloud.com/uploadfile",
-      form,
-      { headers: form.getHeaders() }
-    );
-    if (res.data && res.data.result === 0) {
-      console.log("Backup envoyé sur pCloud !");
-    } else {
-      throw new Error("Echec upload pCloud : " + (res.data?.error || JSON.stringify(res.data)));
-    }
-  } catch (err) {
-    console.error("Erreur sauvegarde pCloud :", err.message);
-  }
+  console.log("Backup envoyé sur Dropbox !");
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -149,7 +107,11 @@ function createBackupZip(callback) {
 
 async function autoBackup() {
   createBackupZip(async (zipPath) => {
-    await uploadBackupToPcloud(zipPath);
+    try {
+      await uploadBackupToDropbox(zipPath);
+    } catch (err) {
+      console.error("Erreur Dropbox :", err.message);
+    }
     fs.unlink(zipPath, ()=>{});
   });
 }
