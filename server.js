@@ -8,11 +8,8 @@ import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
-import fetch from "node-fetch";
 import { fileURLToPath } from "url";
-
-const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
-const DROPBOX_BACKUP_FOLDER = process.env.DROPBOX_BACKUP_FOLDER || "/sauvegardes";
+import cron from "node-cron";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -39,6 +36,8 @@ const MAGASIN_MAILS = {
   "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
   "Seynod": "respmagseynod@durandservices.fr"
 };
+
+const BACKUP_DEST_EMAIL = process.env.BACKUP_DEST_EMAIL || "magvl4gleize@durandservices.fr";
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -83,42 +82,43 @@ function createBackupZip(callback) {
   archive.finalize();
 }
 
-async function uploadBackupToDropbox(localPath, fileName = "sauvegarde-garantie.zip") {
-  const dropboxPath = `${DROPBOX_BACKUP_FOLDER}/${fileName}`;
-  const content = fs.readFileSync(localPath);
-
-  const res = await fetch("https://content.dropboxapi.com/2/files/upload", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${DROPBOX_TOKEN}`,
-      "Content-Type": "application/octet-stream",
-      "Dropbox-API-Arg": JSON.stringify({
-        path: dropboxPath,
-        mode: "overwrite",
-        autorename: false,
-        mute: false
-      })
-    },
-    body: content
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error("Upload Dropbox failed: " + err);
+async function sendBackupByEmail(localPath, fileName = "sauvegarde-garantie.zip") {
+  try {
+    await mailer.sendMail({
+      from: `"Sauvegarde Garantie" <${process.env.GMAIL_USER}>`,
+      to: BACKUP_DEST_EMAIL,
+      subject: `Sauvegarde Garantie Durand - ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR", {hour: "2-digit", minute:"2-digit"})}`,
+      text: "Ci-joint la sauvegarde complète des dossiers garantie.",
+      attachments: [
+        {
+          filename: fileName,
+          path: localPath
+        }
+      ]
+    });
+    console.log("Backup envoyé par mail à", BACKUP_DEST_EMAIL);
+  } catch (e) {
+    console.error("Erreur envoi mail backup :", e.message);
   }
-  console.log("Backup envoyé sur Dropbox !");
 }
 
-async function autoBackup() {
-  createBackupZip(async (zipPath) => {
-    try {
-      await uploadBackupToDropbox(zipPath);
-    } catch (err) {
-      console.error("Erreur Dropbox :", err.message);
-    }
-    fs.unlink(zipPath, ()=>{});
+cron.schedule("0 12 * * *", () => {
+  console.log("Déclenchement automatique sauvegarde journalière à 12h00 !");
+  createBackupZip(zipPath => {
+    sendBackupByEmail(zipPath).finally(() => {
+      fs.unlink(zipPath, ()=>{});
+    });
   });
-}
+}, { timezone: "Europe/Paris" });
+
+cron.schedule("0 19 * * *", () => {
+  console.log("Déclenchement automatique sauvegarde journalière à 19h00 !");
+  createBackupZip(zipPath => {
+    sendBackupByEmail(zipPath).finally(() => {
+      fs.unlink(zipPath, ()=>{});
+    });
+  });
+}, { timezone: "Europe/Paris" });
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
@@ -139,7 +139,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       await mailer.sendMail({
-        from: "Garantie <" + process.env.GMAIL_USER + ">",
+        from: `"Garantie" <${process.env.GMAIL_USER}>`,
         to: respMail,
         subject: `Nouvelle demande de garantie`,
         html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
@@ -150,7 +150,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
       });
     }
 
-    await autoBackup();
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -198,14 +197,13 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       <br><br>L'équipe Garantie Durand
     </div>`;
     await mailer.sendMail({
-      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      from: `"Garantie Durand Services" <${process.env.SMTP_USER}>`,
       to: dossier.email,
       subject: `Mise à jour dossier garantie Durand Services`,
       html,
       attachments: att
     });
   }
-  await autoBackup();
   res.json({success:true});
 });
 
@@ -243,7 +241,6 @@ app.delete("/api/admin/dossier/:id", (req, res) => {
   }
   data.splice(idx,1);
   writeData(data);
-  autoBackup();
   res.json({success:true});
 });
 
@@ -304,7 +301,6 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
-    await autoBackup();
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
