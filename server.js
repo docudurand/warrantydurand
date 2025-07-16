@@ -14,39 +14,16 @@ import { fileURLToPath } from "url";
 const DROPBOX_TOKEN = process.env.DROPBOX_TOKEN;
 const DROPBOX_BACKUP_FOLDER = process.env.DROPBOX_BACKUP_FOLDER || "/sauvegardes";
 
-async function uploadBackupToDropbox(localPath, fileName = "sauvegarde-garantie.zip") {
-  const dropboxPath = `${DROPBOX_BACKUP_FOLDER}/${fileName}`;
-  const content = fs.readFileSync(localPath);
-
-  const res = await fetch("https://content.dropboxapi.com/2/files/upload", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${DROPBOX_TOKEN}`,
-      "Content-Type": "application/octet-stream",
-      "Dropbox-API-Arg": JSON.stringify({
-        path: dropboxPath,
-        mode: "overwrite",
-        autorename: false,
-        mute: false
-      })
-    },
-    body: content
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error("Upload Dropbox failed: " + err);
-  }
-  console.log("Backup envoyé sur Dropbox !");
-}
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, "demandes.json");
 const UPLOADS_DIR = path.join(__dirname, "uploads");
-const ADMIN_PASSWORD = process.env['admin-pass'] || "admin";
-const SUPERADMIN_PASSWORD = process.env['superadmin-pass'] || "superadmin";
+
+const MAGASINS = [
+  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
+  "Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+];
 
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
@@ -104,6 +81,32 @@ function createBackupZip(callback) {
     archive.directory(UPLOADS_DIR, "uploads");
   }
   archive.finalize();
+}
+
+async function uploadBackupToDropbox(localPath, fileName = "sauvegarde-garantie.zip") {
+  const dropboxPath = `${DROPBOX_BACKUP_FOLDER}/${fileName}`;
+  const content = fs.readFileSync(localPath);
+
+  const res = await fetch("https://content.dropboxapi.com/2/files/upload", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${DROPBOX_TOKEN}`,
+      "Content-Type": "application/octet-stream",
+      "Dropbox-API-Arg": JSON.stringify({
+        path: dropboxPath,
+        mode: "overwrite",
+        autorename: false,
+        mute: false
+      })
+    },
+    body: content
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error("Upload Dropbox failed: " + err);
+  }
+  console.log("Backup envoyé sur Dropbox !");
 }
 
 async function autoBackup() {
@@ -206,33 +209,32 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   res.json({success:true});
 });
 
-
 app.post("/api/admin/login", (req, res) => {
-  let pw = "";
-  if (req.body && req.body.password) pw = req.body.password;
-  if (pw === SUPERADMIN_PASSWORD) return res.json({success:true, isSuper:true});
-  if (pw === ADMIN_PASSWORD) return res.json({success:true, isSuper:false});
+  let pw = (req.body && req.body.password) ? req.body.password : "";
+  if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
+  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
+  for (const magasin of MAGASINS) {
+    const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
+    if (process.env[key] && pw === process.env[key]) {
+      return res.json({success:true, isSuper:false, isAdmin:false, magasin});
+    }
+  }
   res.json({success:false, message:"Mot de passe incorrect"});
 });
 
-
 app.delete("/api/admin/dossier/:id", (req, res) => {
-
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
   let data = readData();
   let idx = data.findIndex(x=>x.id===id);
   if (idx === -1) return res.json({success:false, message:"Introuvable"});
-
   let dossier = data[idx];
-
   if(dossier.files){
     dossier.files.forEach(f=>{
       let p = path.join(UPLOADS_DIR, f.url);
       if(fs.existsSync(p)) try{fs.unlinkSync(p);}catch{}
     });
   }
-
   if(dossier.reponseFiles){
     dossier.reponseFiles.forEach(f=>{
       let p = path.join(UPLOADS_DIR, f.url);
