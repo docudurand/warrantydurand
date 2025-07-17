@@ -211,7 +211,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
 app.post("/api/admin/login", (req, res) => {
   let pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
-  if (pw === process.env["admin-pass"]) return res.json({success:false, isSuper:false, isAdmin:true});
+  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
   for (const magasin of MAGASINS) {
     const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
     if (process.env[key] && pw === process.env[key]) {
