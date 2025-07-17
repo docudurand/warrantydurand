@@ -101,6 +101,8 @@
   </div>
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="status-counters"></div>
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
         <input type="text" id="search-client" placeholder="🔎 Recherche client..." autocomplete="off">
@@ -117,8 +119,6 @@
         </select>
       </label>
     </div>
-    <div class="tabs" id="tabs"></div>
-    <div id="status-counters"></div>
     <div id="dossier-list"></div>
   </div>
   <script>
@@ -283,7 +283,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
   afficherOnglets();
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
 
-  // filtre recherche client
   if(rechercheClient && rechercheClient.trim().length > 0){
     const rc = rechercheClient.trim().toLowerCase();
     dossiers = dossiers.filter(d =>
