@@ -93,12 +93,13 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
   client.ftp.verbose = false;
   try {
     await client.access({
-      host: FTP_HOST,
-      port: FTP_PORT,
-      user: FTP_USER,
-      password: FTP_PASS,
-      secure: true
-    });
+  host: FTP_HOST,
+  port: FTP_PORT,
+  user: FTP_USER,
+  password: FTP_PASS,
+  secure: true,
+  secureOptions: { rejectUnauthorized: false }
+});
     await client.ensureDir(FTP_BACKUP_FOLDER);
     await client.uploadFrom(localPath, FTP_BACKUP_FOLDER + "/" + remoteFilename);
     console.log("Backup uploadé sur le FTP Freebox !");
