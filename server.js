@@ -194,7 +194,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
         ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
         ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
       </ul>
-      <br><br>L'équipe Garantie Durand<br><br>
+      <br><br>L'équipe Garantie Durand<br><br><br>
     </div>`;
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
