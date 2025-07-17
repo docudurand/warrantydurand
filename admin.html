@@ -15,6 +15,10 @@
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
+    .search-row { display:flex; justify-content:center; margin-bottom:16px; }
+    .search-row input[type="text"] {
+      font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 330px; box-shadow:0 2px 6px #0001;
+    }
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
     .tab.active { background: #006e90; color: #fff; z-index: 1; }
@@ -92,6 +96,9 @@
   </div>
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
+    <div class="search-row">
+      <input type="text" id="search-client" placeholder="🔎 Recherche client..." autocomplete="off">
+    </div>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
     <div class="filters-row" id="filters-row" style="display:none;">
@@ -120,12 +127,12 @@ const MAGASINS = [
 let allDossiers = [];
 let currentMagasin = null;
 let filtres = { mois: "", annee: "", statut: "" };
+let rechercheClient = "";
 
 function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = isSuperAdmin ? "flex" : "none";
 }
 
-// Sauvegarde ZIP (téléchargement + FTP)
 document.getElementById("btn-exportzip").onclick = function(){
   const a = document.createElement('a');
   a.href = "/api/admin/exportzip";
@@ -134,7 +141,6 @@ document.getElementById("btn-exportzip").onclick = function(){
   a.click();
   setTimeout(() => document.body.removeChild(a), 300);
 };
-
 document.getElementById("import-zip").onchange = function(){
   let file = this.files[0];
   if (!file) return;
@@ -262,10 +268,24 @@ function afficherFiltres(dossiers) {
   };
 }
 
+document.getElementById('search-client').addEventListener('input', function() {
+  rechercheClient = this.value;
+  afficherDossiers(currentMagasin);
+});
+
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
   afficherOnglets();
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
+
+  // filtre recherche client
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d =>
+      (d.nom||"").toLowerCase().includes(rc)
+    );
+  }
+
   afficherCompteurs(dossiers);
   afficherFiltres(dossiers);
 
