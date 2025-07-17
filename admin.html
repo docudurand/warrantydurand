@@ -18,14 +18,8 @@
     .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
     .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
     .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
-    .filters-row .search-container {
-      margin-right: auto;
-      display: flex;
-      align-items: center;
-    }
-    .filters-row input[type="text"] {
-      font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;
-    }
+    .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
+    .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
     .tab.active { background: #006e90; color: #fff; z-index: 1; }
@@ -57,6 +51,13 @@
     .mini-form .bouton { margin-left:7px;}
     .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
     .maj-btn { background: #1780b0; padding: 7px 12px;}
+    /* Pastilles Statut */
+    .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+    .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+    .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+    .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+    .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+    .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -133,6 +134,15 @@ let allDossiers = [];
 let currentMagasin = null;
 let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
+
+function statutChip(statut) {
+  let s = (statut||"").toLowerCase();
+  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+  return statut||"";
+}
 
 function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = isSuperAdmin ? "flex" : "none";
@@ -223,7 +233,8 @@ function afficherCompteurs(dossiers) {
     { label: "En attente d'info", val: "en attente d'info", color:"green" },
     { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
   ];
-  let html = "";
+  let
+  html = "";
   stats.forEach(stat => {
     const n = dossiers.filter(d => d.statut === stat.val).length;
     html += `
@@ -329,7 +340,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
       <td>${d.immatriculation||''}</td>
-      <td id="statut-${id}">${d.statut||''}</td>
+      <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
         ${(d.reponseFiles||[]).length ? d.reponseFiles.map(f=>{
@@ -354,6 +365,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
             <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
             <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
           </select>
+          <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
           <input type="file" name="reponseFiles" multiple>
           <button type="submit" class="bouton">Répondre</button>
@@ -440,6 +452,12 @@ function voirDossier(id) {
       .fiche-actions { text-align:right; margin-bottom:14px;}
       .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
       .print-btn:hover { background:#1780b0; }
+      .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+      .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+      .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+      .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+      .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+      .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
     </style>
     </head><body>
     <div class="fiche-table">
@@ -474,7 +492,7 @@ function voirDossier(id) {
         <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
         <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
         <tr><th>Date de création du dossier</th><td>${(new Date(d.date)).toLocaleDateString("fr-FR")}</td></tr>
-        <tr><th>Statut</th><td>${d.statut||""}</td></tr>
+        <tr><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
         <tr><th>Pièces jointes</th><td>
           ${
             (d.files||[]).length === 0
