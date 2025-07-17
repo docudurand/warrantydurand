@@ -42,8 +42,7 @@ const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = process.env.FTP_PORT;
 const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
-const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "Disque 1/sauvegardegarantie"; // chemin par défaut
-
+const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie"; // met bien le slash au début
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -93,15 +92,17 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
   client.ftp.verbose = false;
   try {
     await client.access({
-  host: FTP_HOST,
-  port: FTP_PORT,
-  user: FTP_USER,
-  password: FTP_PASS,
-  secure: true,
-  secureOptions: { rejectUnauthorized: false }
-});
+      host: FTP_HOST,
+      port: FTP_PORT,
+      user: FTP_USER,
+      password: FTP_PASS,
+      secure: true,
+      secureOptions: { rejectUnauthorized: false }
+    });
+    // S'assure que le dossier existe
     await client.ensureDir(FTP_BACKUP_FOLDER);
-    await client.uploadFrom(localPath, FTP_BACKUP_FOLDER + "/" + remoteFilename);
+    // Utilise path.posix.join pour bien gérer les slash, les espaces, et éviter les doublons
+    await client.uploadFrom(localPath, path.posix.join(FTP_BACKUP_FOLDER, remoteFilename));
     console.log("Backup uploadé sur le FTP Freebox !");
   } catch (err) {
     console.error("Erreur FTP :", err.message);
@@ -212,7 +213,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
 app.post("/api/admin/login", (req, res) => {
   let pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
-  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
+  if (pw === process.env["admin-pass"]) return res.json({success:false, isSuper:false, isAdmin:true});
   for (const magasin of MAGASINS) {
     const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
     if (process.env[key] && pw === process.env[key]) {
@@ -264,7 +265,6 @@ app.get("/download/:file", (req, res) => {
 });
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
-
 
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
