@@ -55,7 +55,7 @@
       .tab { min-width: 100px; padding: 8px 8px; font-size: 0.99em; }
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
-      h2 { font-size: 1.28em;}
+      h2 { font-size:1.28em;}
       .top-tools { padding-right: 0.5vw;}
     }
     @media (max-width:700px) {
@@ -125,6 +125,7 @@ function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = isSuperAdmin ? "flex" : "none";
 }
 
+// Sauvegarde ZIP (téléchargement + FTP)
 document.getElementById("btn-exportzip").onclick = function(){
   const a = document.createElement('a');
   a.href = "/api/admin/exportzip";
@@ -133,6 +134,7 @@ document.getElementById("btn-exportzip").onclick = function(){
   a.click();
   setTimeout(() => document.body.removeChild(a), 300);
 };
+
 document.getElementById("import-zip").onchange = function(){
   let file = this.files[0];
   if (!file) return;

@@ -8,8 +8,9 @@ import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
-import { fileURLToPath } from "url";
 import cron from "node-cron";
+import ftp from "basic-ftp";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -36,8 +37,6 @@ const MAGASIN_MAILS = {
   "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
   "Seynod": "respmagseynod@durandservices.fr"
 };
-
-const BACKUP_DEST_EMAIL = process.env.BACKUP_DEST_EMAIL || "magvl4gleize@durandservices.fr";
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -69,6 +68,33 @@ const upload = multer({ storage });
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
+async function uploadBackupToFTP(localFilePath, remoteFileName = "sauvegarde-garantie.zip") {
+  const client = new ftp.Client();
+  client.ftp.verbose = false;
+  try {
+    await client.access({
+      host: process.env.FTP_HOST,
+      port: Number(process.env.FTP_PORT),
+      user: process.env.FTP_USER,
+      password: process.env.FTP_PASS,
+      secure: process.env.FTP_SECURE === "true",
+      secureOptions: { rejectUnauthorized: false },
+      passive: true
+    });
+
+    if (process.env.FTP_REMOTE_PATH) {
+      await client.ensureDir(process.env.FTP_REMOTE_PATH);
+      await client.cd(process.env.FTP_REMOTE_PATH);
+    }
+    await client.uploadFrom(localFilePath, remoteFileName);
+    console.log("Sauvegarde FTP envoyée !");
+  } catch (err) {
+    console.error("Erreur FTP :", err.message);
+  } finally {
+    client.close();
+  }
+}
+
 function createBackupZip(callback) {
   const backupPath = path.join(__dirname, "backup_tmp.zip");
   const archive = archiver('zip', { zlib: { level: 9 } });
@@ -82,43 +108,22 @@ function createBackupZip(callback) {
   archive.finalize();
 }
 
-async function sendBackupByEmail(localPath, fileName = "sauvegarde-garantie.zip") {
-  try {
-    await mailer.sendMail({
-      from: `"Sauvegarde Garantie" <${process.env.GMAIL_USER}>`,
-      to: BACKUP_DEST_EMAIL,
-      subject: `Sauvegarde Garantie Durand - ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR", {hour: "2-digit", minute:"2-digit"})}`,
-      text: "Ci-joint la sauvegarde complète des dossiers garantie.",
-      attachments: [
-        {
-          filename: fileName,
-          path: localPath
-        }
-      ]
-    });
-    console.log("Backup envoyé par mail à", BACKUP_DEST_EMAIL);
-  } catch (e) {
-    console.error("Erreur envoi mail backup :", e.message);
-  }
+async function doAutoBackup() {
+  createBackupZip(async (zipPath) => {
+    try {
+      await uploadBackupToFTP(zipPath);
+    } catch (err) {
+      console.error("Erreur FTP:", err.message);
+    }
+    fs.unlink(zipPath, ()=>{});
+  });
 }
 
-cron.schedule("0 12 * * *", () => {
-  console.log("Déclenchement automatique sauvegarde journalière à 12h00 !");
-  createBackupZip(zipPath => {
-    sendBackupByEmail(zipPath).finally(() => {
-      fs.unlink(zipPath, ()=>{});
-    });
-  });
-}, { timezone: "Europe/Paris" });
+cron.schedule("0 12,19 * * *", () => {
+  console.log("Déclenchement sauvegarde auto (cron)...");
+  doAutoBackup();
+});
 
-cron.schedule("0 19 * * *", () => {
-  console.log("Déclenchement automatique sauvegarde journalière à 19h00 !");
-  createBackupZip(zipPath => {
-    sendBackupByEmail(zipPath).finally(() => {
-      fs.unlink(zipPath, ()=>{});
-    });
-  });
-}, { timezone: "Europe/Paris" });
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
@@ -139,7 +144,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       await mailer.sendMail({
-        from: `"Garantie" <${process.env.GMAIL_USER}>`,
+        from: "Garantie <" + process.env.GMAIL_USER + ">",
         to: respMail,
         subject: `Nouvelle demande de garantie`,
         html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
@@ -197,7 +202,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       <br><br>L'équipe Garantie Durand
     </div>`;
     await mailer.sendMail({
-      from: `"Garantie Durand Services" <${process.env.SMTP_USER}>`,
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: dossier.email,
       subject: `Mise à jour dossier garantie Durand Services`,
       html,
@@ -250,29 +255,28 @@ app.get("/api/mes-dossiers", (req, res) => {
   res.json(dossiers);
 });
 
-app.get("/download/:file", (req, res) => {
-  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
-  const filePath = path.join(UPLOADS_DIR, file);
-  if (!fs.existsSync(filePath)) return res.status(404).send("Fichier introuvable");
-  res.download(filePath, undefined, (err)=>{
-    if (err) res.status(500).send("Erreur lors du téléchargement");
-  });
-});
-
-app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
-
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
-    res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde-garantie.zip"');
-    res.setHeader('Content-Type', 'application/zip');
+    const backupPath = path.join(__dirname, "backup_tmp.zip");
     const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', err => res.status(500).send({error: err.message}));
-    archive.pipe(res);
+    const output = fs.createWriteStream(backupPath);
+
+    output.on("close", async () => {
+
+      await uploadBackupToFTP(backupPath);
+
+      res.setHeader('Content-Disposition', 'attachment; filename="sauvegarde-garantie.zip"');
+      res.setHeader('Content-Type', 'application/zip');
+      fs.createReadStream(backupPath).pipe(res).on("finish", ()=>fs.unlink(backupPath, ()=>{}));
+    });
+
+    archive.pipe(output);
     archive.file(DATA_FILE, { name: "demandes.json" });
     if (fs.existsSync(UPLOADS_DIR)) {
       archive.directory(UPLOADS_DIR, "uploads");
     }
     archive.finalize();
+
   } catch (e) {
     res.status(500).send({error: e.message});
   }
@@ -300,11 +304,12 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
   }
 });
+
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));
