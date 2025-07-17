@@ -42,7 +42,7 @@ const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = process.env.FTP_PORT;
 const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
-const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie"; // met bien le slash au début
+const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie";
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -99,9 +99,7 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
       secure: true,
       secureOptions: { rejectUnauthorized: false }
     });
-    // S'assure que le dossier existe
     await client.ensureDir(FTP_BACKUP_FOLDER);
-    // Utilise path.posix.join pour bien gérer les slash, les espaces, et éviter les doublons
     await client.uploadFrom(localPath, path.posix.join(FTP_BACKUP_FOLDER, remoteFilename));
     console.log("Backup uploadé sur le FTP Freebox !");
   } catch (err) {
@@ -147,7 +145,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
           Client : ${d.nom} (${d.email})<br>
           Marque du produit : ${d.marque_produit||""}<br>
-          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>`,
+          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
         attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
       });
     }
@@ -196,7 +194,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
         ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
         ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
       </ul>
-      <br><br>L'équipe Garantie Durand
+      <br><br>L'équipe Garantie Durand<br><br>
     </div>`;
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
