@@ -8,7 +8,6 @@ import nodemailer from "nodemailer";
 import mime from "mime-types";
 import archiver from "archiver";
 import unzipper from "unzipper";
-import cron from "node-cron";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
 
@@ -80,17 +79,30 @@ function nowSuffix() {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
 }
 
-function createBackupZip(callback) {
-  const backupPath = path.join(__dirname, "backup_tmp.zip");
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  const output = fs.createWriteStream(backupPath);
-  output.on("close", () => callback(backupPath));
-  archive.pipe(output);
-  archive.file(DATA_FILE, { name: "demandes.json" });
-  if (fs.existsSync(UPLOADS_DIR)) {
-    archive.directory(UPLOADS_DIR, "uploads");
-  }
-  archive.finalize();
+async function saveBackupFTP() {
+  return new Promise((resolve, reject) => {
+    const backupPath = path.join(__dirname, "backup_tmp.zip");
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    const output = fs.createWriteStream(backupPath);
+    output.on("close", async () => {
+      const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+      try {
+        await uploadBackupToFTP(backupPath, fileName);
+        await cleanOldBackupsFTP();
+        fs.unlinkSync(backupPath);
+        resolve();
+      } catch (err) {
+        console.error("Erreur FTP backup:", err.message);
+        reject(err);
+      }
+    });
+    archive.pipe(output);
+    archive.file(DATA_FILE, { name: "demandes.json" });
+    if (fs.existsSync(UPLOADS_DIR)) {
+      archive.directory(UPLOADS_DIR, "uploads");
+    }
+    archive.finalize();
+  });
 }
 
 async function uploadBackupToFTP(localPath, remoteFilename) {
@@ -114,20 +126,34 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
   client.close();
 }
 
-async function saveBackupFTP() {
-  return new Promise((resolve, reject) => {
-    createBackupZip(async (zipPath) => {
-      const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-      try {
-        await uploadBackupToFTP(zipPath, fileName);
-        fs.unlink(zipPath, ()=>{});
-        resolve();
-      } catch (err) {
-        console.error("Erreur FTP backup:", err.message);
-        reject(err);
-      }
+async function cleanOldBackupsFTP() {
+  const client = new ftp.Client();
+  client.ftp.verbose = false;
+  try {
+    await client.access({
+      host: FTP_HOST,
+      port: FTP_PORT,
+      user: FTP_USER,
+      password: FTP_PASS,
+      secure: true,
+      secureOptions: { rejectUnauthorized: false }
     });
-  });
+    await client.ensureDir(FTP_BACKUP_FOLDER);
+    const list = await client.list(FTP_BACKUP_FOLDER);
+    const backups = list
+      .filter(f => /^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{2}h\d{2}\.zip$/.test(f.name))
+      .sort((a, b) => b.name.localeCompare(a.name));
+    if (backups.length > 10) {
+      const toDelete = backups.slice(10);
+      for (const f of toDelete) {
+        await client.remove(path.posix.join(FTP_BACKUP_FOLDER, f.name));
+        console.log("Suppression vieille sauvegarde FTP :", f.name);
+      }
+    }
+  } catch (err) {
+    console.error("Erreur nettoyage FTP :", err.message);
+  }
+  client.close();
 }
 
 mailer.sendMail({
@@ -176,6 +202,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
       });
     }
+    await saveBackupFTP();
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -231,6 +258,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       attachments: att
     });
   }
+  await saveBackupFTP();
   res.json({success:true});
 });
 
@@ -247,7 +275,7 @@ app.post("/api/admin/login", (req, res) => {
   res.json({success:false, message:"Mot de passe incorrect"});
 });
 
-app.delete("/api/admin/dossier/:id", (req, res) => {
+app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
   let data = readData();
@@ -268,6 +296,7 @@ app.delete("/api/admin/dossier/:id", (req, res) => {
   }
   data.splice(idx,1);
   writeData(data);
+  await saveBackupFTP();
   res.json({success:true});
 });
 
@@ -306,7 +335,8 @@ app.get("/api/admin/exportzip", async (req, res) => {
 
     output.on("close", async () => {
       await uploadBackupToFTP(backupPath, fileName);
-      fs.unlink(backupPath, ()=>{});
+      await cleanOldBackupsFTP();
+      fs.unlinkSync(backupPath);
     });
     archive.finalize();
   } catch (e) {
@@ -336,15 +366,11 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    await saveBackupFTP();
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
   }
 });
-
-cron.schedule("0 9,12,17,20 * * *", () => {
-  console.log("Sauvegarde automatique FTP programmée !");
-  saveBackupFTP();
-}, { timezone: "Europe/Paris" });
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));
