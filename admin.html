@@ -442,15 +442,17 @@ function voirDossier(id) {
   let d = allDossiers.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
   let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+  let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
   let detailHtml = `
     <html><head>
     <meta charset="UTF-8">
     <title>Détail dossier</title>
     <style>
       body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-      .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px;}
+      .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
       .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
       .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
+      .fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}
       .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
       .fiche-table table { width:100%; border-collapse:collapse; }
       .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
@@ -461,6 +463,14 @@ function voirDossier(id) {
       .fiche-actions { text-align:right; margin-bottom:14px;}
       .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
       .print-btn:hover { background:#1780b0; }
+      @media print {
+        .print-btn { display:none !important; }
+        body { background: #fff; }
+        .fiche-table { box-shadow: none; border:1px solid #888;}
+        .fiche-header { padding-top:10px; }
+        .hide-print { display:none !important; }
+        .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
+      }
       .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
       .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
       .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
@@ -469,14 +479,13 @@ function voirDossier(id) {
       .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
     </style>
     </head><body>
+    <div class="fiche-header">
+      <img src="${logoUrl}" alt="Logo DSG">
+      <span class="magasin-title">${d.magasin||""}</span>
+      <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}</span>
+    </div>
     <div class="fiche-table">
-      <div class="fiche-header">
-        <img src="${logoUrl}" alt="Logo DSG">
-        <span class="magasin-title">${d.magasin||""}</span>
-      </div>
-      <div class="fiche-actions">
-        <button class="print-btn" onclick="window.print()">🖨️ Imprimer</button>
-      </div>
+      <div class="fiche-actions"><button class="print-btn" onclick="window.print()">🖨️ Imprimer</button></div>
       <table>
         <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
         <tr><th>Email</th><td>${d.email||""}</td></tr>
@@ -500,9 +509,8 @@ function voirDossier(id) {
         <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose||""}</td></tr>
         <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
         <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
-        <tr><th>Date de création du dossier</th><td>${(new Date(d.date)).toLocaleDateString("fr-FR")}</td></tr>
-        <tr><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
-        <tr><th>Pièces jointes</th><td>
+        <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
+        <tr class="hide-print"><th>Pièces jointes</th><td>
           ${
             (d.files||[]).length === 0
               ? 'Aucune'
@@ -516,7 +524,7 @@ function voirDossier(id) {
                 }).join("<br>")
           }
         </td></tr>
-        <tr><th>Réponse</th><td>
+        <tr class="hide-print"><th>Réponse</th><td>
           ${(d.reponse||"")}
           ${(d.reponseFiles||[]).length
               ? "<br>"+d.reponseFiles.map(f=>{
