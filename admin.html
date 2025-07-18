@@ -47,6 +47,7 @@
     .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
     .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
     .mini-form input[type="file"] { margin-top:0; }
+    .mini-form input[name="numero_avoir"] { min-width: 120px; padding: 6px 8px; font-size: 0.98em; border-radius:6px; border:1px solid #c3d2e0;}
     .mini-form select { font-size:0.97em;}
     .mini-form .bouton { margin-left:7px;}
     .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
@@ -242,8 +243,7 @@ function afficherCompteurs(dossiers) {
     { label: "En attente d'info", val: "en attente d'info", color:"green" },
     { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
   ];
-  let
-  html = "";
+  let html = "";
   stats.forEach(stat => {
     const n = dossiers.filter(d => d.statut === stat.val).length;
     html += `
@@ -377,7 +377,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
           <input type="file" name="reponseFiles" multiple>
-          <button type="submit" class="bouton">Répondre</button>
+          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
+          <button type="submit" class="bouton">Mettre à jour</button>
           <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
           <span class="admin-msg"></span>
         </form>
@@ -408,7 +409,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
       let json = await resp.json();
       if (json.success) {
-        this.querySelector('.admin-msg').textContent = "Réponse envoyée ✔";
+        this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
         setTimeout(()=>{
           document.getElementById('mini-row-'+id).style.display="none";
           chargerDossiers();
@@ -537,6 +538,7 @@ function voirDossier(id) {
               }).join("<br>")
               : ""}
         </td></tr>
+        <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
     </body></html>

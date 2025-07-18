@@ -219,22 +219,31 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   let data = readData();
   let dossier = data.find(x=>x.id===id);
   if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
-  let oldStatut = dossier.statut;
 
-  if (req.body.statut) dossier.statut = req.body.statut;
-  if (req.body.reponse) dossier.reponse = req.body.reponse;
+  let oldStatut = dossier.statut;
+  let oldReponse = dossier.reponse;
+  let oldFilesLength = (dossier.reponseFiles||[]).length;
+
+  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
+  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
+  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
   if (req.files && req.files.length) {
     dossier.reponseFiles = (dossier.reponseFiles||[]).concat(
       req.files.map(f=>({url: path.basename(f.filename), original: f.originalname}))
     );
   }
+
   writeData(data);
 
+  let mailDoitEtreEnvoye = false;
   let changes = [];
-  if (req.body.statut && req.body.statut !== oldStatut) changes.push("statut");
-  if (req.body.reponse) changes.push("réponse");
-  if (req.files && req.files.length) changes.push("pièce jointe");
-  if (changes.length && dossier.email) {
+  if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
+  if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
+  if (req.files && req.files.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
+    changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
+  }
+
+  if (mailDoitEtreEnvoye && dossier.email) {
     let att = (dossier.reponseFiles||[]).map(f=>({
       filename: f.original, path: path.join(UPLOADS_DIR, f.url)
     }));
@@ -248,7 +257,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
         ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
         ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
       </ul>
-      <br><br>L'équipe Garantie Durand<br><br><br>
+      <br><br>L'équipe Garantie Durand<br><br>
     </div>`;
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
@@ -258,6 +267,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       attachments: att
     });
   }
+
   await saveBackupFTP();
   res.json({success:true});
 });
