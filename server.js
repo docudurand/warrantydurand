@@ -107,7 +107,7 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
     });
     await client.ensureDir(FTP_BACKUP_FOLDER);
     await client.uploadFrom(localPath, path.posix.join(FTP_BACKUP_FOLDER, remoteFilename));
-    console.log("Backup uploadé sur le FTP Freebox !");
+    console.log("Backup uploadé sur le FTP !");
   } catch (err) {
     console.error("Erreur FTP :", err.message);
   }
@@ -130,8 +130,26 @@ async function saveBackupFTP() {
   });
 }
 
+mailer.sendMail({
+  from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+  to: "magvl4gleize@durandservices.fr",
+  subject: "[ALERTE] Redémarrage du serveur Garantie Durand Services",
+  html: `<b>Attention : le serveur de garantie vient de redémarrer sur Render.</b><br>
+         Pense à vérifier les dossiers et à restaurer la sauvegarde si besoin.<br>
+         Date : ${(new Date()).toLocaleString("fr-FR")}`
+}, (err, info) => {
+  if(err) console.error("Erreur envoi mail redémarrage :", err.message);
+});
+
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
+    const data = readData();
+    if (!data || data.length === 0) {
+      return res.json({
+        success: false,
+        message: "Maintenance en cours (aucune sauvegarde restaurée). Merci de réessayer dans quelques minutes."
+      });
+    }
     let d = req.body;
     d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     d.date = new Date().toISOString();
@@ -142,7 +160,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     }));
     d.reponse = "";
     d.reponseFiles = [];
-    const data = readData();
     data.push(d);
     writeData(data);
 
@@ -166,7 +183,8 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 });
 
 app.get("/api/admin/dossiers", (req, res) => {
-  res.json(readData());
+  const data = readData();
+  res.json(data);
 });
 
 app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
