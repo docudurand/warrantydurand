@@ -74,6 +74,12 @@ const upload = multer({ storage });
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 const writeData = (arr) => fs.writeFileSync(DATA_FILE, JSON.stringify(arr, null, 2));
 
+function nowSuffix() {
+  const d = new Date();
+  const pad = n => n.toString().padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
+}
+
 function createBackupZip(callback) {
   const backupPath = path.join(__dirname, "backup_tmp.zip");
   const archive = archiver('zip', { zlib: { level: 9 } });
@@ -108,15 +114,19 @@ async function uploadBackupToFTP(localPath, remoteFilename) {
   client.close();
 }
 
-async function autoBackup() {
-  createBackupZip(async (zipPath) => {
-    const fileName = "sauvegarde-garantie-" + (new Date()).toISOString().slice(0,10) + ".zip";
-    try {
-      await uploadBackupToFTP(zipPath, fileName);
-    } catch (err) {
-      console.error("Erreur FTP autoBackup :", err.message);
-    }
-    fs.unlink(zipPath, ()=>{});
+async function saveBackupFTP() {
+  return new Promise((resolve, reject) => {
+    createBackupZip(async (zipPath) => {
+      const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+      try {
+        await uploadBackupToFTP(zipPath, fileName);
+        fs.unlink(zipPath, ()=>{});
+        resolve();
+      } catch (err) {
+        console.error("Erreur FTP backup:", err.message);
+        reject(err);
+      }
+    });
   });
 }
 
@@ -149,7 +159,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
       });
     }
-    await autoBackup();
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -204,7 +213,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
       attachments: att
     });
   }
-  await autoBackup();
   res.json({success:true});
 });
 
@@ -242,7 +250,6 @@ app.delete("/api/admin/dossier/:id", (req, res) => {
   }
   data.splice(idx,1);
   writeData(data);
-  autoBackup();
   res.json({success:true});
 });
 
@@ -251,7 +258,6 @@ app.get("/api/mes-dossiers", (req, res) => {
   let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
-
 
 app.get("/download/:file", (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
@@ -266,20 +272,20 @@ app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html"))
 
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
-    const fileName = "sauvegarde-garantie-" + (new Date()).toISOString().slice(0,10) + ".zip";
+    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
     archive.on('error', err => res.status(500).send({error: err.message}));
-    archive.pipe(res);
     archive.file(DATA_FILE, { name: "demandes.json" });
     if (fs.existsSync(UPLOADS_DIR)) {
       archive.directory(UPLOADS_DIR, "uploads");
     }
-
     const backupPath = path.join(__dirname, "backup_tmp.zip");
     const output = fs.createWriteStream(backupPath);
+    archive.pipe(res);
     archive.pipe(output);
+
     output.on("close", async () => {
       await uploadBackupToFTP(backupPath, fileName);
       fs.unlink(backupPath, ()=>{});
@@ -312,22 +318,15 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-
-    await autoBackup();
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
   }
 });
 
-cron.schedule("0 12 * * *", () => {
-  console.log("Sauvegarde automatique FTP - MIDI !");
-  autoBackup();
-}, { timezone: "Europe/Paris" });
-
-cron.schedule("0 19 * * *", () => {
-  console.log("Sauvegarde automatique FTP - 19H !");
-  autoBackup();
+cron.schedule("0 9,12,17,20 * * *", () => {
+  console.log("Sauvegarde automatique FTP programmée !");
+  saveBackupFTP();
 }, { timezone: "Europe/Paris" });
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));
