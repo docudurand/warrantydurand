@@ -147,10 +147,10 @@ let rechercheClient = "";
 
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
-  if (s==="enregistré") return <span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>;
-  if (s==="accepté") return <span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>;
-  if (s==="refusé") return <span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>;
-  if (s==="en attente d'info") return <span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>;
+  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
   return statut||"";
 }
 
@@ -216,12 +216,12 @@ function chargerDossiers() {
     afficherOnglets();
     if (!allDossiers || allDossiers.length === 0) {
       document.getElementById("dossier-list").innerHTML =
-        <div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
         font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
         ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
         Il est probable que le serveur vient de redémarrer.<br>
         <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
-        </div>;
+        </div>`;
       return;
     }
     afficherDossiers(currentMagasin, true);
@@ -232,7 +232,7 @@ function afficherOnglets() {
   let t = '';
   if(isAdmin || isSuperAdmin){
     MAGASINS.forEach((m, i) => {
-      t += <div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>;
+      t += `<div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
     });
     document.getElementById('tabs').innerHTML = t;
     MAGASINS.forEach((m, i) => {
@@ -242,7 +242,7 @@ function afficherOnglets() {
     });
   } else if(magasinUnique){
     document.getElementById('tabs').innerHTML =
-      <div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>;
+      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
   }
 }
 
@@ -256,12 +256,12 @@ function afficherCompteurs(dossiers) {
   let html = "";
   stats.forEach(stat => {
     const n = dossiers.filter(d => d.statut === stat.val).length;
-    html += 
+    html += `
       <div class="counter-card">
         <span class="counter-label ${stat.color}">${stat.label}</span>
         <span class="counter-value ${stat.color}">${n}</span>
       </div>
-    ;
+    `;
   });
   document.getElementById("status-counters").innerHTML = html;
 }
@@ -284,10 +284,10 @@ function afficherFiltres(dossiers) {
 
   const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
-  moisSel.innerHTML = <option value="">Tous</option>;
-  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += <option value="${m}">${moisLib[i]}</option>; });
-  anneeSel.innerHTML = <option value="">Toutes</option>;
-  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += <option value="${a}">${a}</option>; });
+  moisSel.innerHTML = `<option value="">Tous</option>`;
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
+  anneeSel.innerHTML = `<option value="">Toutes</option>`;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
 
@@ -339,7 +339,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     dossiers = dossiers.filter(d=>d.statut===filtres.statut);
   }
 
-  let html = <table>
+  let html = `<table>
     <tr>
       <th>Date</th>
       <th>Client</th>
@@ -352,10 +352,10 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th class="action">Mettre à jour</th>
       <th class="action">Voir</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
-    </tr>;
+    </tr>`;
   dossiers.forEach(d=>{
     let id = d.id;
-    html += <tr>
+    html += `<tr>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
@@ -367,15 +367,15 @@ function afficherDossiers(magasin, forceFiltres=false) {
         ${(d.reponseFiles||[]).length ? d.reponseFiles.map(f=>{
           let ext = f.original.split('.').pop().toLowerCase();
           if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-            return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
+            return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
           } else {
-            return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
+            return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
           }
         }).join("<br>") : ""}
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-      ${isSuperAdmin ? <td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td> : ''}
+      ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
       <td colspan="${isSuperAdmin ? 10 : 9}">
@@ -395,9 +395,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <span class="admin-msg"></span>
         </form>
       </td>
-    </tr>;
+    </tr>`;
   });
-  html += </table>;
+  html += `</table>`;
   document.getElementById('dossier-list').innerHTML = html;
 
   document.querySelectorAll('.maj-btn').forEach(btn => {
@@ -418,7 +418,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
       this.querySelector('.admin-msg').textContent = "Envoi...";
-      let resp = await fetch(/api/admin/dossier/${id}, { method:"POST", body:fd });
+      let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
       let json = await resp.json();
       if (json.success) {
         this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
@@ -439,7 +439,7 @@ function fermerMiniForm(id){
 
 function supprimerDossier(id) {
   if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
-  fetch(/api/admin/dossier/${id}, {
+  fetch(`/api/admin/dossier/${id}`, {
     method: "DELETE",
     headers: {'x-superadmin': '1'}
   }).then(r=>r.json()).then(json=>{
@@ -456,7 +456,7 @@ function voirDossier(id) {
   if (!d) return alert("Dossier introuvable !");
   let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
-  let detailHtml = 
+  let detailHtml = `
     <html><head>
     <meta charset="UTF-8">
     <title>Détail dossier</title>
@@ -530,9 +530,9 @@ function voirDossier(id) {
               : d.files.map(f=>{
                   let ext = f.original.split('.').pop().toLowerCase();
                   if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                    return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
+                    return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
                   } else {
-                    return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
+                    return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                   }
                 }).join("<br>")
           }
@@ -543,9 +543,9 @@ function voirDossier(id) {
               ? "<br>"+d.reponseFiles.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
                 } else {
-                  return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
+                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                 }
               }).join("<br>")
               : ""}
@@ -554,7 +554,7 @@ function voirDossier(id) {
       </table>
     </div>
     </body></html>
-  ;
+  `;
   let w = window.open("", "_blank", "width=820,height=900");
   w.document.write(detailHtml);
   w.document.close();
