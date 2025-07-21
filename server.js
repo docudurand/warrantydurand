@@ -19,7 +19,7 @@ const UPLOADS_DIR = path.join(__dirname, "uploads");
 
 const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
-  "Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod","Pavi"
+  "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
 ];
 
 const MAGASIN_MAILS = {
