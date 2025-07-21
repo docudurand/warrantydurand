@@ -60,7 +60,6 @@
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
 
-    /* === Toujours appliquer la règle pour la liste des fichiers === */
     #dossier-list td[id^="pj-"] a {
       word-break: break-all;
       white-space: normal;
@@ -316,7 +315,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
   if(rechercheClient && rechercheClient.trim().length > 0){
     const rc = rechercheClient.trim().toLowerCase();
     dossiers = dossiers.filter(d =>
-      (d.nom||"").toLowerCase().includes(rc)
+      (d.nom||"").toLowerCase().includes(rc) ||
+      (d.reference_piece||"").toLowerCase().includes(rc) ||
+      (d.marque_produit||"").toLowerCase().includes(rc)
     );
   }
 
@@ -345,7 +346,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th>Client</th>
       <th>Produit</th>
       <th>Référence de la pièce</th>
-	  <th>Marque du produit</th>
+      <th>Marque du produit</th>
       <th>Statut</th>
       <th>Réponse</th>
       <th>Fichiers réponse</th>
@@ -360,7 +361,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
       <td>${d.reference_piece||''}</td>
-	  <td>${d.marque_produit||''}</td>
+      <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
