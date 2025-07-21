@@ -6,7 +6,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
   <style>
-    /* ... (tes styles, inchangés) ... */
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+    .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
+    .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
+    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
+    .top-tools label { background:#c4d4ea; color:#1780b0; }
+    .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
+    #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
+    #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
+    #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
+    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
+    .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
+    .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
+    .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
+    .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
+    .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
+    .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
+    .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
+    .tab.active { background: #006e90; color: #fff; z-index: 1; }
+    #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
+    .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
+    .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
+    .counter-card .counter-label.orange { color: #f8a900; }
+    .counter-card .counter-label.green { color: #168b3e; }
+    .counter-card .counter-label.red { color: #bb1810; }
+    .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
+    .counter-card .counter-value.orange { color: #f8a900; }
+    .counter-card .counter-value.green { color: #168b3e; }
+    .counter-card .counter-value.red { color: #bb1810; }
+    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
+    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
+    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
+    tr:nth-child(even) td { background:#f4fafd;}
+    td.action, th.action { min-width: 215px; max-width: 330px; }
+    .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
+    .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
+    .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
+    .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
+    #dossier-list p {margin-top:15px;}
+    .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
+    .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
+    .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form input[type="file"] { margin-top:0; }
+    .mini-form input[name="numero_avoir"] { min-width: 120px; padding: 6px 8px; font-size: 0.98em; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form select { font-size:0.97em;}
+    .mini-form .bouton { margin-left:7px;}
+    .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
+    .maj-btn { background: #1780b0; padding: 7px 12px;}
+    .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+    .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+    .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+    .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+    .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+    .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+
+    /* === Toujours appliquer la règle pour la liste des fichiers === */
+    #dossier-list td[id^="pj-"] a {
+      word-break: break-all;
+      white-space: normal;
+      display: inline-block;
+      max-width: 210px;
+    }
+
+    @media (max-width:1050px) {
+      #admin-content { padding: 10px 2vw 10px 2vw;}
+      .counter-card { padding:18px 7vw;}
+      h2 { font-size:1.28em;}
+      .top-tools { padding-right: 0.5vw;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
+    @media (max-width:700px) {
+      #admin-content {max-width: 99vw; padding: 2vw 1vw;}
+      .tabs { gap:4px;}
+      .tab { min-width: 86px; font-size:0.94em;}
+      #status-counters {flex-direction:column;align-items:center;gap:13px;}
+      .counter-card { min-width: 160px; padding:13px 1vw;}
+      .mini-form textarea { min-width: 60vw;}
+      .banniere { min-height: 32px; max-height: 80px;}
+      .top-tools { margin-top: 14px; margin-bottom: 18px; flex-direction: column; align-items: flex-end;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -26,7 +107,7 @@
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
-    <button class="bouton" id="btn-login">Connexion</button>
+    <button class="bouton" onclick="adminLogin()">Connexion</button>
     <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
   </div>
   <div id="admin-content">
@@ -35,7 +116,7 @@
     <div id="status-counters"></div>
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
-        <input type="text" id="search-client" placeholder="🔎 Recherche (toutes colonnes)..." autocomplete="off">
+        <input type="text" id="search-client" placeholder="🔎 Recherche client..." autocomplete="off">
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
@@ -66,10 +147,10 @@ let rechercheClient = "";
 
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
-  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
-  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
-  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
-  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+  if (s==="enregistré") return <span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>;
+  if (s==="accepté") return <span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>;
+  if (s==="refusé") return <span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>;
+  if (s==="en attente d'info") return <span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>;
   return statut||"";
 }
 
@@ -129,20 +210,18 @@ function adminLogin() {
   });
 }
 
-document.getElementById("btn-login").addEventListener("click", adminLogin);
-
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
     allDossiers = data;
     afficherOnglets();
     if (!allDossiers || allDossiers.length === 0) {
       document.getElementById("dossier-list").innerHTML =
-        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        <div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
         font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
         ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
         Il est probable que le serveur vient de redémarrer.<br>
         <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
-        </div>`;
+        </div>;
       return;
     }
     afficherDossiers(currentMagasin, true);
@@ -153,7 +232,7 @@ function afficherOnglets() {
   let t = '';
   if(isAdmin || isSuperAdmin){
     MAGASINS.forEach((m, i) => {
-      t += `<div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+      t += <div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>;
     });
     document.getElementById('tabs').innerHTML = t;
     MAGASINS.forEach((m, i) => {
@@ -163,7 +242,7 @@ function afficherOnglets() {
     });
   } else if(magasinUnique){
     document.getElementById('tabs').innerHTML =
-      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
+      <div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>;
   }
 }
 
@@ -177,12 +256,12 @@ function afficherCompteurs(dossiers) {
   let html = "";
   stats.forEach(stat => {
     const n = dossiers.filter(d => d.statut === stat.val).length;
-    html += `
+    html += 
       <div class="counter-card">
         <span class="counter-label ${stat.color}">${stat.label}</span>
         <span class="counter-value ${stat.color}">${n}</span>
       </div>
-    `;
+    ;
   });
   document.getElementById("status-counters").innerHTML = html;
 }
@@ -205,10 +284,10 @@ function afficherFiltres(dossiers) {
 
   const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
-  moisSel.innerHTML = `<option value="">Tous</option>`;
-  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-  anneeSel.innerHTML = `<option value="">Toutes</option>`;
-  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
+  moisSel.innerHTML = <option value="">Tous</option>;
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += <option value="${m}">${moisLib[i]}</option>; });
+  anneeSel.innerHTML = <option value="">Toutes</option>;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += <option value="${a}">${a}</option>; });
 
   document.getElementById("filters-row").style.display = "flex";
 
@@ -229,19 +308,6 @@ document.getElementById('search-client').addEventListener('input', function() {
   afficherDossiers(currentMagasin);
 });
 
-function dossierContientTexte(d, texte) {
-  texte = texte.toLowerCase();
-  return [
-    d.nom, d.email, d.magasin, d.marque_produit, d.produit_concerne, d.reference_piece, d.quantite_posee,
-    d.immatriculation, d.marque_vehicule, d.modele_vehicule, d.num_serie, d.premiere_immat,
-    d.date_pose, d.date_constat, d.km_pose, d.km_constat, d.bl_pose, d.bl_constat, d.probleme_rencontre,
-    d.statut, d.reponse, d.numero_avoir,
-    // Les fichiers joint et réponse :
-    (d.files||[]).map(f=>f.original).join(' '),
-    (d.reponseFiles||[]).map(f=>f.original).join(' ')
-  ].filter(x=>x).join(' ').toLowerCase().includes(texte);
-}
-
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
   afficherOnglets();
@@ -249,7 +315,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
 
   if(rechercheClient && rechercheClient.trim().length > 0){
     const rc = rechercheClient.trim().toLowerCase();
-    dossiers = dossiers.filter(d => dossierContientTexte(d, rc));
+    dossiers = dossiers.filter(d =>
+      (d.nom||"").toLowerCase().includes(rc)
+    );
   }
 
   afficherCompteurs(dossiers);
@@ -271,43 +339,43 @@ function afficherDossiers(magasin, forceFiltres=false) {
     dossiers = dossiers.filter(d=>d.statut===filtres.statut);
   }
 
-  let html = `<table>
+  let html = <table>
     <tr>
       <th>Date</th>
       <th>Client</th>
       <th>Produit</th>
       <th>Référence de la pièce</th>
-      <th>Marque du produit</th>
+	  <th>Marque du produit</th>
       <th>Statut</th>
       <th>Réponse</th>
       <th>Fichiers réponse</th>
       <th class="action">Mettre à jour</th>
       <th class="action">Voir</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
-    </tr>`;
+    </tr>;
   dossiers.forEach(d=>{
     let id = d.id;
-    html += `<tr>
+    html += <tr>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
       <td>${d.reference_piece||''}</td>
-      <td>${d.marque_produit||''}</td>
+	  <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
         ${(d.reponseFiles||[]).length ? d.reponseFiles.map(f=>{
           let ext = f.original.split('.').pop().toLowerCase();
           if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-            return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+            return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
           } else {
-            return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+            return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
           }
         }).join("<br>") : ""}
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-      ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
+      ${isSuperAdmin ? <td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td> : ''}
     </tr>
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
       <td colspan="${isSuperAdmin ? 10 : 9}">
@@ -327,10 +395,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <span class="admin-msg"></span>
         </form>
       </td>
-    </tr>`;
+    </tr>;
   });
-  html += `</table>`;
-  document.getElementById('dossier-list').
+  html += </table>;
   document.getElementById('dossier-list').innerHTML = html;
 
   document.querySelectorAll('.maj-btn').forEach(btn => {
@@ -351,7 +418,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
       this.querySelector('.admin-msg').textContent = "Envoi...";
-      let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+      let resp = await fetch(/api/admin/dossier/${id}, { method:"POST", body:fd });
       let json = await resp.json();
       if (json.success) {
         this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
@@ -372,7 +439,7 @@ function fermerMiniForm(id){
 
 function supprimerDossier(id) {
   if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
-  fetch(`/api/admin/dossier/${id}`, {
+  fetch(/api/admin/dossier/${id}, {
     method: "DELETE",
     headers: {'x-superadmin': '1'}
   }).then(r=>r.json()).then(json=>{
@@ -389,7 +456,7 @@ function voirDossier(id) {
   if (!d) return alert("Dossier introuvable !");
   let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
-  let detailHtml = `
+  let detailHtml = 
     <html><head>
     <meta charset="UTF-8">
     <title>Détail dossier</title>
@@ -463,9 +530,9 @@ function voirDossier(id) {
               : d.files.map(f=>{
                   let ext = f.original.split('.').pop().toLowerCase();
                   if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                    return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                    return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
                   } else {
-                    return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                    return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
                   }
                 }).join("<br>")
           }
@@ -476,9 +543,9 @@ function voirDossier(id) {
               ? "<br>"+d.reponseFiles.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                  return <a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>;
                 } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                  return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
                 }
               }).join("<br>")
               : ""}
@@ -487,7 +554,7 @@ function voirDossier(id) {
       </table>
     </div>
     </body></html>
-  `;
+  ;
   let w = window.open("", "_blank", "width=820,height=900");
   w.document.write(detailHtml);
   w.document.close();
