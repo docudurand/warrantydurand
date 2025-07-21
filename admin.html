@@ -335,7 +335,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th>Date</th>
       <th>Client</th>
       <th>Produit</th>
-      <th>Immatriculation</th>
+      <th>Référence de la pièce</th>
+	  <th>Marque du produit</th>
       <th>Statut</th>
       <th>Réponse</th>
       <th>Fichiers réponse</th>
@@ -349,7 +350,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
-      <td>${d.immatriculation||''}</td>
+      <td>${d.reference_piece||''}</td>
+	  <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
