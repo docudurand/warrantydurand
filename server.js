@@ -19,7 +19,7 @@ const UPLOADS_DIR = path.join(__dirname, "uploads");
 
 const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
-  "Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+  "Les Echets","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod","Pavi"
 ];
 
 const MAGASIN_MAILS = {
@@ -34,7 +34,8 @@ const MAGASIN_MAILS = {
   "Saint-Egreve": "magvlstegreve@durandservices.fr",
   "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
   "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
-  "Seynod": "respmagseynod@durandservices.fr"
+  "Seynod": "respmagseynod@durandservices.fr",
+  "Pavi": "adv@plateformepavi.fr"
 };
 
 const FTP_HOST = process.env.FTP_HOST;
