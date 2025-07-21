@@ -59,15 +59,7 @@
     .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
-
-    /* === Toujours appliquer la règle pour la liste des fichiers === */
-    #dossier-list td[id^="pj-"] a {
-      word-break: break-all;
-      white-space: normal;
-      display: inline-block;
-      max-width: 210px;
-    }
-
+    #dossier-list td[id^="pj-"] a { word-break: break-all; white-space: normal; display: inline-block; max-width: 210px; }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -116,7 +108,7 @@
     <div id="status-counters"></div>
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
-        <input type="text" id="search-client" placeholder="🔎 Recherche client..." autocomplete="off">
+        <input type="text" id="search-client" placeholder="🔎 Recherche (toutes colonnes)..." autocomplete="off">
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
@@ -308,6 +300,19 @@ document.getElementById('search-client').addEventListener('input', function() {
   afficherDossiers(currentMagasin);
 });
 
+function dossierContientTexte(d, texte) {
+  texte = texte.toLowerCase();.
+  return [
+    d.nom, d.email, d.magasin, d.marque_produit, d.produit_concerne, d.reference_piece, d.quantite_posee,
+    d.immatriculation, d.marque_vehicule, d.modele_vehicule, d.num_serie, d.premiere_immat,
+    d.date_pose, d.date_constat, d.km_pose, d.km_constat, d.bl_pose, d.bl_constat, d.probleme_rencontre,
+    d.statut, d.reponse, d.numero_avoir,
+    // Les fichiers joint et réponse :
+    (d.files||[]).map(f=>f.original).join(' '),
+    (d.reponseFiles||[]).map(f=>f.original).join(' ')
+  ].filter(x=>x).join(' ').toLowerCase().includes(texte);
+}
+
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
   afficherOnglets();
@@ -315,9 +320,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
 
   if(rechercheClient && rechercheClient.trim().length > 0){
     const rc = rechercheClient.trim().toLowerCase();
-    dossiers = dossiers.filter(d =>
-      (d.nom||"").toLowerCase().includes(rc)
-    );
+    dossiers = dossiers.filter(d => dossierContientTexte(d, rc));
   }
 
   afficherCompteurs(dossiers);
@@ -345,7 +348,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th>Client</th>
       <th>Produit</th>
       <th>Référence de la pièce</th>
-	  <th>Marque du produit</th>
+      <th>Marque du produit</th>
       <th>Statut</th>
       <th>Réponse</th>
       <th>Fichiers réponse</th>
@@ -360,7 +363,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
       <td>${d.reference_piece||''}</td>
-	  <td>${d.marque_produit||''}</td>
+      <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
