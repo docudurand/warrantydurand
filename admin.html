@@ -59,6 +59,15 @@
     .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+
+    /* === Toujours appliquer la règle pour la liste des fichiers === */
+    #dossier-list td[id^="pj-"] a {
+      word-break: break-all;
+      white-space: normal;
+      display: inline-block;
+      max-width: 210px;
+    }
+
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
