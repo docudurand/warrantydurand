@@ -418,4 +418,4 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 
-app.listen(PORT, ()=>console.log("Serveur garanti 100% FTP sur "+PORT));
+app.listen(PORT, ()=>console.log("OK"+PORT));
