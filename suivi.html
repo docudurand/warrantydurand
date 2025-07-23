@@ -8,53 +8,15 @@
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .container { max-width:1300px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:44px 28px 38px 28px; box-sizing: border-box;}
     h2 { color:#006e90; font-size:2.10em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
-    .ligne1 {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-    .ligne2 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .gauche {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .droite {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-    label {
-      font-size: 1.13em;
-      color: #146083;
-      font-weight: 500;
-    }
-    input[type="text"], select {
-      padding: 8px 13px;
-      border-radius: 7px;
-      border: 1px solid #b4c8d8;
-      font-size: 1.09em;
-      background: #f9fafb;
-    }
+    .ligne1 { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
+    .ligne2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 24px; flex-wrap: wrap; }
+    .gauche { display: flex; align-items: center; gap: 8px; }
+    .droite { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+    label { font-size: 1.13em; color: #146083; font-weight: 500; }
+    input[type="text"], select { padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.09em; background: #f9fafb; }
     input[type="text"].mail { min-width: 250px; }
     input[type="text"].recherche { min-width: 180px; }
-    .suivi-btn {
-      background:#006e90; color:#fff; border-radius:8px; border:none;
-      padding:10px 32px; font-size:1.13em; font-weight:700; cursor:pointer;
-      transition: background 0.16s;
-      margin-left: 8px;
-    }
+    .suivi-btn { background:#006e90; color:#fff; border-radius:8px; border:none; padding:10px 32px; font-size:1.13em; font-weight:700; cursor:pointer; transition: background 0.16s; margin-left: 8px; }
     .suivi-btn:hover { background: #1780b0; }
     @media (max-width: 1050px) {
       .ligne2 { flex-direction: column; align-items: stretch; gap: 13px;}
@@ -260,6 +222,7 @@
       let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
       let serverUrl = "https://durandservicesgarantie.onrender.com";
       let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+      // Nouveau nom de fichier : NOMCLIENT_YYYY-MM-DD
       let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
       let dateStr = "";
       if (d.date) {
@@ -297,7 +260,6 @@
           .hide-print { display:none !important; }
           .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
         }
-        .statut-chip { display:inline-flex; align-items:center; gap:
         .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
         .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
         .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
@@ -377,7 +339,7 @@
           window.print();
           setTimeout(function() {
             document.title = oldTitle;
-          }, 1500);
+          }, 1000);
         }
         window.onbeforeprint = function() {
           document.title = "${nomFichier}";
