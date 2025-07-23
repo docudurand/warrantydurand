@@ -89,7 +89,6 @@
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
-
   <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
     <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
@@ -100,7 +99,6 @@
     </form>
     <span id="importzip-msg"></span>
   </div>
-
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
@@ -133,7 +131,6 @@
 let isSuperAdmin = false;
 let isAdmin = false;
 let magasinUnique = null;
-
 const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
 ];
@@ -450,16 +447,24 @@ function supprimerDossier(id) {
     }
   });
 }
-
 function voirDossier(id) {
   let d = allDossiers.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
   let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+  let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+  let dateStr = "";
+  if (d.date) {
+    let dt = new Date(d.date);
+    if (!isNaN(dt)) {
+      dateStr = dt.toISOString().slice(0,10); // "YYYY-MM-DD"
+    }
+  }
+  let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
   let detailHtml = `
     <html><head>
     <meta charset="UTF-8">
-    <title>Détail dossier</title>
+    <title>${nomFichier}</title>
     <style>
       body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
       .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
@@ -498,7 +503,9 @@ function voirDossier(id) {
       <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}</span>
     </div>
     <div class="fiche-table">
-      <div class="fiche-actions"><button class="print-btn" onclick="window.print()">🖨️ Imprimer</button></div>
+      <div class="fiche-actions">
+        <button class="print-btn" onclick="renameAndPrint('${nomFichier}')">🖨️ Imprimer</button>
+      </div>
       <table>
         <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
         <tr><th>Email</th><td>${d.email||""}</td></tr>
@@ -553,6 +560,24 @@ function voirDossier(id) {
         <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
+    <script>
+      function renameAndPrint(filename) {
+        var oldTitle = document.title;
+        document.title = filename;
+        window.print();
+        setTimeout(function() {
+          document.title = oldTitle;
+        }, 1500);
+      }
+      window.onbeforeprint = function() {
+        document.title = "${nomFichier}";
+      };
+      window.onafterprint = function() {
+        setTimeout(function(){
+          document.title = "${nomFichier}";
+        }, 500);
+      };
+    <\/script>
     </body></html>
   `;
   let w = window.open("", "_blank", "width=820,height=900");
