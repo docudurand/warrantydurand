@@ -208,8 +208,8 @@ async function creerPDFDemande(d, nomFichier) {
       const tableWidth = pageWidth - 36;
       let y = 50;
 
-      const logoUrl = 'https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png';
-      doc.image(logoUrl, tableX, y, { width: 62 });
+      const logoPath = path.join(__dirname, "DSG.png");
+doc.image(logoPath, tableX, y, { width: 62 });
       doc.font("Helvetica-Bold").fontSize(16).fillColor("#14548C")
         .text(d.magasin || "", tableX + 75, y + 8, { align: "left" });
       doc.font("Helvetica").fontSize(11).fillColor("#333")
