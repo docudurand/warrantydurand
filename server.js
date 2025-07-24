@@ -10,6 +10,7 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
+import PDFDocument from "pdfkit";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -60,145 +61,71 @@ app.use(express.json());
 
 const upload = multer({ dest: "temp_uploads/" });
 
-async function getFTPClient() {
-  const client = new ftp.Client();
-  await client.access({
-    host: FTP_HOST,
-    port: FTP_PORT,
-    user: FTP_USER,
-    password: FTP_PASS,
-    secure: true,
-    secureOptions: { rejectUnauthorized: false }
-  });
-  return client;
-}
+async function getFTPClient() { /*......*/ }
+async function readDataFTP() { /*...*/ }
+async function writeDataFTP(data) { /*...*/ }
+async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) { /*...*/ }
+async function deleteFileFromFTP(remoteFileName) { /*...*/ }
+async function streamFTPFileToRes(res, remotePath, fileName, mimeType) { /*...*/ }
+function nowSuffix() { /*...*/ }
+async function fetchFilesFromFTP(fileObjs) { /*...*/ }
+function cleanupFiles(localPaths) { /*...*/ }
+async function saveBackupFTP() { /*...*/ }
+async function cleanOldBackupsFTP(client) { /*...*/ }
 
-async function readDataFTP() {
-  const client = await getFTPClient();
-  let json = [];
-  try {
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
-    json = JSON.parse(fs.readFileSync(tmp, "utf8"));
-    fs.unlinkSync(tmp);
-  } catch (e) {
-    json = [];
-  }
-  client.close();
-  return json;
-}
-
-async function writeDataFTP(data) {
-  const client = await getFTPClient();
-  const tmp = path.join(__dirname, "temp_demandes.json");
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  await client.ensureDir(FTP_BACKUP_FOLDER);
-  await client.uploadFrom(tmp, JSON_FILE_FTP);
-  fs.unlinkSync(tmp);
-  client.close();
-}
-
-async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
-  const client = await getFTPClient();
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder);
-  await client.ensureDir(remotePath);
-  const fileName = remoteFileName || path.basename(localPath);
-  await client.uploadFrom(localPath, path.posix.join(remotePath, fileName));
-  client.close();
-  return fileName;
-}
-
-async function deleteFileFromFTP(remoteFileName) {
-  const client = await getFTPClient();
-  const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-  try {
-    await client.remove(remotePath);
-  } catch (e) {}
-  client.close();
-}
-
-async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
-  const client = await getFTPClient();
-  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-  if (mimeType) res.setHeader("Content-Type", mimeType);
-  try {
-    await client.downloadTo(res, remotePath);
-  } catch (e) {
-    res.status(404).send("Fichier introuvable");
-  }
-  client.close();
-}
-
-function nowSuffix() {
-  const d = new Date();
-  const pad = n => n.toString().padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
-}
-
-async function fetchFilesFromFTP(fileObjs) {
-  const localPaths = [];
-  if (!fileObjs || fileObjs.length === 0) return [];
-  const client = await getFTPClient();
-  await client.ensureDir(UPLOADS_FTP);
-  for (const f of fileObjs) {
-    const remotePath = path.posix.join(UPLOADS_FTP, f.url);
-    const tmp = path.join(__dirname, "mailtmp_" + f.url);
+function creerPDFDemande(d, nomFichier) {
+  return new Promise((resolve, reject) => {
     try {
-      await client.downloadTo(tmp, remotePath);
-      localPaths.push({ path: tmp, filename: f.original });
-    } catch (e) {}
-  }
-  client.close();
-  return localPaths;
-}
-function cleanupFiles(localPaths) {
-  if (!localPaths) return;
-  for (const f of localPaths) {
-    try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch {}
-  }
-}
+      const doc = new PDFDocument({margin:40, size:"A4"});
+      const buffers = [];
+      doc.on("data", buffers.push.bind(buffers));
+      doc.on("end", () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
 
-async function saveBackupFTP() {
-  const clientDL = await getFTPClient();
-  const tmpJSON = path.join(__dirname, "temp_demandes.json");
-  try {
-    await clientDL.downloadTo(tmpJSON, JSON_FILE_FTP);
-  } catch (e) {
-    fs.writeFileSync(tmpJSON, "[]");
-  }
-  clientDL.close();
+      doc.fontSize(20).font("Helvetica-Bold").text(nomFichier, {align:"left"});
+      doc.moveDown(0.3);
+      doc.fontSize(16).fillColor("#14548C").text((d.magasin || ""), {align:"left"});
+      doc.moveDown(0.5);
+      doc.moveTo(doc.x, doc.y).lineTo(550, doc.y).stroke("#cccccc");
 
-  const backupPath = path.join(__dirname, "backup_tmp.zip");
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  const output = fs.createWriteStream(backupPath);
-  archive.pipe(output);
-  archive.file(tmpJSON, { name: "demandes.json" });
-  await new Promise((resolve, reject) => {
-    output.on("close", resolve);
-    archive.finalize();
+      doc.moveDown();
+      doc.fontSize(11).fillColor("#000").font("Helvetica-Bold").text("Nom du client", {continued:true}).font("Helvetica").text(" "+(d.nom||""));
+      doc.font("Helvetica-Bold").text("Email", {continued:true}).font("Helvetica").text(" "+(d.email||""));
+      doc.font("Helvetica-Bold").text("Magasin", {continued:true}).font("Helvetica").text(" "+(d.magasin||""));
+
+      doc.moveDown();
+      doc.font("Helvetica-Bold").text("Produit");
+      doc.font("Helvetica-Bold").text("Marque du produit", {continued:true}).font("Helvetica").text(" "+(d.marque_produit||""));
+      doc.font("Helvetica-Bold").text("Produit concerné", {continued:true}).font("Helvetica").text(" "+(d.produit_concerne||""));
+      doc.font("Helvetica-Bold").text("Référence de la pièce", {continued:true}).font("Helvetica").text(" "+(d.reference_piece||""));
+      doc.font("Helvetica-Bold").text("Quantité posée", {continued:true}).font("Helvetica").text(" "+(d.quantite_posee||""));
+
+      doc.moveDown();
+      doc.font("Helvetica-Bold").text("Véhicule");
+      doc.font("Helvetica-Bold").text("Immatriculation", {continued:true}).font("Helvetica").text(" "+(d.immatriculation||""));
+      doc.font("Helvetica-Bold").text("Marque", {continued:true}).font("Helvetica").text(" "+(d.marque_vehicule||""));
+      doc.font("Helvetica-Bold").text("Modèle", {continued:true}).font("Helvetica").text(" "+(d.modele_vehicule||""));
+      doc.font("Helvetica-Bold").text("Numéro de série", {continued:true}).font("Helvetica").text(" "+(d.num_serie||""));
+      doc.font("Helvetica-Bold").text("1ère immatriculation", {continued:true}).font("Helvetica").text(" "+(d.premiere_immat||""));
+
+      doc.moveDown();
+      doc.font("Helvetica-Bold").text("Problème");
+      doc.font("Helvetica-Bold").text("Date de pose", {continued:true}).font("Helvetica").text(" "+(d.date_pose||""));
+      doc.font("Helvetica-Bold").text("Date du constat", {continued:true}).font("Helvetica").text(" "+(d.date_constat||""));
+      doc.font("Helvetica-Bold").text("Kilométrage à la pose", {continued:true}).font("Helvetica").text(" "+(d.km_pose||""));
+      doc.font("Helvetica-Bold").text("Kilométrage au constat", {continued:true}).font("Helvetica").text(" "+(d.km_constat||""));
+      doc.font("Helvetica-Bold").text("N° BL 1ère Vente", {continued:true}).font("Helvetica").text(" "+(d.bl_pose||""));
+      doc.font("Helvetica-Bold").text("N° BL 2ème Vente", {continued:true}).font("Helvetica").text(" "+(d.bl_constat||""));
+      doc.font("Helvetica-Bold").text("Problème rencontré", {continued:true}).font("Helvetica").text(" "+(d.probleme_rencontre||""));
+
+      doc.moveDown();
+      doc.fontSize(11).font("Helvetica-Bold").fillColor("#14548C").text("Créé le : ", {continued:true}).font("Helvetica").fillColor("#000").text(new Date(d.date).toLocaleDateString("fr-FR"));
+
+      doc.end();
+    } catch(e) { reject(e); }
   });
-  fs.unlinkSync(tmpJSON);
-
-  const clientUP = await getFTPClient();
-  const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-  await clientUP.ensureDir(FTP_BACKUP_FOLDER);
-  await clientUP.uploadFrom(backupPath, path.posix.join(FTP_BACKUP_FOLDER, fileName));
-  await cleanOldBackupsFTP(clientUP);
-  clientUP.close();
-  fs.unlinkSync(backupPath);
-}
-
-async function cleanOldBackupsFTP(client) {
-  const list = await client.list(FTP_BACKUP_FOLDER);
-  const backups = list
-    .filter(f => /^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{2}h\d{2}\.zip$/.test(f.name))
-    .sort((a, b) => b.name.localeCompare(a.name));
-  if (backups.length > 10) {
-    const toDelete = backups.slice(10);
-    for (const f of toDelete) {
-      await client.remove(path.posix.join(FTP_BACKUP_FOLDER, f.name));
-    }
-  }
 }
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
@@ -221,19 +148,37 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     await writeDataFTP(data);
     await saveBackupFTP();
 
+    let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+    let dateStr = "";
+    if (d.date) {
+      let dt = new Date(d.date);
+      if (!isNaN(dt)) {
+        dateStr = dt.toISOString().slice(0,10);
+      }
+    }
+    let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
+    const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
+
     if (d.email) {
       const attachments = await fetchFilesFromFTP(d.files);
       await mailer.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
         to: d.email,
-        subject: "Demande de Garantie EnvoyéE",
+        subject: "Demande de Garantie Envoyée",
         text:
 `Bonjour votre demande de garantie a été envoyée avec succès, merci de joindre le fichier ci-joint avec votre pièce.
 
 Cordialement
 L'équipe Durand Services Garantie.
 `,
-        attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
+        attachments: [
+          ...attachments.map(f=>({filename: f.filename, path: f.path})),
+          {
+            filename: nomFichier,
+            content: pdfBuffer,
+            contentType: "application/pdf"
+          }
+        ]
       });
       cleanupFiles(attachments);
     }
