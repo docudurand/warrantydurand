@@ -10,6 +10,8 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
+import PDFDocument from "pdfkit";      // <-- LIGNE INDISPENSABLE !
+import axios from "axios";        
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
