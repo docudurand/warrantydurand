@@ -60,8 +60,6 @@ app.use(express.json());
 
 const upload = multer({ dest: "temp_uploads/" });
 
-// ========== FONCTIONS UTILITAIRES FTP ==========
-
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -137,7 +135,6 @@ function nowSuffix() {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
 }
 
-// Télécharge la liste de fichiers (array) depuis le FTP, retourne les chemins temporaires locaux téléchargés
 async function fetchFilesFromFTP(fileObjs) {
   const localPaths = [];
   if (!fileObjs || fileObjs.length === 0) return [];
@@ -202,8 +199,6 @@ async function cleanOldBackupsFTP(client) {
   }
 }
 
-// ========== ROUTES API PRINCIPALES ==========
-
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
@@ -226,7 +221,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
-      // Download pieces jointes en local juste avant mail :
       const attachments = await fetchFilesFromFTP(d.files);
       await mailer.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
@@ -240,6 +234,24 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
       });
       cleanupFiles(attachments);
     }
+
+    if (d.email) {
+      const attachments = await fetchFilesFromFTP(d.files);
+      await mailer.sendMail({
+        from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+        to: d.email,
+        subject: "Demande de Garantie EnvoyéE",
+        text:
+`Bonjour votre demande de garantie a été envoyée avec succès, merci de joindre le fichier ci-joint avec votre pièce.
+
+Cordialement
+L'équipe Durand Services Garantie.
+`,
+        attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
+      });
+      cleanupFiles(attachments);
+    }
+
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -270,7 +282,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   await writeDataFTP(data);
   await saveBackupFTP();
 
-  // Email au client si changements
   let mailDoitEtreEnvoye = false;
   let changes = [];
   if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
@@ -280,7 +291,6 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   }
 
   if (mailDoitEtreEnvoye && dossier.email) {
-    // Download toutes les PJ de réponse avant d'envoyer le mail :
     const attachments = await fetchFilesFromFTP(dossier.reponseFiles);
     let html = `<div style="font-family:sans-serif;">
       Bonjour,<br>
@@ -317,15 +327,12 @@ app.get("/api/mes-dossiers", async (req, res) => {
   let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
-
-// STREAM TOUTE PIECE JOINTE DEPUIS LE FTP DIRECTEMENT
 app.get("/download/:file", async (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const remotePath = path.posix.join(UPLOADS_FTP, file);
   const mimeType = mime.lookup(file) || undefined;
   await streamFTPFileToRes(res, remotePath, file, mimeType);
 });
-
 app.post("/api/admin/login", (req, res) => {
   let pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
@@ -338,7 +345,6 @@ app.post("/api/admin/login", (req, res) => {
   }
   res.json({success:false, message:"Mot de passe incorrect"});
 });
-
 app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
@@ -346,7 +352,6 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   let idx = data.findIndex(x=>x.id===id);
   if (idx === -1) return res.json({success:false, message:"Introuvable"});
   let dossier = data[idx];
-  // Supprime les fichiers du FTP aussi :
   if(dossier.files){
     for(const f of dossier.files){
       await deleteFileFromFTP(f.url);
@@ -362,71 +367,6 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   await saveBackupFTP();
   res.json({success:true});
 });
-
-// Routes de backup/restore ZIP (idem que version précédente, voir ton code d'origine)
-app.get("/api/admin/exportzip", async (req, res) => {
-  try {
-    const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Type', 'application/zip');
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', err => res.status(500).send({error: err.message}));
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
-    archive.file(tmp, { name: "demandes.json" });
-    const uploadFiles = await client.list(UPLOADS_FTP);
-    for(const f of uploadFiles){
-      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
-      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
-    }
-    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
-    archive.pipe(res);
-    archive.pipe(output);
-    archive.finalize();
-    output.on("close", ()=>{
-      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
-      client.close();
-    });
-  } catch (e) {
-    res.status(500).send({error: e.message});
-  }
-});
-
-app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
-  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
-  try {
-    const zipPath = req.file.path;
-    await fs.createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
-      .promise();
-    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
-    if (fs.existsSync(jsonSrc)) {
-      const data = JSON.parse(fs.readFileSync(jsonSrc,"utf8"));
-      await writeDataFTP(data);
-    } else {
-      throw new Error("Le fichier demandes.json est manquant dans l'archive");
-    }
-    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
-    if (fs.existsSync(newUploads)) {
-      const files = fs.readdirSync(newUploads);
-      for(const f of files){
-        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
-      }
-    }
-    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
-    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-    await saveBackupFTP();
-    res.json({success:true});
-  } catch (e) {
-    res.json({success:false, message:e.message});
-  }
-});
-
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
-
 app.listen(PORT, ()=>console.log("Serveur garanti 100% FTP sur "+PORT));
