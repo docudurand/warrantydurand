@@ -62,318 +62,130 @@ app.use(express.json());
 
 const upload = multer({ dest: "temp_uploads/" });
 
-async function getFTPClient() {
-  const client = new ftp.Client();
-  await client.access({
-    host: FTP_HOST,
-    port: FTP_PORT,
-    user: FTP_USER,
-    password: FTP_PASS,
-    secure: true,
-    secureOptions: { rejectUnauthorized: false }
-  });
-  return client;
-}
+async function getFTPClient() { /* ... ... */ }
+async function readDataFTP() { /* ... ... */ }
+async function writeDataFTP(data) { /* ...... */ }
+async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) { /* ...  ... */ }
+async function deleteFileFromFTP(remoteFileName) { /* ...  ... */ }
+async function streamFTPFileToRes(res, remotePath, fileName, mimeType) { /* ...  ... */ }
+function nowSuffix() { /* ...  ... */ }
+async function fetchFilesFromFTP(fileObjs) { /* ...  ... */ }
+function cleanupFiles(localPaths) { /* ...  ... */ }
+async function saveBackupFTP() { /* ...  ... */ }
+async function cleanOldBackupsFTP(client) { /* ...  ... */ }
 
-async function readDataFTP() {
-  const client = await getFTPClient();
-  let json = [];
-  try {
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
-    json = JSON.parse(fs.readFileSync(tmp, "utf8"));
-    fs.unlinkSync(tmp);
-  } catch (e) {
-    json = [];
-  }
-  client.close();
-  return json;
-}
-
-async function writeDataFTP(data) {
-  const client = await getFTPClient();
-  const tmp = path.join(__dirname, "temp_demandes.json");
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  await client.ensureDir(FTP_BACKUP_FOLDER);
-  await client.uploadFrom(tmp, JSON_FILE_FTP);
-  fs.unlinkSync(tmp);
-  client.close();
-}
-
-async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
-  const client = await getFTPClient();
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder);
-  await client.ensureDir(remotePath);
-  const fileName = remoteFileName || path.basename(localPath);
-  await client.uploadFrom(localPath, path.posix.join(remotePath, fileName));
-  client.close();
-  return fileName;
-}
-
-async function deleteFileFromFTP(remoteFileName) {
-  const client = await getFTPClient();
-  const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-  try {
-    await client.remove(remotePath);
-  } catch (e) {}
-  client.close();
-}
-
-async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
-  const client = await getFTPClient();
-  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-  if (mimeType) res.setHeader("Content-Type", mimeType);
-  try {
-    await client.downloadTo(res, remotePath);
-  } catch (e) {
-    res.status(404).send("Fichier introuvable");
-  }
-  client.close();
-}
-
-function nowSuffix() {
-  const d = new Date();
-  const pad = n => n.toString().padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
-}
-
-async function fetchFilesFromFTP(fileObjs) {
-  const localPaths = [];
-  if (!fileObjs || fileObjs.length === 0) return [];
-  const client = await getFTPClient();
-  await client.ensureDir(UPLOADS_FTP);
-  for (const f of fileObjs) {
-    const remotePath = path.posix.join(UPLOADS_FTP, f.url);
-    const tmp = path.join(__dirname, "mailtmp_" + f.url);
-    try {
-      await client.downloadTo(tmp, remotePath);
-      localPaths.push({ path: tmp, filename: f.original });
-    } catch (e) {}
-  }
-  client.close();
-  return localPaths;
-}
-function cleanupFiles(localPaths) {
-  if (!localPaths) return;
-  for (const f of localPaths) {
-    try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch {}
-  }
-}
-
-async function saveBackupFTP() {
-  const clientDL = await getFTPClient();
-  const tmpJSON = path.join(__dirname, "temp_demandes.json");
-  try {
-    await clientDL.downloadTo(tmpJSON, JSON_FILE_FTP);
-  } catch (e) {
-    fs.writeFileSync(tmpJSON, "[]");
-  }
-  clientDL.close();
-
-  const backupPath = path.join(__dirname, "backup_tmp.zip");
-  const archive = archiver('zip', { zlib: { level: 9 } });
-  const output = fs.createWriteStream(backupPath);
-  archive.pipe(output);
-  archive.file(tmpJSON, { name: "demandes.json" });
-  await new Promise((resolve, reject) => {
-    output.on("close", resolve);
-    archive.finalize();
-  });
-  fs.unlinkSync(tmpJSON);
-
-  const clientUP = await getFTPClient();
-  const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-  await clientUP.ensureDir(FTP_BACKUP_FOLDER);
-  await clientUP.uploadFrom(backupPath, path.posix.join(FTP_BACKUP_FOLDER, fileName));
-  await cleanOldBackupsFTP(clientUP);
-  clientUP.close();
-  fs.unlinkSync(backupPath);
-}
-
-async function cleanOldBackupsFTP(client) {
-  const list = await client.list(FTP_BACKUP_FOLDER);
-  const backups = list
-    .filter(f => /^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{2}h\d{2}\.zip$/.test(f.name))
-    .sort((a, b) => b.name.localeCompare(a.name));
-  if (backups.length > 10) {
-    const toDelete = backups.slice(10);
-    for (const f of toDelete) {
-      await client.remove(path.posix.join(FTP_BACKUP_FOLDER, f.name));
-    }
-  }
-}
-
-function wrapText(doc, text, width, font, fontSize) {
-  doc.font(font).fontSize(fontSize);
-  let result = [];
-  let line = "";
-  const words = (""+text).split(" ");
-  for (const word of words) {
-    let testLine = line + word + " ";
-    let testWidth = doc.widthOfString(testLine);
-    if (testWidth > width && line) {
-      result.push(line.trim());
-      line = word + " ";
-    } else {
-      line = testLine;
-    }
-  }
-  if (line) result.push(line.trim());
-  return result;
+async function getLogoBuffer() {
+  const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+  const res = await axios.get(url, { responseType: "arraybuffer" });
+  return Buffer.from(res.data, "binary");
 }
 
 async function creerPDFDemande(d, nomFichier) {
-  const logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
-  const logoPath = path.join(__dirname, "logo_tmp.png");
-  try {
-    const response = await axios.get(logoUrl, {responseType: "arraybuffer"});
-    fs.writeFileSync(logoPath, response.data);
-  } catch {}
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
-      const doc = new PDFDocument({margin: 30, size: "A4"});
+      const doc = new PDFDocument({ margin: 32, size: "A4" });
       const buffers = [];
       doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => {
-        try { if (fs.existsSync(logoPath)) fs.unlinkSync(logoPath); } catch{}
-        resolve(Buffer.concat(buffers));
-      });
+      doc.on("end", () => resolve(Buffer.concat(buffers)));
 
-      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-      const logoSize = 54;
-      const topY = 20;
+      const logo = await getLogoBuffer();
+      const PAGE_W = doc.page.width;
+      let y = 36;
+      const logoW = 50, logoH = 50;
+      doc.image(logo, 36, y, { width: logoW, height: logoH });
+      doc.font("Helvetica-Bold").fontSize(20).fillColor("#14548C");
+      doc.text("DURAND SERVICES GARANTIE", 36 + logoW + 12, y + 10, { align: "left", continued: false });
+      doc.font("Helvetica").fontSize(14).fillColor("#14548C");
+      doc.text(d.magasin || "", 36 + logoW + 12, y + 36, { align: "left" });
 
-      if (fs.existsSync(logoPath)) {
-        doc.image(logoPath, doc.page.margins.left, topY, {width: logoSize, height: logoSize});
-      }
-      doc.font("Helvetica-Bold").fontSize(20).fillColor("#222");
-      const titre = "DURAND SERVICES GARANTIE";
-      doc.text(
-        titre,
-        doc.page.margins.left + logoSize + 16,
-        topY + 6,
-        {width: pageWidth - logoSize - 16 - 110, align: "center"}
-      );
-      doc.font("Helvetica").fontSize(13).fillColor("#333");
-      doc.text(
-        d.magasin || "",
-        doc.page.margins.left + logoSize + 16,
-        topY + 34,
-        {width: pageWidth - logoSize - 16 - 110, align: "center"}
-      );
-      const dateTxt = "Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "");
-      doc.font("Helvetica").fontSize(11).fillColor("#333");
-      doc.text(dateTxt, doc.page.margins.left + pageWidth - 110, topY + 6, {width: 110, align: "right"});
-      doc.moveDown(2.6);
+      doc.fontSize(11).fillColor("#000");
+      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 36 - 120, y + 10, { align: "left", width: 120 });
 
-      const tableTop = topY + logoSize + 24;
-      const tableLeft = doc.page.margins.left;
-      const tableWidth = pageWidth;
-      let y = tableTop;
+      y += logoH + 25;
+      const x0 = 36;
+      const tableW = PAGE_W - 2 * x0;
+      const colLabelW = 155;
+      const colValW = tableW - colLabelW;
 
-      const colLabelW = 140;
-      const colValW = tableWidth - colLabelW;
+      const rows = [
 
-      const lignes = [
-        // Informations client
-        ["Nom du client", d.nom||""],
-        ["Email", d.email||""],
-        ["Magasin", d.magasin||""],
-        // Produit
-        ["Marque du produit", d.marque_produit||""],
-        ["Produit concerné", d.produit_concerne||""],
-        ["Référence de la pièce", d.reference_piece||""],
-        ["Quantité posée", d.quantite_posee||""],
-        // Véhicule
-        ["Immatriculation", d.immatriculation||""],
-        ["Marque", d.marque_vehicule||""],
-        ["Modèle", d.modele_vehicule||""],
-        ["Numéro de série", d.num_serie||""],
-        ["1ère immatriculation", d.premiere_immat||""],
-        // Problème
-        ["Date de pose", d.date_pose||""],
-        ["Date du constat", d.date_constat||""],
-        ["Kilométrage à la pose", d.km_pose||""],
-        ["Kilométrage au constat", d.km_constat||""],
-        ["N° BL 1ère Vente", d.bl_pose||""],
-        ["N° BL 2ème Vente", d.bl_constat||""],
-        ["Problème rencontré", d.probleme_rencontre||""]
-      ];
-      const groupTitles = [
-        { idx: 0, label: "Informations client" },
-        { idx: 3, label: "Produit" },
-        { idx: 7, label: "Véhicule" },
-        { idx: 12, label: "Problème" }
+        ["Informations client", "", "section"],
+        ["Nom du client", d.nom || ""],
+        ["Email", d.email || ""],
+        ["Magasin", d.magasin || "", "rowline"],
+
+        ["Produit", "", "section"],
+        ["Marque du produit", d.marque_produit || ""],
+        ["Produit concerné", d.produit_concerne || ""],
+        ["Référence de la pièce", d.reference_piece || ""],
+        ["Quantité posée", d.quantite_posee || "", "rowline"],
+
+        ["Véhicule", "", "section"],
+        ["Immatriculation", d.immatriculation || ""],
+        ["Marque", d.marque_vehicule || ""],
+        ["Modèle", d.modele_vehicule || ""],
+        ["Numéro de série", d.num_serie || ""],
+        ["1ère immatriculation", d.premiere_immat || "", "rowline"],
+
+        ["Problème", "", "section"],
+        ["Date de pose", d.date_pose || ""],
+        ["Date du constat", d.date_constat || ""],
+        ["Kilométrage à la pose", d.km_pose || ""],
+        ["Kilométrage au constat", d.km_constat || ""],
+        ["N° BL 1ère Vente", d.bl_pose || ""],
+        ["N° BL 2ème Vente", d.bl_constat || ""],
+        ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
       ];
 
-      const borderRadius = 17;
-      const borderColor = "#b7c7e1";
-      const labelFont = "Helvetica-Bold";
-      const valueFont = "Helvetica";
-      const rowHeight = 23;
-      const rowPadV = 7;
-
-      let rows = [];
-      for (let i = 0; i < lignes.length; ++i) {
-  let [lbl, val] = lignes[i];
-  let wrapVal = wrapText(doc, val, colValW-20, valueFont, 11);
-  let lines = Math.max(1, wrapVal.length);
-  if (i === lignes.length-1) {
-    wrapVal = (val + "")
-      .split("\n")
-      .map(line => wrapText(doc, line, colValW - 20, valueFont, 11))
-      .flat();
-    lines = Math.max(1, wrapVal.length);
-  }
-  rows.push({
-    label: lbl,
-    value: val,
-    lines,
-    wrapVal,
-    isProblem: (lbl==="Problème rencontré")
-  });
-}
-
-      let tableHeight = rows.reduce((acc, row)=>acc+rowHeight*row.lines, 0)
-        + groupTitles.length*rowHeight;
-
-      doc.save();
-      doc.roundedRect(tableLeft, y, tableWidth, tableHeight, borderRadius)
-        .lineWidth(1.5)
-        .stroke(borderColor);
-
-      let cy = y;
-      for (let i=0; i<rows.length; ++i) {
-        let isGroup = groupTitles.some(g=>g.idx===i);
-        if (isGroup) {
-          let group = groupTitles.find(g=>g.idx===i);
-          doc.font("Helvetica-Bold").fontSize(11).fillColor("#222")
-            .text(group.label, tableLeft+12, cy+7, {width: tableWidth-24, align:"left"});
-          doc.moveTo(tableLeft, cy+rowHeight)
-            .lineTo(tableLeft+tableWidth, cy+rowHeight)
-            .lineWidth(1)
-            .stroke(borderColor);
-          cy += rowHeight;
-        }
-        let row = rows[i];
-        for (let l=0; l<row.lines; ++l) {
-          if (!(l===0 && isGroup)) {
-            doc.moveTo(tableLeft, cy)
-              .lineTo(tableLeft+tableWidth, cy)
-              .lineWidth(1)
-              .stroke(borderColor);
-          }
-          doc.font(labelFont).fontSize(11).fillColor("#14548C")
-            .text(l===0?row.label:"", tableLeft+14, cy+rowPadV, {width:colLabelW-18, align:"left"});
-          doc.font(valueFont).fontSize(11).fillColor("#333")
-            .text((row.wrapVal[l]||""), tableLeft+colLabelW+6, cy+rowPadV, {width:colValW-20, align:"left"});
-          cy += rowHeight;
-        }
+      let rowHeight = 23, valueFont = "Helvetica", labelFont = "Helvetica-Bold";
+      let curY = y;
+      let cornerRad = 14;
+      let linesCount = 0;
+      for (const row of rows) {
+        if (row[2] === "section") linesCount++;
+        else if (row[2] === "multiline") linesCount += (row[1].split("\n").length);
+        else linesCount++;
       }
-      doc.moveTo(tableLeft, cy).lineTo(tableLeft+tableWidth, cy).lineWidth(1).stroke(borderColor);
-      doc.restore();
+      let tableH = rowHeight * linesCount;
+
+      doc.roundedRect(x0, curY, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
+
+      doc.lineWidth(1.7).roundedRect(x0, curY, tableW, tableH, cornerRad).stroke("#3f628c");
+
+      let yCursor = curY;
+      for (let i = 0; i < rows.length; i++) {
+        const [label, value, type] = rows[i];
+
+        if (type === "section") {
+          doc.font(labelFont).fontSize(11).fillColor("#3f628c").text(label, x0 + 18, yCursor + 5, { width: tableW, align: "left" });
+          yCursor += rowHeight;
+          continue;
+        }
+
+        let valueLines = type === "multiline" ? value.split("\n") : [value];
+        let cellHeight = rowHeight * valueLines.length;
+
+        doc.font(labelFont).fontSize(11).fillColor("#000")
+          .text(label, x0 + 16, yCursor + 5, { width: colLabelW - 20, align: "left" });
+
+        doc.font(valueFont).fontSize(11).fillColor("#000");
+        for (let k = 0; k < valueLines.length; k++) {
+          doc.text(valueLines[k], x0 + colLabelW + 8, yCursor + 5 + k * rowHeight, { width: colValW - 18, align: "left" });
+        }
+
+        let drawLine = false;
+        if (rows[i][2] === "rowline") drawLine = true;
+        if (i < rows.length - 1 && rows[i+1][2] !== "section" && type !== "multiline") drawLine = true;
+        if (i === rows.length - 1) drawLine = false;
+        if (drawLine) {
+          doc.moveTo(x0 + 8, yCursor + cellHeight).lineTo(x0 + tableW - 8, yCursor + cellHeight).strokeColor("#b3c5df").lineWidth(1).stroke();
+        }
+
+        yCursor += cellHeight;
+      }
+
       doc.end();
-    } catch(e) { reject(e); }
+    } catch (e) { reject(e); }
   });
 }
 
@@ -419,6 +231,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 
 Cordialement
 L'équipe Durand Services Garantie.
+
 `,
         attachments: [
           ...attachments.map(f=>({filename: f.filename, path: f.path})),
@@ -631,4 +444,4 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 
-app.listen(PORT, ()=>console.log("Serveur garanti 100% FTP sur "+PORT));
+app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
