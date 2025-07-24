@@ -16,6 +16,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const LOGO_PATH = path.join(__dirname, "DSG.png"); // Mets ici le chemin correct si besoin
+
 const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
   "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
@@ -58,6 +60,7 @@ const mailer = nodemailer.createTransport({
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
+
 const upload = multer({ dest: "temp_uploads/" });
 
 async function getFTPClient() {
@@ -201,108 +204,116 @@ async function cleanOldBackupsFTP(client) {
   }
 }
 
-async function creerPDFDemande(d, nomFichier) {
-  return new Promise((resolve, reject) => {
+function creerPDFDemande(d, nomFichier) {
+  return new Promise(async (resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 36, size: "A4" });
+      const doc = new PDFDocument({ margin: 0, size: "A4" });
       const buffers = [];
       doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => resolve(Buffer.concat(buffers)));
+      doc.on("end", () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
 
-      const logoPath = path.join(__dirname, "DSG.png");
-      let logoExists = fs.existsSync(logoPath);
+      const PAGE_W = 595.28;
+      const MARGIN = 36, TABLE_W = PAGE_W - MARGIN*2, CELL_W = TABLE_W;
+      let y = MARGIN;
 
-      const bleu = "#14548C";
-      const bleuSection = "#dde8f7";
-      const grisBorder = "#b4c8d8";
-      const grisTitre = "#475A6B";
-      const grisBg = "#F8F9FB";
-      const largeurTable = 460;
-      let x0 = 75, y = 42;
-
-      if (logoExists) {
-        doc.image(logoPath, x0, y, { width: 58 });
+      const logoSize = 56;
+      if (fs.existsSync(LOGO_PATH)) {
+        doc.image(LOGO_PATH, MARGIN+2, y, { width: logoSize });
       }
-      doc.font("Helvetica-Bold").fontSize(18).fillColor(bleu)
-        .text((d.magasin || ""), x0 + (logoExists ? 66 : 0), y + 5, { align: "left" });
+      doc.font("Helvetica-Bold").fontSize(15).fillColor("#14548C")
+        .text(d.magasin || "", MARGIN + logoSize + 16, y + 5, { continued: true });
+      doc.font("Helvetica").fontSize(11).fillColor("#222")
+        .text("    Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), MARGIN + logoSize + 170, y + 11);
 
-      doc.font("Helvetica").fontSize(12).fillColor("#222")
-        .text("Créé le : " + new Date(d.date).toLocaleDateString("fr-FR"), x0, y, {
-          align: "right", width: largeurTable - 14
-        });
+      y += logoSize + 15;
 
-      y += 45;
-      doc.moveDown();
+      doc.save();
+      doc.lineWidth(1.2);
+      doc.roundedRect(MARGIN, y, CELL_W, 560, 12).stroke("#a5bddb");
+      doc.restore();
 
-      doc.roundedRect(x0, y, largeurTable, 410, 11).fillAndStroke(grisBg, grisBorder);
+      let ty = y + 12;
 
-      function sectionTitle(title, ySection) {
-        doc.rect(x0, ySection, largeurTable, 26).fillAndStroke(bleuSection, grisBorder);
-        doc.fillColor(bleu).font("Helvetica-Bold").fontSize(12)
-          .text(title, x0 + 11, ySection + 7);
+      const rows = [
+        ["Nom du client", d.nom || ""],
+        ["Email", d.email || ""],
+        ["Magasin", d.magasin || ""],
+        ["-", "-"], // SEP
+        ["Marque du produit", d.marque_produit || ""],
+        ["Produit concerné", d.produit_concerne || ""],
+        ["Référence de la pièce", d.reference_piece || ""],
+        ["Quantité posée", d.quantite_posee || ""],
+        ["-", "-"], // SEP
+        ["Immatriculation", d.immatriculation || ""],
+        ["Marque", d.marque_vehicule || ""],
+        ["Modèle", d.modele_vehicule || ""],
+        ["Numéro de série", d.num_serie || ""],
+        ["1ère immatriculation", d.premiere_immat || ""],
+        ["-", "-"], // SEP
+        ["Date de pose", d.date_pose || ""],
+        ["Date du constat", d.date_constat || ""],
+        ["Kilométrage à la pose", d.km_pose || ""],
+        ["Kilométrage au constat", d.km_constat || ""],
+        ["N° BL 1ère Vente", d.bl_pose || ""],
+        ["N° BL 2ème Vente", d.bl_constat || ""],
+      ];
+
+      const sectionTitles = [
+        0: "Informations client",
+        4: "Produit",
+        9: "Véhicule",
+        14: "Problème",
+      ];
+      const sepIndexes = [0, 4, 9, 14];
+
+      let rowHeight = 26;
+      let headerHeight = 22;
+
+      for (let i = 0; i < rows.length; i++) {
+        if (sepIndexes.includes(i)) {
+          doc.save()
+            .fillColor("#14548C")
+            .rect(MARGIN, ty, CELL_W, headerHeight)
+            .fill()
+            .fillColor("white")
+            .font("Helvetica-Bold")
+            .fontSize(12)
+            .text(sectionTitles[i], MARGIN + 10, ty + 5)
+            .restore();
+          doc.rect(MARGIN, ty, CELL_W, headerHeight).stroke("#a5bddb");
+          ty += headerHeight;
+        }
+        if (rows[i][0] !== "-") {
+          doc.save();
+          doc.font("Helvetica-Bold").fontSize(10).fillColor("#14548C")
+            .text(rows[i][0], MARGIN + 10, ty + 7, { width: CELL_W/2 - 18, continued: true })
+            .font("Helvetica").fillColor("#222")
+            .text(rows[i][1], MARGIN + CELL_W/2 + 2, ty + 7, { width: CELL_W/2 - 16, align: "left" });
+          doc.rect(MARGIN, ty, CELL_W, rowHeight).stroke("#a5bddb");
+          doc.restore();
+          ty += rowHeight;
+        }
       }
-      function row(label, value, yRow, isBold = false) {
-        doc.font(isBold ? "Helvetica-Bold" : "Helvetica").fontSize(11).fillColor("#222")
-          .text(label, x0 + 15, yRow, { width: 155 });
-        doc.font("Helvetica").fontSize(11)
-          .text(value || "", x0 + 175, yRow, { width: largeurTable - 190 });
-      }
-      function drawLine(yLine) {
-        doc.moveTo(x0, yLine).lineTo(x0 + largeurTable, yLine).strokeColor(grisBorder).lineWidth(1).stroke();
-      }
 
-      let currY = y + 9;
-      sectionTitle("Informations client", currY);
-      currY += 26;
-      row("Nom du client", d.nom, currY, true); currY += 19;
-      drawLine(currY - 4);
-      row("Email", d.email, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Magasin", d.magasin, currY); currY += 19;
-      drawLine(currY - 4);
+      let pbText = d.probleme_rencontre || "";
+      let pbHeight = doc.heightOfString(pbText, { width: CELL_W/2 - 16, align: "left", fontSize: 10, font: "Helvetica" });
+      let pbCellH = Math.max(rowHeight, pbHeight + 16);
 
-      sectionTitle("Produit", currY);
-      currY += 26;
-      row("Marque du produit", d.marque_produit, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Produit concerné", d.produit_concerne, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Référence de la pièce", d.reference_piece, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Quantité posée", d.quantite_posee, currY); currY += 19;
-      drawLine(currY - 4);
-
-      sectionTitle("Véhicule", currY);
-      currY += 26;
-      row("Immatriculation", d.immatriculation, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Marque", d.marque_vehicule, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Modèle", d.modele_vehicule, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Numéro de série", d.num_serie, currY); currY += 19;
-      drawLine(currY - 4);
-      row("1ère immatriculation", d.premiere_immat, currY); currY += 19;
-      drawLine(currY - 4);
-
-      sectionTitle("Problème", currY);
-      currY += 26;
-      row("Date de pose", d.date_pose, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Date du constat", d.date_constat, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Kilométrage à la pose", d.km_pose, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Kilométrage au constat", d.km_constat, currY); currY += 19;
-      drawLine(currY - 4);
-      row("N° BL 1ère Vente", d.bl_pose, currY); currY += 19;
-      drawLine(currY - 4);
-      row("N° BL 2ème Vente", d.bl_constat, currY); currY += 19;
-      drawLine(currY - 4);
-      row("Problème rencontré", d.probleme_rencontre, currY); currY += 23;
+      doc.save();
+      doc.font("Helvetica-Bold").fontSize(10).fillColor("#14548C")
+        .text("Problème rencontré", MARGIN + 10, ty + 7, { width: CELL_W/2 - 18, continued: true })
+        .font("Helvetica").fillColor("#222")
+        .text(pbText, MARGIN + CELL_W/2 + 2, ty + 7, { width: CELL_W/2 - 16, align: "left" });
+      doc.rect(MARGIN, ty, CELL_W, pbCellH).stroke("#a5bddb");
+      doc.restore();
 
       doc.end();
-    } catch (e) { reject(e); }
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 
@@ -334,7 +345,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         dateStr = dt.toISOString().slice(0,10);
       }
     }
-    let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
+    let nomFichier = `DURAND_SERVICES_${d.magasin ? d.magasin.toUpperCase() + "_" : ""}${dateStr}`.replace(/[\s]/g, "") + ".pdf";
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
 
     if (d.email) {
