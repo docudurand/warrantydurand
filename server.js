@@ -58,7 +58,6 @@ const mailer = nodemailer.createTransport({
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-
 const upload = multer({ dest: "temp_uploads/" });
 
 async function getFTPClient() {
@@ -202,72 +201,108 @@ async function cleanOldBackupsFTP(client) {
   }
 }
 
-function creerPDFDemande(d, nomFichier) {
+async function creerPDFDemande(d, nomFichier) {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({margin:36, size:"A4"});
+      const doc = new PDFDocument({ margin: 36, size: "A4" });
       const buffers = [];
       doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => {
-        const pdfData = Buffer.concat(buffers);
-        resolve(pdfData);
-      });
+      doc.on("end", () => resolve(Buffer.concat(buffers)));
 
       const logoPath = path.join(__dirname, "DSG.png");
-      if (fs.existsSync(logoPath)) {
-        doc.image(logoPath, 34, 28, {width: 60}).moveUp();
+      let logoExists = fs.existsSync(logoPath);
+
+      const bleu = "#14548C";
+      const bleuSection = "#dde8f7";
+      const grisBorder = "#b4c8d8";
+      const grisTitre = "#475A6B";
+      const grisBg = "#F8F9FB";
+      const largeurTable = 460;
+      let x0 = 75, y = 42;
+
+      if (logoExists) {
+        doc.image(logoPath, x0, y, { width: 58 });
+      }
+      doc.font("Helvetica-Bold").fontSize(18).fillColor(bleu)
+        .text((d.magasin || ""), x0 + (logoExists ? 66 : 0), y + 5, { align: "left" });
+
+      doc.font("Helvetica").fontSize(12).fillColor("#222")
+        .text("Créé le : " + new Date(d.date).toLocaleDateString("fr-FR"), x0, y, {
+          align: "right", width: largeurTable - 14
+        });
+
+      y += 45;
+      doc.moveDown();
+
+      doc.roundedRect(x0, y, largeurTable, 410, 11).fillAndStroke(grisBg, grisBorder);
+
+      function sectionTitle(title, ySection) {
+        doc.rect(x0, ySection, largeurTable, 26).fillAndStroke(bleuSection, grisBorder);
+        doc.fillColor(bleu).font("Helvetica-Bold").fontSize(12)
+          .text(title, x0 + 11, ySection + 7);
+      }
+      function row(label, value, yRow, isBold = false) {
+        doc.font(isBold ? "Helvetica-Bold" : "Helvetica").fontSize(11).fillColor("#222")
+          .text(label, x0 + 15, yRow, { width: 155 });
+        doc.font("Helvetica").fontSize(11)
+          .text(value || "", x0 + 175, yRow, { width: largeurTable - 190 });
+      }
+      function drawLine(yLine) {
+        doc.moveTo(x0, yLine).lineTo(x0 + largeurTable, yLine).strokeColor(grisBorder).lineWidth(1).stroke();
       }
 
-      doc.font("Helvetica-Bold").fontSize(17).fillColor("#17537a")
-        .text((d.magasin || ""), 105, 33, {align:"left"});
-      let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-      let dateStr = "";
-      if (d.date) {
-        let dt = new Date(d.date);
-        if (!isNaN(dt)) dateStr = dt.toLocaleDateString("fr-FR");
-      }
-      doc.fontSize(14).fillColor("#333")
-        .text("Créé le : " + dateStr, 400, 38, {align:"left"});
-      doc.moveDown();
+      let currY = y + 9;
+      sectionTitle("Informations client", currY);
+      currY += 26;
+      row("Nom du client", d.nom, currY, true); currY += 19;
+      drawLine(currY - 4);
+      row("Email", d.email, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Magasin", d.magasin, currY); currY += 19;
+      drawLine(currY - 4);
 
-      doc.moveTo(34, 80).lineTo(560, 80).lineWidth(1.2).stroke("#c7d3de");
+      sectionTitle("Produit", currY);
+      currY += 26;
+      row("Marque du produit", d.marque_produit, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Produit concerné", d.produit_concerne, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Référence de la pièce", d.reference_piece, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Quantité posée", d.quantite_posee, currY); currY += 19;
+      drawLine(currY - 4);
 
-      doc.moveDown(1.2);
+      sectionTitle("Véhicule", currY);
+      currY += 26;
+      row("Immatriculation", d.immatriculation, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Marque", d.marque_vehicule, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Modèle", d.modele_vehicule, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Numéro de série", d.num_serie, currY); currY += 19;
+      drawLine(currY - 4);
+      row("1ère immatriculation", d.premiere_immat, currY); currY += 19;
+      drawLine(currY - 4);
 
-      doc.font("Helvetica-Bold").fillColor("#14548C").fontSize(13).text("Nom du client", 34, 92, {continued:true}).font("Helvetica").fillColor("#000").text("   " + (d.nom||""), {continued:true});
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("        Email", {continued:true}).font("Helvetica").fillColor("#000").text("   " + (d.email||""), {continued:true});
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("        Magasin", {continued:false}).font("Helvetica").fillColor("#000").text("   " + (d.magasin||""));
-      doc.moveDown(1.2);
-
-      doc.font("Helvetica-Bold").fontSize(12.7).fillColor("#14548C").text("Produit", 34);
-      doc.font("Helvetica-Bold").fillColor("#14548C").fontSize(12)
-        .text("Marque du produit", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.marque_produit||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Produit concerné", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.produit_concerne||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Référence de la pièce", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.reference_piece||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Quantité posée", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.quantite_posee||""));
-      doc.moveDown();
-
-      doc.font("Helvetica-Bold").fontSize(12.7).fillColor("#14548C").text("Véhicule");
-      doc.font("Helvetica-Bold").fillColor("#14548C").fontSize(12)
-        .text("Immatriculation", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.immatriculation||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Marque", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.marque_vehicule||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Modèle", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.modele_vehicule||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Numéro de série", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.num_serie||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("1ère immatriculation", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.premiere_immat||""));
-      doc.moveDown();
-
-      doc.font("Helvetica-Bold").fontSize(12.7).fillColor("#14548C").text("Problème");
-      doc.font("Helvetica-Bold").fillColor("#14548C").fontSize(12)
-        .text("Date de pose", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.date_pose||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Date du constat", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.date_constat||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Kilométrage à la pose", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.km_pose||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Kilométrage au constat", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.km_constat||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("N° BL 1ère Vente", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.bl_pose||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("N° BL 2ème Vente", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.bl_constat||""));
-      doc.font("Helvetica-Bold").fillColor("#14548C").text("Problème rencontré", {continued:true}).font("Helvetica").fillColor("#222").text("   " + (d.probleme_rencontre||""));
+      sectionTitle("Problème", currY);
+      currY += 26;
+      row("Date de pose", d.date_pose, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Date du constat", d.date_constat, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Kilométrage à la pose", d.km_pose, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Kilométrage au constat", d.km_constat, currY); currY += 19;
+      drawLine(currY - 4);
+      row("N° BL 1ère Vente", d.bl_pose, currY); currY += 19;
+      drawLine(currY - 4);
+      row("N° BL 2ème Vente", d.bl_constat, currY); currY += 19;
+      drawLine(currY - 4);
+      row("Problème rencontré", d.probleme_rencontre, currY); currY += 23;
 
       doc.end();
-    } catch(e) { reject(e); }
+    } catch (e) { reject(e); }
   });
 }
 
