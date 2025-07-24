@@ -58,7 +58,6 @@ const mailer = nodemailer.createTransport({
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-
 const upload = multer({ dest: "temp_uploads/" });
 
 async function getFTPClient() {
@@ -73,6 +72,7 @@ async function getFTPClient() {
   });
   return client;
 }
+
 async function readDataFTP() {
   const client = await getFTPClient();
   let json = [];
@@ -87,6 +87,7 @@ async function readDataFTP() {
   client.close();
   return json;
 }
+
 async function writeDataFTP(data) {
   const client = await getFTPClient();
   const tmp = path.join(__dirname, "temp_demandes.json");
@@ -96,6 +97,7 @@ async function writeDataFTP(data) {
   fs.unlinkSync(tmp);
   client.close();
 }
+
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   const client = await getFTPClient();
   const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder);
@@ -105,30 +107,29 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   client.close();
   return fileName;
 }
+
 async function deleteFileFromFTP(remoteFileName) {
   const client = await getFTPClient();
   const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-  try {
-    await client.remove(remotePath);
-  } catch (e) {}
+  try { await client.remove(remotePath); } catch (e) {}
   client.close();
 }
+
 async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   const client = await getFTPClient();
   res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
   if (mimeType) res.setHeader("Content-Type", mimeType);
-  try {
-    await client.downloadTo(res, remotePath);
-  } catch (e) {
-    res.status(404).send("Fichier introuvable");
-  }
+  try { await client.downloadTo(res, remotePath); }
+  catch (e) { res.status(404).send("Fichier introuvable"); }
   client.close();
 }
+
 function nowSuffix() {
   const d = new Date();
   const pad = n => n.toString().padStart(2,"0");
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
 }
+
 async function fetchFilesFromFTP(fileObjs) {
   const localPaths = [];
   if (!fileObjs || fileObjs.length === 0) return [];
@@ -151,14 +152,12 @@ function cleanupFiles(localPaths) {
     try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch {}
   }
 }
+
 async function saveBackupFTP() {
   const clientDL = await getFTPClient();
   const tmpJSON = path.join(__dirname, "temp_demandes.json");
-  try {
-    await clientDL.downloadTo(tmpJSON, JSON_FILE_FTP);
-  } catch (e) {
-    fs.writeFileSync(tmpJSON, "[]");
-  }
+  try { await clientDL.downloadTo(tmpJSON, JSON_FILE_FTP); }
+  catch (e) { fs.writeFileSync(tmpJSON, "[]"); }
   clientDL.close();
 
   const backupPath = path.join(__dirname, "backup_tmp.zip");
@@ -166,7 +165,7 @@ async function saveBackupFTP() {
   const output = fs.createWriteStream(backupPath);
   archive.pipe(output);
   archive.file(tmpJSON, { name: "demandes.json" });
-  await new Promise((resolve, reject) => {
+  await new Promise((resolve) => {
     output.on("close", resolve);
     archive.finalize();
   });
@@ -180,6 +179,7 @@ async function saveBackupFTP() {
   clientUP.close();
   fs.unlinkSync(backupPath);
 }
+
 async function cleanOldBackupsFTP(client) {
   const list = await client.list(FTP_BACKUP_FOLDER);
   const backups = list
@@ -193,103 +193,105 @@ async function cleanOldBackupsFTP(client) {
   }
 }
 
-async function creerPDFDemande(d, nomFichier) {
+function creerPDFDemande(d, nomFichier) {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ margin: 40, size: "A4" });
+      const doc = new PDFDocument({ margin: 0, size: "A4" });
       const buffers = [];
       doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => {
-        resolve(Buffer.concat(buffers));
-      });
+      doc.on("end", () => resolve(Buffer.concat(buffers)));
 
-      const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-      const tableX = doc.page.margins.left + 18;
-      const tableWidth = pageWidth - 36;
-      let y = 50;
+      const pageW = 595.28, pageH = 841.89;
+      const frameX = 42, frameY = 50, frameW = pageW - 2 * frameX, frameH = pageH - frameY - 36;
+      doc.lineWidth(2).roundedRect(frameX, frameY, frameW, frameH, 20).stroke("#1c518b");
 
-      const logoPath = path.join(__dirname, "DSG.png");
-doc.image(logoPath, tableX, y, { width: 62 });
-      doc.font("Helvetica-Bold").fontSize(16).fillColor("#14548C")
-        .text(d.magasin || "", tableX + 75, y + 8, { align: "left" });
-      doc.font("Helvetica").fontSize(11).fillColor("#333")
-        .text("Créé le : " + new Date(d.date).toLocaleDateString("fr-FR"), tableX + 75, y + 28, { align: "left" });
-      y += 60;
-
-      const rows = [
-        [{ txt: "Informations client", section: true }],
-        ["Nom du client", d.nom || ""],
-        ["Email", d.email || ""],
-        ["Magasin", d.magasin || ""],
-
-        [{ txt: "Produit", section: true }],
-        ["Marque du produit", d.marque_produit || ""],
-        ["Produit concerné", d.produit_concerne || ""],
-        ["Référence de la pièce", d.reference_piece || ""],
-        ["Quantité posée", d.quantite_posee || ""],
-
-        [{ txt: "Véhicule", section: true }],
-        ["Immatriculation", d.immatriculation || ""],
-        ["Marque", d.marque_vehicule || ""],
-        ["Modèle", d.modele_vehicule || ""],
-        ["Numéro de série", d.num_serie || ""],
-        ["1ère immatriculation", d.premiere_immat || ""],
-
-        [{ txt: "Problème", section: true }],
-        ["Date de pose", d.date_pose || ""],
-        ["Date du constat", d.date_constat || ""],
-        ["Kilométrage à la pose", d.km_pose || ""],
-        ["Kilométrage au constat", d.km_constat || ""],
-        ["N° BL 1ère Vente", d.bl_pose || ""],
-        ["N° BL 2ème Vente", d.bl_constat || ""],
-        ["Problème rencontré", d.probleme_rencontre || ""],
-      ];
-
-      const rowHeight = 28;
-      const leftColWidth = 155;
-      const rightColWidth = tableWidth - leftColWidth;
-      const heights = rows.map(row => {
-        if (row[0] && row[0].section) return rowHeight;
-        if (row[1]) {
-          if (row[0] === "Problème rencontré") {
-            return Math.max(rowHeight, doc.heightOfString(row[1], { width: rightColWidth - 16 }) + 12);
-          }
-        }
-        return rowHeight;
-      });
-      const tableHeight = heights.reduce((a, b) => a + b, 0);
-
-      const radius = 15;
-      doc.save();
-      doc.roundedRect(tableX, y, tableWidth, tableHeight, radius).fillAndStroke("#F8FAFD", "#90A7C3");
-      doc.restore();
-
-      let curY = y;
-      for (let i = 0; i < rows.length; i++) {
-        const h = heights[i];
-        const row = rows[i];
-        if (row[0] && row[0].section) {
-          doc.rect(tableX, curY, tableWidth, h).fill("#e3eefb");
-          doc.font("Helvetica-Bold").fontSize(12).fillColor("#14548C")
-            .text(row[0].txt, tableX + 16, curY + 7, { align: "left" });
-        } else {
-          if (i > 0) {
-            doc.moveTo(tableX, curY).lineTo(tableX + tableWidth, curY).strokeColor("#90A7C3").lineWidth(1).stroke();
-          }
-          doc.font("Helvetica").fontSize(11).fillColor("#14548C")
-            .text(row[0], tableX + 14, curY + (h - 16) / 2, { width: leftColWidth - 18, align: "left" });
-          doc.font("Helvetica").fontSize(11).fillColor("#222")
-            .text(row[1], tableX + leftColWidth + 10, curY + (h - doc.heightOfString(row[1], { width: rightColWidth - 16 })) / 2, {
-              width: rightColWidth - 16,
-              align: "left"
-            });
-        }
-        curY += h;
+      let logoPath = path.join(__dirname, "DSG.png");
+      if (fs.existsSync(logoPath)) {
+        doc.image(logoPath, frameX + 22, frameY + 18, { width: 72, height: 72 });
       }
+      doc.font("Helvetica-Bold").fontSize(21).fillColor("#14548C")
+        .text("DURAND SERVICES GARANTIE", frameX + 110, frameY + 34, { align: "left" });
+      doc.font("Helvetica").fontSize(15).fillColor("#1c518b")
+        .text(d.magasin || "", frameX + 110, frameY + 66, { align: "left" });
+      doc.font("Helvetica").fontSize(11).fillColor("#888")
+        .text("Créé le : " + new Date(d.date).toLocaleDateString("fr-FR"),
+          frameX + frameW - 145, frameY + 35, { width: 130, align: "right" });
+
+      const colonne1 = frameX + 18;
+      const colonne2 = frameX + 172;
+      const labelW = 148;
+      const valueW = frameW - 64 - labelW;
+      let y = frameY + 110;
+      const ligneH = 27;
+
+      function blocTitre(txt) {
+        doc.moveTo(frameX + 16, y)
+          .lineTo(frameX + frameW - 16, y)
+          .lineWidth(1).stroke("#c2d2ee");
+        y += 2;
+        doc.font("Helvetica-Bold").fontSize(13).fillColor("#14548C")
+          .text(txt, colonne1, y + 7, { width: frameW - 36, align: "left" });
+        y += 22;
+      }
+      function row(label, value, opt = {}) {
+        const hauteur = opt.height || ligneH;
+        doc.lineWidth(1)
+          .moveTo(frameX + 16, y)
+          .lineTo(frameX + frameW - 16, y)
+          .stroke("#c2d2ee");
+        doc.font("Helvetica-Bold").fontSize(12).fillColor("#14548C")
+          .text(label, colonne1, y + 7, { width: labelW, align: "left" });
+        doc.font("Helvetica").fontSize(12).fillColor("#000")
+          .text(value, colonne2, y + 7, { width: valueW, align: "left" });
+        y += hauteur;
+      }
+
+      blocTitre("Informations client");
+      row("Nom du client", d.nom || "");
+      row("Email", d.email || "");
+      row("Magasin", d.magasin || "");
+
+      blocTitre("Produit");
+      row("Marque du produit", d.marque_produit || "");
+      row("Produit concerné", d.produit_concerne || "");
+      row("Référence de la pièce", d.reference_piece || "");
+      row("Quantité posée", d.quantite_posee || "");
+
+      blocTitre("Véhicule");
+      row("Immatriculation", d.immatriculation || "");
+      row("Marque", d.marque_vehicule || "");
+      row("Modèle", d.modele_vehicule || "");
+      row("Numéro de série", d.num_serie || "");
+      row("1ère immatriculation", d.premiere_immat || "");
+
+      blocTitre("Problème");
+      row("Date de pose", d.date_pose || "");
+      row("Date du constat", d.date_constat || "");
+      row("Kilométrage à la pose", d.km_pose || "");
+      row("Kilométrage au constat", d.km_constat || "");
+      row("N° BL 1ère Vente", d.bl_pose || "");
+      row("N° BL 2ème Vente", d.bl_constat || "");
+
+      let probleme = d.probleme_rencontre || "";
+      let hPb = doc.heightOfString(probleme, {
+        width: valueW,
+        align: "left",
+        font: "Helvetica",
+        size: 12
+      }) + 14;
+      doc.moveTo(frameX + 16, y)
+        .lineTo(frameX + frameW - 16, y)
+        .stroke("#c2d2ee");
+      doc.font("Helvetica-Bold").fontSize(12).fillColor("#14548C")
+        .text("Problème rencontré", colonne1, y + 7, { width: labelW, align: "left" });
+      doc.font("Helvetica").fontSize(12).fillColor("#000")
+        .text(probleme, colonne2, y + 7, { width: valueW, align: "left" });
+      y += Math.max(ligneH, hPb);
+
+      doc.lineWidth(2).roundedRect(frameX, frameY, frameW, y - frameY + 15, 20).stroke("#1c518b");
+
       doc.end();
-    } catch (e) {
-      reject(e);
-    }
+    } catch (e) { reject(e); }
   });
 }
 
@@ -317,9 +319,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     let dateStr = "";
     if (d.date) {
       let dt = new Date(d.date);
-      if (!isNaN(dt)) {
-        dateStr = dt.toISOString().slice(0,10);
-      }
+      if (!isNaN(dt)) dateStr = dt.toISOString().slice(0,10);
     }
     let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
@@ -365,10 +365,70 @@ L'équipe Durand Services Garantie.
   }
 });
 
+app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
+  let { id } = req.params;
+  let data = await readDataFTP();
+  let dossier = data.find(x=>x.id===id);
+  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
+
+  const oldStatut = dossier.statut;
+  const oldReponse = dossier.reponse;
+  const oldFilesLength = (dossier.reponseFiles||[]).length;
+
+  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
+  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
+  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
+
+  dossier.reponseFiles = dossier.reponseFiles || [];
+  for (const f of req.files || []) {
+    const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+    await uploadFileToFTP(f.path, "uploads", remoteName);
+    dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
+    fs.unlinkSync(f.path);
+  }
+  await writeDataFTP(data);
+  await saveBackupFTP();
+
+  let mailDoitEtreEnvoye = false;
+  let changes = [];
+  if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
+  if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
+  if (req.files && req.files.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
+    changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
+  }
+
+  if (mailDoitEtreEnvoye && dossier.email) {
+    const attachments = await fetchFilesFromFTP(dossier.reponseFiles);
+    let html = `<div style="font-family:sans-serif;">
+      Bonjour,<br>
+      Votre dossier de garantie a été mis à jour.<br>
+      Produit : ${dossier.produit_concerne}<br>
+      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
+      <ul>
+        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
+        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
+        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
+      </ul>
+      <br><br>L'équipe Garantie Durand<br><br>
+    </div>`;
+    await mailer.sendMail({
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      to: dossier.email,
+      subject: `Mise à jour dossier garantie Durand Services`,
+      html,
+      attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
+    });
+    cleanupFiles(attachments);
+  }
+
+  res.json({success:true});
+});
+
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
 });
+
 app.get("/api/mes-dossiers", async (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let data = await readDataFTP();
@@ -417,6 +477,68 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   await writeDataFTP(data);
   await saveBackupFTP();
   res.json({success:true});
+});
+
+app.get("/api/admin/exportzip", async (req, res) => {
+  try {
+    const client = await getFTPClient();
+    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/zip');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', err => res.status(500).send({error: err.message}));
+    const tmp = path.join(__dirname, "temp_demandes.json");
+    await client.downloadTo(tmp, JSON_FILE_FTP);
+    archive.file(tmp, { name: "demandes.json" });
+    const uploadFiles = await client.list(UPLOADS_FTP);
+    for(const f of uploadFiles){
+      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
+      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
+      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
+      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
+    }
+    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
+    archive.pipe(res);
+    archive.pipe(output);
+    archive.finalize();
+    output.on("close", ()=>{
+      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
+      client.close();
+    });
+  } catch (e) {
+    res.status(500).send({error: e.message});
+  }
+});
+
+app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
+  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
+  try {
+    const zipPath = req.file.path;
+    await fs.createReadStream(zipPath)
+      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
+      .promise();
+    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
+    if (fs.existsSync(jsonSrc)) {
+      const data = JSON.parse(fs.readFileSync(jsonSrc,"utf8"));
+      await writeDataFTP(data);
+    } else {
+      throw new Error("Le fichier demandes.json est manquant dans l'archive");
+    }
+    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
+    if (fs.existsSync(newUploads)) {
+      const files = fs.readdirSync(newUploads);
+      for(const f of files){
+        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
+      }
+    }
+    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    await saveBackupFTP();
+    res.json({success:true});
+  } catch (e) {
+    res.json({success:false, message:e.message});
+  }
 });
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
