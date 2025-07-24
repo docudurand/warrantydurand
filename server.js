@@ -159,31 +159,33 @@ function cleanupFiles(localPaths) {
 }
 
 async function saveBackupFTP() {
-  const client = await getFTPClient();
+  const clientDL = await getFTPClient();
+  const tmpJSON = path.join(__dirname, "temp_demandes.json");
+  try {
+    await clientDL.downloadTo(tmpJSON, JSON_FILE_FTP);
+  } catch (e) {
+    fs.writeFileSync(tmpJSON, "[]");
+  }
+  clientDL.close();
+
   const backupPath = path.join(__dirname, "backup_tmp.zip");
   const archive = archiver('zip', { zlib: { level: 9 } });
   const output = fs.createWriteStream(backupPath);
-
-  return new Promise((resolve, reject) => {
-    output.on("close", async () => {
-      const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-      try {
-        await client.ensureDir(FTP_BACKUP_FOLDER);
-        await client.uploadFrom(backupPath, path.posix.join(FTP_BACKUP_FOLDER, fileName));
-        await cleanOldBackupsFTP(client);
-        fs.unlinkSync(backupPath);
-        client.close();
-        resolve();
-      } catch (err) {
-        client.close();
-        reject(err);
-      }
-    });
-    archive.pipe(output);
-    archive.append(JSON.stringify([]), { name: "demandes.json" });
-    client.downloadTo(archive, JSON_FILE_FTP).catch(() => {});
+  archive.pipe(output);
+  archive.file(tmpJSON, { name: "demandes.json" });
+  await new Promise((resolve, reject) => {
+    output.on("close", resolve);
     archive.finalize();
   });
+  fs.unlinkSync(tmpJSON);
+
+  const clientUP = await getFTPClient();
+  const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+  await clientUP.ensureDir(FTP_BACKUP_FOLDER);
+  await clientUP.uploadFrom(backupPath, path.posix.join(FTP_BACKUP_FOLDER, fileName));
+  await cleanOldBackupsFTP(clientUP);
+  clientUP.close();
+  fs.unlinkSync(backupPath);
 }
 
 async function cleanOldBackupsFTP(client) {
@@ -219,24 +221,10 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     await writeDataFTP(data);
     await saveBackupFTP();
 
-    const attachments = await fetchFilesFromFTP(d.files);
-
-    const respMail = MAGASIN_MAILS[d.magasin] || "";
-    if (respMail) {
+    if (d.email) {
+      const attachments = await fetchFilesFromFTP(d.files);
       await mailer.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
-        to: respMail,
-        subject: `Nouvelle demande de garantie`,
-        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
-          Client : ${d.nom} (${d.email})<br>
-          Marque du produit : ${d.marque_produit||""}<br>
-          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
-        attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
-      });
-    }
-    if (d.email) {
-      await mailer.sendMail({
-        from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
         to: d.email,
         subject: "Demande de Garantie EnvoyéE",
         text:
@@ -247,10 +235,24 @@ L'équipe Durand Services Garantie.
 `,
         attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
       });
+      cleanupFiles(attachments);
     }
 
-    cleanupFiles(attachments);
-
+    const respMail = MAGASIN_MAILS[d.magasin] || "";
+    if (respMail) {
+      const attachments = await fetchFilesFromFTP(d.files);
+      await mailer.sendMail({
+        from: "Garantie <" + process.env.GMAIL_USER + ">",
+        to: respMail,
+        subject: `Nouvelle demande de garantie`,
+        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
+          Client : ${d.nom} (${d.email})<br>
+          Marque du produit : ${d.marque_produit||""}<br>
+          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
+        attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
+      });
+      cleanupFiles(attachments);
+    }
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
