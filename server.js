@@ -59,27 +59,47 @@ const mailer = nodemailer.createTransport({
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-
 const upload = multer({ dest: "temp_uploads/" });
 
-async function getFTPClient() { /* ... ... */ }
-async function readDataFTP() { /* ... ... */ }
-async function writeDataFTP(data) { /* ...... */ }
-async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) { /* ...  ... */ }
-async function deleteFileFromFTP(remoteFileName) { /* ...  ... */ }
-async function streamFTPFileToRes(res, remotePath, fileName, mimeType) { /* ...  ... */ }
-function nowSuffix() { /* ...  ... */ }
-async function fetchFilesFromFTP(fileObjs) { /* ...  ... */ }
-function cleanupFiles(localPaths) { /* ...  ... */ }
-async function saveBackupFTP() { /* ...  ... */ }
-async function cleanOldBackupsFTP(client) { /* ...  ... */ }
+// ===================  FTP functions (à compléter avec ton code habituel)  ===================
+async function getFTPClient() {/* ... */}
+async function readDataFTP() {
+  // Doit retourner [] si inexistant ou erreur
+  try {
+    const client = await getFTPClient();
+    let tempFile = path.join(__dirname, "demandes_temp.json");
+    await client.downloadTo(tempFile, JSON_FILE_FTP).catch(()=>{});
+    let data = [];
+    if (fs.existsSync(tempFile)) {
+      let str = fs.readFileSync(tempFile, "utf8");
+      if (str.trim().length) data = JSON.parse(str);
+      fs.unlinkSync(tempFile);
+    }
+    client.close();
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    return [];
+  }
+}
+async function writeDataFTP(data) {/* ... */}
+async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {/* ... */}
+async function deleteFileFromFTP(remoteFileName) {/* ... */}
+async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {/* ... */}
+function nowSuffix() {/* ... */}
+async function fetchFilesFromFTP(fileObjs) {/* ... */}
+function cleanupFiles(localPaths) {/* ... */}
+async function saveBackupFTP() {/* ... */}
+async function cleanOldBackupsFTP(client) {/* ... */}
+// =======================================================================
 
+// --------- Logo utilitaire ---------
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data, "binary");
 }
 
+// --------- PDF GENERATION -----------
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -88,46 +108,50 @@ async function creerPDFDemande(d, nomFichier) {
       doc.on("data", buffers.push.bind(buffers));
       doc.on("end", () => resolve(Buffer.concat(buffers)));
 
+      // Header
       const logo = await getLogoBuffer();
       const PAGE_W = doc.page.width;
-      let y = 36;
-      const logoW = 50, logoH = 50;
-      doc.image(logo, 36, y, { width: logoW, height: logoH });
-      doc.font("Helvetica-Bold").fontSize(20).fillColor("#14548C");
-      doc.text("DURAND SERVICES GARANTIE", 36 + logoW + 12, y + 10, { align: "left", continued: false });
-      doc.font("Helvetica").fontSize(14).fillColor("#14548C");
-      doc.text(d.magasin || "", 36 + logoW + 12, y + 36, { align: "left" });
-
-      doc.fontSize(11).fillColor("#000");
-      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 36 - 120, y + 10, { align: "left", width: 120 });
-
-      y += logoH + 25;
+      const logoW = 55, logoH = 55;
       const x0 = 36;
+      let y0 = 36;
+
+      // Logo + titre
+      doc.image(logo, x0, y0, { width: logoW, height: logoH });
+      doc.font("Helvetica-Bold").fontSize(20).fillColor("#14548C");
+      doc.text("DURAND SERVICES GARANTIE", x0 + logoW + 12, y0 + 6, { align: "left", continued: false });
+      doc.font("Helvetica").fontSize(14).fillColor("#14548C");
+      doc.text(d.magasin || "", x0 + logoW + 12, y0 + 32, { align: "left" });
+
+      // Date à droite (non chevauchant le titre)
+      doc.fontSize(11).fillColor("#000");
+      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
+
+      // Table layout
+      let y = y0 + logoH + 32;
       const tableW = PAGE_W - 2 * x0;
       const colLabelW = 155;
       const colValW = tableW - colLabelW;
+      const rowHeight = 22;
+      const labelFont = "Helvetica-Bold";
+      const valueFont = "Helvetica";
 
+      // Table data
       const rows = [
-
-        ["Informations client", "", "section"],
         ["Nom du client", d.nom || ""],
         ["Email", d.email || ""],
         ["Magasin", d.magasin || "", "rowline"],
 
-        ["Produit", "", "section"],
         ["Marque du produit", d.marque_produit || ""],
         ["Produit concerné", d.produit_concerne || ""],
         ["Référence de la pièce", d.reference_piece || ""],
         ["Quantité posée", d.quantite_posee || "", "rowline"],
 
-        ["Véhicule", "", "section"],
         ["Immatriculation", d.immatriculation || ""],
         ["Marque", d.marque_vehicule || ""],
         ["Modèle", d.modele_vehicule || ""],
         ["Numéro de série", d.num_serie || ""],
         ["1ère immatriculation", d.premiere_immat || "", "rowline"],
 
-        ["Problème", "", "section"],
         ["Date de pose", d.date_pose || ""],
         ["Date du constat", d.date_constat || ""],
         ["Kilométrage à la pose", d.km_pose || ""],
@@ -137,61 +161,51 @@ async function creerPDFDemande(d, nomFichier) {
         ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
       ];
 
-      let rowHeight = 23, valueFont = "Helvetica", labelFont = "Helvetica-Bold";
-      let curY = y;
+      // Arrondi/cadre
+      let totalRow = rows.reduce((sum, row) => sum + ((row[2] === "multiline") ? (row[1].split("\n").length) : 1), 0);
+      let tableH = rowHeight * totalRow;
       let cornerRad = 14;
-      let linesCount = 0;
-      for (const row of rows) {
-        if (row[2] === "section") linesCount++;
-        else if (row[2] === "multiline") linesCount += (row[1].split("\n").length);
-        else linesCount++;
-      }
-      let tableH = rowHeight * linesCount;
+      doc.roundedRect(x0, y, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
+      doc.lineWidth(1.7).roundedRect(x0, y, tableW, tableH, cornerRad).stroke("#3f628c");
 
-      doc.roundedRect(x0, curY, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
-
-      doc.lineWidth(1.7).roundedRect(x0, curY, tableW, tableH, cornerRad).stroke("#3f628c");
-
-      let yCursor = curY;
+      // Table rendering
+      let yCursor = y;
       for (let i = 0; i < rows.length; i++) {
         const [label, value, type] = rows[i];
-
-        if (type === "section") {
-          doc.font(labelFont).fontSize(11).fillColor("#3f628c").text(label, x0 + 18, yCursor + 5, { width: tableW, align: "left" });
-          yCursor += rowHeight;
-          continue;
-        }
-
-        let valueLines = type === "multiline" ? value.split("\n") : [value];
+        let valueLines = (type === "multiline") ? value.split("\n") : [value];
         let cellHeight = rowHeight * valueLines.length;
 
         doc.font(labelFont).fontSize(11).fillColor("#000")
-          .text(label, x0 + 16, yCursor + 5, { width: colLabelW - 20, align: "left" });
-
+          .text(label, x0 + 16, yCursor + 4, { width: colLabelW - 16, align: "left" });
         doc.font(valueFont).fontSize(11).fillColor("#000");
         for (let k = 0; k < valueLines.length; k++) {
-          doc.text(valueLines[k], x0 + colLabelW + 8, yCursor + 5 + k * rowHeight, { width: colValW - 18, align: "left" });
+          doc.text(valueLines[k], x0 + colLabelW + 8, yCursor + 4 + k * rowHeight, { width: colValW - 16, align: "left" });
         }
 
+        // Lignes séparatrices
         let drawLine = false;
-        if (rows[i][2] === "rowline") drawLine = true;
-        if (i < rows.length - 1 && rows[i+1][2] !== "section" && type !== "multiline") drawLine = true;
+        // Ligne après Magasin, Quantité posée, 1ère immatriculation et toutes sauf la dernière
+        if (type === "rowline") drawLine = true;
+        else if (i < rows.length - 1 && rows[i+1][2] !== "multiline" && type !== "multiline") drawLine = true;
+        // Sauf pas de ligne après le dernier champ multiline
         if (i === rows.length - 1) drawLine = false;
         if (drawLine) {
           doc.moveTo(x0 + 8, yCursor + cellHeight).lineTo(x0 + tableW - 8, yCursor + cellHeight).strokeColor("#b3c5df").lineWidth(1).stroke();
         }
-
         yCursor += cellHeight;
       }
-
       doc.end();
     } catch (e) { reject(e); }
   });
 }
 
+// ========== ROUTES ==========
+
+// Ajout de la vérif data []
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
     let d = req.body;
     d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     d.date = new Date().toISOString();
@@ -231,7 +245,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 
 Cordialement
 L'équipe Durand Services Garantie.
-
 `,
         attachments: [
           ...attachments.map(f=>({filename: f.filename, path: f.path})),
@@ -269,6 +282,7 @@ L'équipe Durand Services Garantie.
 app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
   let { id } = req.params;
   let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
   let dossier = data.find(x=>x.id===id);
   if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
 
@@ -321,17 +335,18 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
     });
     cleanupFiles(attachments);
   }
-
   res.json({success:true});
 });
 
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
   res.json(data);
 });
 app.get("/api/mes-dossiers", async (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
   let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
@@ -360,6 +375,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
   let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
   let idx = data.findIndex(x=>x.id===id);
   if (idx === -1) return res.json({success:false, message:"Introuvable"});
   let dossier = data[idx];
