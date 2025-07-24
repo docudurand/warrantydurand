@@ -10,7 +10,6 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
-import PDFDocument from "pdfkit";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -191,8 +190,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     data.push(d);
     writeData(data);
 
-    const pdfBuffer = await generateFichePDF(d);
-
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       await mailer.sendMail({
@@ -206,29 +203,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         attachments: d.files.map(f=>({filename: f.original, path: path.join(UPLOADS_DIR, f.url)}))
       });
     }
-
-    if (d.email) {
-      let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-      let dateStr = d.date ? d.date.slice(0,10) : "";
-      let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
-      await mailer.sendMail({
-        from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
-        to: d.email,
-        subject: "Demande envoyée avec succès",
-        text:
-`Votre demande de Garantie a été envoyée avec succès.
-
-Cordialement
-L'équipe Durand Services Garantie.`,
-        attachments: [
-          {
-            filename: nomFichier,
-            content: pdfBuffer
-          }
-        ]
-      });
-    }
-
     await saveBackupFTP();
     res.json({ success: true });
   } catch (err) {
@@ -236,53 +210,178 @@ L'équipe Durand Services Garantie.`,
   }
 });
 
-function generateFichePDF(d) {
-  return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({margin: 40});
-    const buffers = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => resolve(Buffer.concat(buffers)));
+app.get("/api/admin/dossiers", (req, res) => {
+  const data = readData();
+  res.json(data);
+});
 
-    doc.fontSize(22).fillColor('#006e90').text('Demande de Garantie', {align: 'center'});
-    doc.moveDown();
+app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
+  let { id } = req.params;
+  let data = readData();
+  let dossier = data.find(x=>x.id===id);
+  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
 
-    doc.fontSize(12).fillColor('#17537a');
-    doc.text(`Nom du client : ${d.nom||""}`);
-    doc.text(`Email : ${d.email||""}`);
-    doc.text(`Magasin : ${d.magasin||""}`);
-    doc.moveDown();
+  let oldStatut = dossier.statut;
+  let oldReponse = dossier.reponse;
+  let oldFilesLength = (dossier.reponseFiles||[]).length;
 
-    doc.fillColor('#006e90').fontSize(16).text('Produit', {underline:true});
-    doc.fontSize(12).fillColor('#222');
-    doc.text(`Marque du produit : ${d.marque_produit||""}`);
-    doc.text(`Produit concerné : ${d.produit_concerne||""}`);
-    doc.text(`Référence de la pièce : ${d.reference_piece||""}`);
-    doc.text(`Quantité posée : ${d.quantite_posee||""}`);
-    doc.moveDown();
+  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
+  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
+  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
+  if (req.files && req.files.length) {
+    dossier.reponseFiles = (dossier.reponseFiles||[]).concat(
+      req.files.map(f=>({url: path.basename(f.filename), original: f.originalname}))
+    );
+  }
 
-    doc.fillColor('#006e90').fontSize(16).text('Véhicule', {underline:true});
-    doc.fontSize(12).fillColor('#222');
-    doc.text(`Immatriculation : ${d.immatriculation||""}`);
-    doc.text(`Marque : ${d.marque_vehicule||""}`);
-    doc.text(`Modèle : ${d.modele_vehicule||""}`);
-    doc.text(`Numéro de série : ${d.num_serie||""}`);
-    doc.text(`1ère immatriculation : ${d.premiere_immat||""}`);
-    doc.moveDown();
+  writeData(data);
 
-    doc.fillColor('#006e90').fontSize(16).text('Problème', {underline:true});
-    doc.fontSize(12).fillColor('#222');
-    doc.text(`Date de pose : ${d.date_pose||""}`);
-    doc.text(`Date du constat : ${d.date_constat||""}`);
-    doc.text(`Kilométrage à la pose : ${d.km_pose||""}`);
-    doc.text(`Kilométrage au constat : ${d.km_constat||""}`);
-    doc.text(`N° BL 1ère Vente : ${d.bl_pose||""}`);
-    doc.text(`N° BL 2ème Vente : ${d.bl_constat||""}`);
-    doc.text(`Problème rencontré : ${d.probleme_rencontre||""}`);
+  let mailDoitEtreEnvoye = false;
+  let changes = [];
+  if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
+  if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
+  if (req.files && req.files.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
+    changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
+  }
 
-    doc.end();
+  if (mailDoitEtreEnvoye && dossier.email) {
+    let att = (dossier.reponseFiles||[]).map(f=>({
+      filename: f.original, path: path.join(UPLOADS_DIR, f.url)
+    }));
+    let html = `<div style="font-family:sans-serif;">
+      Bonjour,<br>
+      Votre dossier de garantie a été mis à jour.<br>
+      Produit : ${dossier.produit_concerne}<br>
+      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
+      <ul>
+        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
+        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
+        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
+      </ul>
+      <br><br>L'équipe Garantie Durand<br><br>
+    </div>`;
+    await mailer.sendMail({
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      to: dossier.email,
+      subject: `Mise à jour dossier garantie Durand Services`,
+      html,
+      attachments: att
+    });
+  }
+
+  await saveBackupFTP();
+  res.json({success:true});
+});
+
+app.post("/api/admin/login", (req, res) => {
+  let pw = (req.body && req.body.password) ? req.body.password : "";
+  if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
+  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
+  for (const magasin of MAGASINS) {
+    const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
+    if (process.env[key] && pw === process.env[key]) {
+      return res.json({success:true, isSuper:false, isAdmin:false, magasin});
+    }
+  }
+  res.json({success:false, message:"Mot de passe incorrect"});
+});
+
+app.delete("/api/admin/dossier/:id", async (req, res) => {
+  if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
+  let { id } = req.params;
+  let data = readData();
+  let idx = data.findIndex(x=>x.id===id);
+  if (idx === -1) return res.json({success:false, message:"Introuvable"});
+  let dossier = data[idx];
+  if(dossier.files){
+    dossier.files.forEach(f=>{
+      let p = path.join(UPLOADS_DIR, f.url);
+      if(fs.existsSync(p)) try{fs.unlinkSync(p);}catch{}
+    });
+  }
+  if(dossier.reponseFiles){
+    dossier.reponseFiles.forEach(f=>{
+      let p = path.join(UPLOADS_DIR, f.url);
+      if(fs.existsSync(p)) try{fs.unlinkSync(p);}catch{}
+    });
+  }
+  data.splice(idx,1);
+  writeData(data);
+  await saveBackupFTP();
+  res.json({success:true});
+});
+
+app.get("/api/mes-dossiers", (req, res) => {
+  let email = (req.query.email||"").toLowerCase();
+  let dossiers = readData().filter(d=>d.email && d.email.toLowerCase()===email);
+  res.json(dossiers);
+});
+
+app.get("/download/:file", (req, res) => {
+  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
+  const filePath = path.join(UPLOADS_DIR, file);
+  if (!fs.existsSync(filePath)) return res.status(404).send("Fichier introuvable");
+  res.download(filePath, undefined, (err)=>{
+    if (err) res.status(500).send("Erreur lors du téléchargement");
   });
-}
+});
 
-import("./routes/adminRoutes.js").catch(() => { });
+app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
+
+app.get("/api/admin/exportzip", async (req, res) => {
+  try {
+    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Type', 'application/zip');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', err => res.status(500).send({error: err.message}));
+    archive.file(DATA_FILE, { name: "demandes.json" });
+    if (fs.existsSync(UPLOADS_DIR)) {
+      archive.directory(UPLOADS_DIR, "uploads");
+    }
+    const backupPath = path.join(__dirname, "backup_tmp.zip");
+    const output = fs.createWriteStream(backupPath);
+    archive.pipe(res);
+    archive.pipe(output);
+
+    output.on("close", async () => {
+      await uploadBackupToFTP(backupPath, fileName);
+      await cleanOldBackupsFTP();
+      fs.unlinkSync(backupPath);
+    });
+    archive.finalize();
+  } catch (e) {
+    res.status(500).send({error: e.message});
+  }
+});
+
+app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
+  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
+  try {
+    const zipPath = req.file.path;
+    await fs.createReadStream(zipPath)
+      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
+      .promise();
+    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
+    if (fs.existsSync(jsonSrc)) {
+      fs.copyFileSync(jsonSrc, DATA_FILE);
+    } else {
+      throw new Error("Le fichier demandes.json est manquant dans l'archive");
+    }
+    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
+    if (fs.existsSync(newUploads)) {
+      if (fs.existsSync(UPLOADS_DIR)) {
+        fs.rmSync(UPLOADS_DIR, { recursive: true, force: true });
+      }
+      fs.renameSync(newUploads, UPLOADS_DIR);
+    }
+    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
+    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
+    await saveBackupFTP();
+    res.json({success:true});
+  } catch (e) {
+    res.json({success:false, message:e.message});
+  }
+});
 
 app.listen(PORT, ()=>console.log("Serveur garanti sur "+PORT));
