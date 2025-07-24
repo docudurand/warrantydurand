@@ -300,28 +300,26 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
 
     if (d.email) {
-      const attachments = await fetchFilesFromFTP(d.files);
-      await mailer.sendMail({
-        from: "Garantie <" + process.env.GMAIL_USER + ">",
-        to: d.email,
-        subject: "Demande de Garantie Envoyée",
-        text:
-`Bonjour votre demande de garantie a été envoyée avec succès, merci de joindre le fichier ci-joint avec votre pièce.
+  await mailer.sendMail({
+    from: "Garantie <" + process.env.GMAIL_USER + ">",
+    to: d.email,
+    subject: "Demande de Garantie Envoyée",
+    text:
+`Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.
 
 Cordialement
 L'équipe Durand Services Garantie.
+
 `,
-        attachments: [
-          ...attachments.map(f=>({filename: f.filename, path: f.path})),
-          {
-            filename: nomFichier,
-            content: pdfBuffer,
-            contentType: "application/pdf"
-          }
-        ]
-      });
-      cleanupFiles(attachments);
-    }
+    attachments: [
+      {
+        filename: nomFichier,
+        content: pdfBuffer,
+        contentType: "application/pdf"
+      }
+    ]
+  });
+}
 
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
