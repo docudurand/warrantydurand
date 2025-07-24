@@ -10,8 +10,6 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
-import PDFDocument from "pdfkit";
-import axios from "axios";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -59,7 +57,10 @@ const mailer = nodemailer.createTransport({
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
+
 const upload = multer({ dest: "temp_uploads/" });
+
+// ========== FONCTIONS UTILITAIRES FTP ==========
 
 async function getFTPClient() {
   const client = new ftp.Client();
@@ -68,33 +69,32 @@ async function getFTPClient() {
     port: FTP_PORT,
     user: FTP_USER,
     password: FTP_PASS,
-    secure: false
+    secure: true,
+    secureOptions: { rejectUnauthorized: false }
   });
   return client;
 }
 
 async function readDataFTP() {
+  const client = await getFTPClient();
+  let json = [];
   try {
-    const client = await getFTPClient();
-    let tempFile = path.join(__dirname, "demandes_temp.json");
-    await client.downloadTo(tempFile, JSON_FILE_FTP).catch(()=>{});
-    let data = [];
-    if (fs.existsSync(tempFile)) {
-      let str = fs.readFileSync(tempFile, "utf8");
-      if (str.trim().length) data = JSON.parse(str);
-      fs.unlinkSync(tempFile);
-    }
-    client.close();
-    return Array.isArray(data) ? data : [];
-  } catch(e) {
-    return [];
+    const tmp = path.join(__dirname, "temp_demandes.json");
+    await client.downloadTo(tmp, JSON_FILE_FTP);
+    json = JSON.parse(fs.readFileSync(tmp, "utf8"));
+    fs.unlinkSync(tmp);
+  } catch (e) {
+    json = [];
   }
+  client.close();
+  return json;
 }
 
 async function writeDataFTP(data) {
   const client = await getFTPClient();
-  let tmp = path.join(__dirname, "demandes_temp_out.json");
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), "utf8");
+  const tmp = path.join(__dirname, "temp_demandes.json");
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+  await client.ensureDir(FTP_BACKUP_FOLDER);
   await client.uploadFrom(tmp, JSON_FILE_FTP);
   fs.unlinkSync(tmp);
   client.close();
@@ -102,176 +102,111 @@ async function writeDataFTP(data) {
 
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   const client = await getFTPClient();
-  const remoteName = remoteFileName || path.basename(localPath);
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder, remoteName);
-  await client.uploadFrom(localPath, remotePath);
+  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder);
+  await client.ensureDir(remotePath);
+  const fileName = remoteFileName || path.basename(localPath);
+  await client.uploadFrom(localPath, path.posix.join(remotePath, fileName));
   client.close();
+  return fileName;
 }
 
 async function deleteFileFromFTP(remoteFileName) {
   const client = await getFTPClient();
   const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-  await client.remove(remotePath).catch(()=>{});
+  try {
+    await client.remove(remotePath);
+  } catch (e) {}
   client.close();
 }
 
 async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   const client = await getFTPClient();
-  let tempPath = path.join(__dirname, "tempdl_"+fileName);
-  await client.downloadTo(tempPath, remotePath).catch(()=>{});
-  client.close();
-  if (fs.existsSync(tempPath)) {
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-    if (mimeType) res.setHeader("Content-Type", mimeType);
-    const s = fs.createReadStream(tempPath);
-    s.pipe(res);
-    s.on("end", ()=>fs.unlinkSync(tempPath));
-  } else {
-    res.status(404).send("Not found");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  if (mimeType) res.setHeader("Content-Type", mimeType);
+  try {
+    await client.downloadTo(res, remotePath);
+  } catch (e) {
+    res.status(404).send("Fichier introuvable");
   }
+  client.close();
 }
 
 function nowSuffix() {
   const d = new Date();
-  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
+  const pad = n => n.toString().padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}h${pad(d.getMinutes())}`;
 }
 
+// Télécharge la liste de fichiers (array) depuis le FTP, retourne les chemins temporaires locaux téléchargés
 async function fetchFilesFromFTP(fileObjs) {
-  if (!fileObjs || !fileObjs.length) return [];
+  const localPaths = [];
+  if (!fileObjs || fileObjs.length === 0) return [];
   const client = await getFTPClient();
-  let files = [];
-  for (let f of fileObjs) {
-    let remote = path.posix.join(UPLOADS_FTP, f.url);
-    let tempPath = path.join(__dirname, "att_"+f.url.replace(/[^\w.]/g,""));
-    await client.downloadTo(tempPath, remote).catch(()=>{});
-    files.push({ filename: f.original, path: tempPath });
+  await client.ensureDir(UPLOADS_FTP);
+  for (const f of fileObjs) {
+    const remotePath = path.posix.join(UPLOADS_FTP, f.url);
+    const tmp = path.join(__dirname, "mailtmp_" + f.url);
+    try {
+      await client.downloadTo(tmp, remotePath);
+      localPaths.push({ path: tmp, filename: f.original });
+    } catch (e) {}
   }
   client.close();
-  return files;
+  return localPaths;
 }
-
-function cleanupFiles(arr) {
-  if (!arr || !arr.length) return;
-  for (let f of arr) {
-    if (f && f.path && fs.existsSync(f.path)) fs.unlinkSync(f.path);
+function cleanupFiles(localPaths) {
+  if (!localPaths) return;
+  for (const f of localPaths) {
+    try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch {}
   }
 }
 
 async function saveBackupFTP() {
   const client = await getFTPClient();
-  const d = new Date();
-  const name = "sauvegarde-"+nowSuffix()+".json";
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
-  await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
-  if (fs.existsSync("tmpb.json")) {
-    await client.uploadFrom("tmpb.json", remotePath);
-    fs.unlinkSync("tmpb.json");
-  }
-  const files = await client.list(FTP_BACKUP_FOLDER);
-  const backups = files.filter(f=>f.name.startsWith("sauvegarde-")).sort((a,b)=>a.name.localeCompare(b.name));
-  while (backups.length > 10) {
-    await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
-    backups.shift();
-  }
-  client.close();
-}
+  const backupPath = path.join(__dirname, "backup_tmp.zip");
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  const output = fs.createWriteStream(backupPath);
 
-async function getLogoBuffer() {
-  const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
-  const res = await axios.get(url, { responseType: "arraybuffer" });
-  return Buffer.from(res.data, "binary");
-}
-
-async function creerPDFDemande(d, nomFichier) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ margin: 32, size: "A4" });
-      const buffers = [];
-      doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => resolve(Buffer.concat(buffers)));
-
-      const logo = await getLogoBuffer();
-      const PAGE_W = doc.page.width;
-      const logoW = 55, logoH = 55;
-      const x0 = 36;
-      let y0 = 36;
-
-      doc.image(logo, x0, y0, { width: logoW, height: logoH });
-      doc.font("Helvetica-Bold").fontSize(20).fillColor("#14548C");
-      doc.text("DURAND SERVICES GARANTIE", x0 + logoW + 12, y0 + 6, { align: "left", continued: false });
-      doc.font("Helvetica").fontSize(14).fillColor("#14548C");
-      doc.text(d.magasin || "", x0 + logoW + 12, y0 + 32, { align: "left" });
-
-      doc.fontSize(11).fillColor("#000");
-      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
-
-      let y = y0 + logoH + 32;
-      const tableW = PAGE_W - 2 * x0;
-      const colLabelW = 155;
-      const colValW = tableW - colLabelW;
-      const rowHeight = 22;
-      const labelFont = "Helvetica-Bold";
-      const valueFont = "Helvetica";
-
-      const rows = [
-        ["Nom du client", d.nom || ""],
-        ["Email", d.email || ""],
-        ["Magasin", d.magasin || "", "rowline"],
-        ["Marque du produit", d.marque_produit || ""],
-        ["Produit concerné", d.produit_concerne || ""],
-        ["Référence de la pièce", d.reference_piece || ""],
-        ["Quantité posée", d.quantite_posee || "", "rowline"],
-        ["Immatriculation", d.immatriculation || ""],
-        ["Marque", d.marque_vehicule || ""],
-        ["Modèle", d.modele_vehicule || ""],
-        ["Numéro de série", d.num_serie || ""],
-        ["1ère immatriculation", d.premiere_immat || "", "rowline"],
-        ["Date de pose", d.date_pose || ""],
-        ["Date du constat", d.date_constat || ""],
-        ["Kilométrage à la pose", d.km_pose || ""],
-        ["Kilométrage au constat", d.km_constat || ""],
-        ["N° BL 1ère Vente", d.bl_pose || ""],
-        ["N° BL 2ème Vente", d.bl_constat || ""],
-        ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
-      ];
-
-      let totalRow = rows.reduce((sum, row) => sum + ((row[2] === "multiline") ? (row[1].split("\n").length) : 1), 0);
-      let tableH = rowHeight * totalRow;
-      let cornerRad = 14;
-      doc.roundedRect(x0, y, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
-      doc.lineWidth(1.7).roundedRect(x0, y, tableW, tableH, cornerRad).stroke("#3f628c");
-
-      let yCursor = y;
-      for (let i = 0; i < rows.length; i++) {
-        const [label, value, type] = rows[i];
-        let valueLines = (type === "multiline") ? value.split("\n") : [value];
-        let cellHeight = rowHeight * valueLines.length;
-
-        doc.font(labelFont).fontSize(11).fillColor("#000")
-          .text(label, x0 + 16, yCursor + 4, { width: colLabelW - 16, align: "left" });
-        doc.font(valueFont).fontSize(11).fillColor("#000");
-        for (let k = 0; k < valueLines.length; k++) {
-          doc.text(valueLines[k], x0 + colLabelW + 8, yCursor + 4 + k * rowHeight, { width: colValW - 16, align: "left" });
-        }
-
-        let drawLine = false;
-        if (type === "rowline") drawLine = true;
-        else if (i < rows.length - 1 && rows[i+1][2] !== "multiline" && type !== "multiline") drawLine = true;
-        if (i === rows.length - 1) drawLine = false;
-        if (drawLine) {
-          doc.moveTo(x0 + 8, yCursor + cellHeight).lineTo(x0 + tableW - 8, yCursor + cellHeight).strokeColor("#b3c5df").lineWidth(1).stroke();
-        }
-        yCursor += cellHeight;
+  return new Promise((resolve, reject) => {
+    output.on("close", async () => {
+      const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+      try {
+        await client.ensureDir(FTP_BACKUP_FOLDER);
+        await client.uploadFrom(backupPath, path.posix.join(FTP_BACKUP_FOLDER, fileName));
+        await cleanOldBackupsFTP(client);
+        fs.unlinkSync(backupPath);
+        client.close();
+        resolve();
+      } catch (err) {
+        client.close();
+        reject(err);
       }
-      doc.end();
-    } catch (e) { reject(e); }
+    });
+    archive.pipe(output);
+    archive.append(JSON.stringify([]), { name: "demandes.json" });
+    client.downloadTo(archive, JSON_FILE_FTP).catch(() => {});
+    archive.finalize();
   });
 }
+
+async function cleanOldBackupsFTP(client) {
+  const list = await client.list(FTP_BACKUP_FOLDER);
+  const backups = list
+    .filter(f => /^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{2}h\d{2}\.zip$/.test(f.name))
+    .sort((a, b) => b.name.localeCompare(a.name));
+  if (backups.length > 10) {
+    const toDelete = backups.slice(10);
+    for (const f of toDelete) {
+      await client.remove(path.posix.join(FTP_BACKUP_FOLDER, f.name));
+    }
+  }
+}
+
+// ========== ROUTES API PRINCIPALES ==========
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
-    if (!Array.isArray(data)) data = [];
     let d = req.body;
     d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     d.date = new Date().toISOString();
@@ -289,43 +224,9 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     await writeDataFTP(data);
     await saveBackupFTP();
 
-    let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-    let dateStr = "";
-    if (d.date) {
-      let dt = new Date(d.date);
-      if (!isNaN(dt)) {
-        dateStr = dt.toISOString().slice(0,10);
-      }
-    }
-    let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
-    const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
-
-    if (d.email) {
-      const attachments = await fetchFilesFromFTP(d.files);
-      await mailer.sendMail({
-        from: "Garantie <" + process.env.GMAIL_USER + ">",
-        to: d.email,
-        subject: "Demande de Garantie Envoyée",
-        text:
-`Bonjour votre demande de garantie a été envoyée avec succès, merci de joindre le fichier ci-joint avec votre pièce.
-
-Cordialement
-L'équipe Durand Services Garantie.
-`,
-        attachments: [
-          ...attachments.map(f=>({filename: f.filename, path: f.path})),
-          {
-            filename: nomFichier,
-            content: pdfBuffer,
-            contentType: "application/pdf"
-          }
-        ]
-      });
-      cleanupFiles(attachments);
-    }
-
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
+      // Download pieces jointes en local juste avant mail :
       const attachments = await fetchFilesFromFTP(d.files);
       await mailer.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
@@ -348,7 +249,6 @@ L'équipe Durand Services Garantie.
 app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
   let { id } = req.params;
   let data = await readDataFTP();
-  if (!Array.isArray(data)) data = [];
   let dossier = data.find(x=>x.id===id);
   if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
 
@@ -370,6 +270,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   await writeDataFTP(data);
   await saveBackupFTP();
 
+  // Email au client si changements
   let mailDoitEtreEnvoye = false;
   let changes = [];
   if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
@@ -379,6 +280,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   }
 
   if (mailDoitEtreEnvoye && dossier.email) {
+    // Download toutes les PJ de réponse avant d'envoyer le mail :
     const attachments = await fetchFilesFromFTP(dossier.reponseFiles);
     let html = `<div style="font-family:sans-serif;">
       Bonjour,<br>
@@ -416,6 +318,7 @@ app.get("/api/mes-dossiers", async (req, res) => {
   res.json(dossiers);
 });
 
+// STREAM TOUTE PIECE JOINTE DEPUIS LE FTP DIRECTEMENT
 app.get("/download/:file", async (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const remotePath = path.posix.join(UPLOADS_FTP, file);
@@ -440,10 +343,10 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
   let data = await readDataFTP();
-  if (!Array.isArray(data)) data = [];
   let idx = data.findIndex(x=>x.id===id);
   if (idx === -1) return res.json({success:false, message:"Introuvable"});
   let dossier = data[idx];
+  // Supprime les fichiers du FTP aussi :
   if(dossier.files){
     for(const f of dossier.files){
       await deleteFileFromFTP(f.url);
@@ -460,6 +363,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   res.json({success:true});
 });
 
+// Routes de backup/restore ZIP (idem que version précédente, voir ton code d'origine)
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
@@ -525,4 +429,4 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 
-app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
+app.listen(PORT, ()=>console.log("Serveur garanti 100% FTP sur "+PORT));
