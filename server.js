@@ -261,13 +261,13 @@ function creerPDFDemande(d, nomFichier) {
         ["N° BL 2ème Vente", d.bl_constat || ""],
       ];
 
-      const sectionTitles = [
-        0: "Informations client",
-        4: "Produit",
-        9: "Véhicule",
-        14: "Problème",
-      ];
-      const sepIndexes = [0, 4, 9, 14];
+      const sectionTitles = {
+  0: "Informations client",
+  4: "Produit",
+  9: "Véhicule",
+  14: "Problème"
+};
+const sepIndexes = [0, 4, 9, 14];
 
       let rowHeight = 26;
       let headerHeight = 22;
