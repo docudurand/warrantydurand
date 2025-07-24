@@ -314,23 +314,26 @@ async function creerPDFDemande(d, nomFichier) {
       const rowPadV = 7;
 
       let rows = [];
-      for (let i=0; i<lignes.length; ++i) {
-        let [lbl, val] = lignes[i];
-        let wrapVal = wrapText(doc, val, colValW-20, valueFont, 11);
-        let lines = Math.max(1, wrapVal.length);
-        if (i === lignes.length-1) {
-          wrapVal = (val+"").split("\n").map(line =>
-            ...wrapText(doc, line, colValW-20, valueFont, 11)).flat();
-          lines = Math.max(1, wrapVal.length);
-        }
-        rows.push({
-          label: lbl,
-          value: val,
-          lines,
-          wrapVal,
-          isProblem: (lbl==="Problème rencontré")
-        });
-      }
+      for (let i = 0; i < lignes.length; ++i) {
+  let [lbl, val] = lignes[i];
+  let wrapVal = wrapText(doc, val, colValW-20, valueFont, 11);
+  let lines = Math.max(1, wrapVal.length);
+  if (i === lignes.length-1) {
+    wrapVal = (val + "")
+      .split("\n")
+      .map(line => wrapText(doc, line, colValW - 20, valueFont, 11))
+      .flat();
+    lines = Math.max(1, wrapVal.length);
+  }
+  rows.push({
+    label: lbl,
+    value: val,
+    lines,
+    wrapVal,
+    isProblem: (lbl==="Problème rencontré")
+  });
+}
+
       let tableHeight = rows.reduce((acc, row)=>acc+rowHeight*row.lines, 0)
         + groupTitles.length*rowHeight;
 
