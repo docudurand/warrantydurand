@@ -10,7 +10,7 @@ import archiver from "archiver";
 import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
-import PDFDocument from "pdfkit";      // <-- LIGNE INDISPENSABLE !
+import PDFDocument from "pdfkit";
 import axios from "axios";        
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -213,26 +213,26 @@ async function creerPDFDemande(d, nomFichier) {
       const valueFont = "Helvetica";
 
       const rows = [
-        ["Nom du client", d.nom || ""],
-        ["Email", d.email || ""],
-        ["Magasin", d.magasin || "", "rowline"],
-        ["Marque du produit", d.marque_produit || ""],
-        ["Produit concerné", d.produit_concerne || ""],
-        ["Référence de la pièce", d.reference_piece || ""],
-        ["Quantité posée", d.quantite_posee || "", "rowline"],
-        ["Immatriculation", d.immatriculation || ""],
-        ["Marque", d.marque_vehicule || ""],
-        ["Modèle", d.modele_vehicule || ""],
-        ["Numéro de série", d.num_serie || ""],
-        ["1ère immatriculation", d.premiere_immat || "", "rowline"],
-        ["Date de pose", d.date_pose || ""],
-        ["Date du constat", d.date_constat || ""],
-        ["Kilométrage à la pose", d.km_pose || ""],
-        ["Kilométrage au constat", d.km_constat || ""],
-        ["N° BL 1ère Vente", d.bl_pose || ""],
-        ["N° BL 2ème Vente", d.bl_constat || ""],
-        ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
-      ];
+  ["Nom du client", d.nom || ""],
+  ["Email", d.email || ""],
+  ["Magasin", d.magasin || "", "rowline"],
+  ["Marque du produit", d.marque_produit || ""],
+  ["Produit concerné", d.produit_concerne || ""],
+  ["Référence de la pièce", d.reference_piece || ""],
+  ["Quantité posée", d.quantite_posee || "", "rowline"],
+  ["Immatriculation", d.immatriculation || ""],
+  ["Marque", d.marque_vehicule || ""],
+  ["Modèle", d.modele_vehicule || ""],
+  ["Numéro de série", d.num_serie || ""],
+  ["1ère immatriculation", d.premiere_immat || "", "rowline"],
+  ["Date de pose", d.date_pose || ""],
+  ["Date du constat", d.date_constat || ""],
+  ["Kilométrage à la pose", d.km_pose || ""],
+  ["Kilométrage au constat", d.km_constat || ""],
+  ["N° BL 1ère Vente", d.bl_pose || ""],
+  ["N° BL 2ème Vente", d.bl_constat || "", "rowline"],
+  ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
+];
 
       let totalRow = rows.reduce((sum, row) => sum + ((row[2] === "multiline") ? (row[1].split("\n").length) : 1), 0);
       let tableH = rowHeight * totalRow;
