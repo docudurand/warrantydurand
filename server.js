@@ -342,7 +342,10 @@ L'équipe Durand Services Garantie.
   }
 });
 
-app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res) => {
+app.post("/api/admin/dossier/:id", upload.fields([
+  { name: "reponseFiles", maxCount: 10 },
+  { name: "documentsAjoutes", maxCount: 10 }
+]), async (req, res) => {
   let { id } = req.params;
   let data = await readDataFTP();
   if (!Array.isArray(data)) data = [];
@@ -358,12 +361,25 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
 
   dossier.reponseFiles = dossier.reponseFiles || [];
-  for (const f of req.files || []) {
-    const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
-    await uploadFileToFTP(f.path, "uploads", remoteName);
-    dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
-    fs.unlinkSync(f.path);
+  if (req.files && req.files.reponseFiles) {
+    for (const f of req.files.reponseFiles) {
+      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      await uploadFileToFTP(f.path, "uploads", remoteName);
+      dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
+      fs.unlinkSync(f.path);
+    }
   }
+
+  dossier.documentsAjoutes = dossier.documentsAjoutes || [];
+  if (req.files && req.files.documentsAjoutes) {
+    for (const f of req.files.documentsAjoutes) {
+      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      await uploadFileToFTP(f.path, "uploads", remoteName);
+      dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+      fs.unlinkSync(f.path);
+    }
+  }
+
   await writeDataFTP(data);
   await saveBackupFTP();
 
@@ -371,7 +387,7 @@ app.post("/api/admin/dossier/:id", upload.array("reponseFiles"), async (req, res
   let changes = [];
   if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
   if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
-  if (req.files && req.files.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
+  if (req.files && req.files.reponseFiles && req.files.reponseFiles.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
     changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
   }
 

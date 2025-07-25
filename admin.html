@@ -85,6 +85,7 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
+	.mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
   </style>
 </head>
 <body>
@@ -345,7 +346,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th>Marque du produit</th>
       <th>Statut</th>
       <th>Réponse</th>
-      <th>Fichiers réponse</th>
+      <th>Documents ajoutés</th>
       <th class="action">Mettre à jour</th>
       <th class="action">Voir</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
@@ -361,14 +362,18 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
-        ${(d.reponseFiles||[]).length ? d.reponseFiles.map(f=>{
-          let ext = f.original.split('.').pop().toLowerCase();
-          if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-            return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
-          } else {
-            return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-          }
-        }).join("<br>") : ""}
+        ${
+          (d.documentsAjoutes||[]).length
+            ? d.documentsAjoutes.map(f=>{
+                let ext = f.original.split('.').pop().toLowerCase();
+                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                } else {
+                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                }
+              }).join("<br>")
+            : ""
+        }
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
@@ -385,7 +390,14 @@ function afficherDossiers(magasin, forceFiltres=false) {
           </select>
           <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <input type="file" name="reponseFiles" multiple>
+          <label>
+            <b>Ajout document</b>
+            <input type="file" name="documentsAjoutes" multiple>
+          </label>
+          <label>
+            <b>envoie avoir client</b>
+            <input type="file" name="reponseFiles" multiple>
+          </label>
           <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
           <button type="submit" class="bouton">Mettre à jour</button>
           <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
