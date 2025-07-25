@@ -65,6 +65,8 @@
       display: inline-block;
       max-width: 210px;
     }
+    .mini-form-row > td { width: 100vw; box-sizing: border-box; }
+    .mini-form { max-width: 100%; width: 100%; }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -85,7 +87,7 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
-	.mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
+    .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
   </style>
 </head>
 <body>
@@ -353,6 +355,15 @@ function afficherDossiers(magasin, forceFiltres=false) {
     </tr>`;
   dossiers.forEach(d=>{
     let id = d.id;
+
+    let fichiersDocs = [].concat(
+      d.documentsAjoutes||[],
+      d.reponseFiles||[]
+    );
+    fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+      f && f.url && arr.findIndex(x => x.url === f.url) === i
+    );
+
     html += `<tr>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
@@ -363,11 +374,11 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
         ${
-          (d.documentsAjoutes||[]).length
-            ? d.documentsAjoutes.map(f=>{
+          fichiersDocs.length
+            ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
                 } else {
                   return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                 }
@@ -395,7 +406,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
             <input type="file" name="documentsAjoutes" multiple>
           </label>
           <label>
-            <b>envoie avoir client</b>
+            <b>Envoie avoir client</b>
             <input type="file" name="reponseFiles" multiple>
           </label>
           <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
@@ -549,7 +560,7 @@ function voirDossier(id) {
               : d.files.map(f=>{
                   let ext = f.original.split('.').pop().toLowerCase();
                   if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                    return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                    return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
                   } else {
                     return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                   }
@@ -562,7 +573,7 @@ function voirDossier(id) {
               ? "<br>"+d.reponseFiles.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/uploads/${f.url}" class="pj-img"></a>`;
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
                 } else {
                   return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
                 }
