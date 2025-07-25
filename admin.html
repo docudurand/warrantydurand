@@ -88,6 +88,8 @@
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
+	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
+	.pj-documents a { font-size: 0.93em; word-break: break-all;}
   </style>
 </head>
 <body>
@@ -373,7 +375,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
-        ${
+	  <div class="pj-documents">
+    ${
           fichiersDocs.length
             ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
@@ -385,13 +388,14 @@ function afficherDossiers(magasin, forceFiltres=false) {
               }).join("<br>")
             : ""
         }
+		</div>
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-      <td colspan="${isSuperAdmin ? 10 : 9}">
+      <td colspan="${isSuperAdmin ? 11 : 10}">
         <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
           <select class="statut-select" name="statut">
             <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
