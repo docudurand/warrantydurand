@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Demande de Garantie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+    form {
+      max-width: 1100px;
+      margin:24px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      font-size: 1.08em;
+    }
+    .bloc {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 13px 18px 12px 18px;
+      min-height: 94px;
+    }
+    .bloc label, .bloc .titre {
+      font-weight: bold;
+      font-size: 1.11em;
+      color: #194e72;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .bloc .sublabel {
+      font-weight:normal;
+      color:#555;
+      margin-bottom:3px;
+      font-size: 1em;
+    }
+    .bloc input[type=text],
+    .bloc input[type=email],
+    .bloc input[type=number],
+    .bloc input[type=date],
+    .bloc select,
+    .bloc textarea {
+      width: 98%;
+      margin-bottom: 11px;
+      padding: 10px 8px;
+      border:1px solid #80878D;
+      border-radius:5px;
+      background: #f8fafc;
+      font-size: 1.09em;
+      min-height: 2.1em;
+      box-sizing: border-box;
+    }
+    .bloc textarea {
+      resize: vertical;
+      min-height:48px;
+    }
+    .full { grid-column:1/3; }
+    #msg-envoi {
+      text-align:center;
+      font-size:1.18em;
+      margin-top:9px;
+      min-height:32px;
+      font-weight: 500;
+    }
+    #msg-envoi.en-cours { color: #006e90; }
+    #msg-envoi.ok { color: #259a54; }
+    #msg-envoi.erreur { color: #d23b33; }
+    .titre-principal {
+      text-align: center;
+      color: #006e90;
+      font-size: 2.1em;
+      font-weight: bold;
+      margin-top: 34px;
+      margin-bottom: 22px;
+      letter-spacing: 0.03em;
+    }
+    .file-list { margin: 0.6em 0 0 0; padding: 0; list-style: none; }
+    .file-list li { margin-bottom: 4px; display: flex; align-items: center; gap: 12px;}
+    .file-remove { background: #d23b33; color: #fff; border: none; border-radius: 3px; padding: 2px 9px; cursor: pointer; font-size: 0.95em;}
+    .file-remove:hover { background: #a11610; }
+    @media (max-width:900px) {
+      form { grid-template-columns: 1fr; font-size:1em; }
+      .full { grid-column: 1/2; }
+    }
+  </style>
+</head>
+<body>
+  <h2 class="titre-principal">Demande de garantie</h2>
+<form id="demandeForm" enctype="multipart/form-data">
+
+  <div class="bloc">
+    <label>Nom du client :</label>
+    <input type="text" name="nom" required>
+    <label class="sublabel">Email :</label>
+    <input type="email" name="email" required>
+  </div>
+
+  <div class="bloc">
+    <label>Magasin :</label>
+    <select name="magasin" required>
+      <option value="">-- Choisissez le magasin --</option>
+      <option value="Annemasse">Annemasse</option>
+      <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
+      <option value="Chasse-sur-Rhone">Chasse-sur-Rhone</option>
+      <option value="Chassieu">Chassieu</option>
+      <option value="Gleize">Gleize</option>
+      <option value="La Motte-Servolex">La Motte-Servolex</option>
+      <option value="Les Echets">Les Echets</option>
+      <option value="Rives">Rives</option>
+      <option value="Saint-Egreve">Saint-Egreve</option>
+      <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
+      <option value="Saint-martin-d'heres">Saint-martin-d'heres</option>
+      <option value="Seynod">Seynod</option>
+    </select>
+  </div>
+
+  <div class="bloc">
+    <span class="titre">Produit</span>
+    <label class="sublabel">Marque du produit :</label>
+    <input type="text" name="marque_produit">
+    <label class="sublabel">Produit concerné :</label>
+    <input type="text" name="produit_concerne">
+    <label class="sublabel">Référence de la pièce :</label>
+    <input type="text" name="reference_piece">
+    <label class="sublabel">Quantité posée :</label>
+    <input type="number" name="quantite_posee" min="1">
+  </div>
+
+  <div class="bloc">
+    <span class="titre">Véhicule</span>
+    <label class="sublabel">Immatriculation :</label>
+    <input type="text" name="immatriculation">
+    <label class="sublabel">Marque :</label>
+    <input type="text" name="marque_vehicule">
+    <label class="sublabel">Modèle :</label>
+    <input type="text" name="modele_vehicule">
+    <label class="sublabel">Numéro de série :</label>
+    <input type="text" name="num_serie">
+    <label class="sublabel">1ère immatriculation :</label>
+    <input type="date" name="premiere_immat">
+  </div>
+
+  <div class="bloc">
+    <span class="titre">Problème</span>
+    <label class="sublabel">Date de pose :</label>
+    <input type="date" name="date_pose">
+    <label class="sublabel">Date du constat :</label>
+    <input type="date" name="date_constat">
+    <label class="sublabel">Kilométrage à la pose :</label>
+    <input type="number" name="km_pose" min="0">
+    <label class="sublabel">Kilométrage au constat :</label>
+    <input type="number" name="km_constat" min="0">
+    <label class="sublabel">N° BL 1ère Vente :</label>
+    <input type="text" name="bl_pose">
+    <label class="sublabel">N° BL 2ème Vente :</label>
+    <input type="text" name="bl_constat">
+  </div>
+
+  <div class="bloc">
+    <span class="titre">Problème rencontré :</span>
+    <textarea name="probleme_rencontre" rows="5"></textarea>
+  </div>
+
+  <div class="bloc">
+    <label>Joindre des fichiers (photos, facture, etc) :</label>
+    <input type="file" id="input-files" multiple style="margin-bottom:7px;">
+    <ul id="file-list" class="file-list"></ul>
+  </div>
+
+  <div class="bloc full" style="text-align:right;">
+    <button id="btn-submit" type="submit" style="padding: 10px 24px; border:none; background:#006e90; color:#fff; font-size:1.08em; border-radius:6px; cursor:pointer;">
+      Envoyer la demande
+    </button>
+    <div id="msg-envoi"></div>
+  </div>
+
+</form>
+<script>
+const inputFiles = document.getElementById("input-files");
+const fileListUl = document.getElementById("file-list");
+let filesArray = [];
+
+function renderFileList() {
+  fileListUl.innerHTML = "";
+  filesArray.forEach((file, idx) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${file.name} <small>(${(file.size/1024).toFixed(1)} Ko)</small></span> <button type="button" class="file-remove" data-idx="${idx}">Supprimer</button>`;
+    fileListUl.appendChild(li);
+  });
+}
+
+inputFiles.addEventListener("change", function() {
+  for (let f of Array.from(this.files)) {
+    if (!filesArray.some(existing => existing.name === f.name && existing.size === f.size)) {
+      filesArray.push(f);
+    }
+  }
+  renderFileList();
+  this.value = "";
+});
+
+fileListUl.addEventListener("click", function(e){
+  if(e.target.classList.contains("file-remove")){
+    const idx = parseInt(e.target.dataset.idx);
+    filesArray.splice(idx, 1);
+    renderFileList();
+  }
+});
+
+const msgDiv = document.getElementById("msg-envoi");
+const btnSubmit = document.getElementById("btn-submit");
+const demandeForm = document.getElementById("demandeForm");
+
+demandeForm.onsubmit = async function(e) {
+  e.preventDefault();
+  msgDiv.textContent = "⏳ Envoi en cours...";
+  msgDiv.className = "en-cours";
+  btnSubmit.disabled = true;
+
+  let formData = new FormData(demandeForm);
+
+  for(let f of filesArray) {
+    formData.append('document', f);
+  }
+
+  try {
+    let resp = await fetch('https://warrantydurand.onrender.com/api/demandes', {
+      method: 'POST',
+      body: formData
+    });
+
+    let json = await resp.json();
+    if(json.success) {
+      msgDiv.textContent = "✅ Demande envoyée avec succès !";
+      msgDiv.className = "ok";
+      demandeForm.reset();
+      filesArray = [];
+      renderFileList();
+    } else {
+      msgDiv.textContent = "❌ Erreur lors de l’envoi : " + (json.message || "Veuillez vérifier votre saisie ou réessayer.");
+      msgDiv.className = "erreur";
+    }
+  } catch(err) {
+    msgDiv.textContent = "❌ Erreur réseau lors de l’envoi : " + err.message;
+    msgDiv.className = "erreur";
+  }
+  btnSubmit.disabled = false;
+}
+</script>
+</body>
+</html>
