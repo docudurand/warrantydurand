@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSG – Administration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <!-- Header / Navigation -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="brand">
+          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
+          <span>Durand Services Garantie</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="demande.html">Faire une demande</a></li>
+            <li><a href="suivi.html">Suivre une demande</a></li>
+            <li><a href="admin.html" class="active admin-link">Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <section class="page-header">
+      <div class="container">
+        <h1>Interface d'administration</h1>
+        <p>Accédez aux demandes de garantie et mettez à jour leur statut.</p>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="container">
+        <!-- Password prompt -->
+        <div id="loginSection" class="login-section">
+          <p>Veuillez saisir le mot de passe pour accéder à l'interface.</p>
+          <input type="password" id="adminPassword" placeholder="Mot de passe" />
+          <button id="loginButton" class="btn primary">Valider</button>
+          <p id="loginError" class="error"></p>
+        </div>
+        <!-- Admin panel hidden by default -->
+        <div id="adminPanel" class="admin-panel hidden">
+          <div class="filters">
+            <select id="filterStatut">
+              <option value="">Tous les statuts</option>
+              <option value="enregistré">Enregistré</option>
+              <option value="en attente">En attente</option>
+              <option value="pris en charge">Pris en charge</option>
+              <option value="accepté">Accepté</option>
+              <option value="refusé">Refusé</option>
+            </select>
+            <select id="filterMagasinAdmin">
+              <option value="">Tous les magasins</option>
+              <option value="Annemasse">Annemasse</option>
+              <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
+              <option value="Chasse-sur-Rhone">Chasse-sur-Rhône</option>
+              <option value="Chassieu">Chassieu</option>
+              <option value="Gleize">Gleizé</option>
+              <option value="La Motte-Servolex">La Motte-Servolex</option>
+              <option value="Les Echets">Les Échets</option>
+              <option value="Pavi">Pavi</option>
+              <option value="Rives">Rives</option>
+              <option value="Saint-Egreve">Saint-Égrève</option>
+              <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
+              <option value="Saint-Martin-d'heres">Saint-Martin-d’Hères</option>
+              <option value="Seynod">Seynod</option>
+            </select>
+            <button id="refreshButton" class="btn secondary">Rafraîchir</button>
+          </div>
+          <div id="adminResults" class="results"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-content">
+        <p>&copy; <span id="year"></span> Durand Services Garantie</p>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      const correctPassword = "Pich@rd2007";
+      const loginButton = document.getElementById("loginButton");
+      const adminPanel = document.getElementById("adminPanel");
+      const loginSection = document.getElementById("loginSection");
+      loginButton.addEventListener("click", () => {
+        const pwd = document.getElementById("adminPassword").value;
+        const error = document.getElementById("loginError");
+        if (pwd === correctPassword) {
+          loginSection.classList.add("hidden");
+          adminPanel.classList.remove("hidden");
+          loadDemands();
+        } else {
+          error.textContent = "Mot de passe incorrect.";
+        }
+      });
+
+      document.getElementById("refreshButton").addEventListener("click", () => {
+        loadDemands();
+      });
+      document.getElementById("filterStatut").addEventListener("change", loadDemands);
+      document.getElementById("filterMagasinAdmin").addEventListener("change", loadDemands);
+
+      async function loadDemands() {
+        const statut = document.getElementById("filterStatut").value;
+        const magasin = document.getElementById("filterMagasinAdmin").value;
+        const qs = new URLSearchParams();
+        if (statut) qs.append("statut", statut);
+        if (magasin) qs.append("magasin", magasin);
+        try {
+          const res = await fetch(`/api/demandes?${qs.toString()}`);
+          const data = await res.json();
+          const container = document.getElementById("adminResults");
+          if (!data.length) {
+            container.innerHTML = `<p>Aucun dossier trouvé.</p>`;
+            return;
+          }
+          let html = `<table class="data-table admin-table"><thead><tr><th>Date</th><th>Nom</th><th>E‑mail</th><th>Magasin</th><th>Produit</th><th>Statut</th><th>Action</th></tr></thead><tbody>`;
+          data.forEach((d) => {
+            const date = new Date(d.date).toLocaleDateString();
+            html += `<tr>
+              <td>${date}</td>
+              <td>${d.nom || ""}</td>
+              <td>${d.email || ""}</td>
+              <td>${d.magasin || ""}</td>
+              <td>${d.produit_concerne || ""}</td>
+              <td class="status" data-status="${d.statut}">${d.statut}</td>
+              <td>
+                <select class="statusSelect" data-id="${d.id}">
+                  <option value="enregistré" ${d.statut === "enregistré" ? "selected" : ""}>Enregistré</option>
+                  <option value="en attente" ${d.statut === "en attente" ? "selected" : ""}>En attente</option>
+                  <option value="pris en charge" ${d.statut === "pris en charge" ? "selected" : ""}>Pris en charge</option>
+                  <option value="accepté" ${d.statut === "accepté" ? "selected" : ""}>Accepté</option>
+                  <option value="refusé" ${d.statut === "refusé" ? "selected" : ""}>Refusé</option>
+                </select>
+              </td>
+            </tr>`;
+          });
+          html += `</tbody></table>`;
+          container.innerHTML = html;
+          // Add listeners to select elements
+          document.querySelectorAll(".statusSelect").forEach((sel) => {
+            sel.addEventListener("change", async function () {
+              const id = this.getAttribute("data-id");
+              const newStatus = this.value;
+              try {
+                const res = await fetch(`/api/demandes/${id}`, {
+                  method: "PUT",
+                  body: new URLSearchParams({ statut: newStatus }),
+                });
+                await res.json();
+                loadDemands();
+              } catch (err) {
+                alert("Erreur lors de la mise à jour du statut.");
+              }
+            });
+          });
+        } catch (err) {
+          document.getElementById("adminResults").innerHTML = `<p class="error">Erreur de chargement des dossiers.</p>`;
+        }
+      }
+    </script>
+  </body>
+</html>

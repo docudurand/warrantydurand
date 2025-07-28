@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Durand Services Garantie – Faire une demande</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <!-- Header / Navigation -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="brand">
+          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
+          <span>Durand Services Garantie</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="demande.html" class="active">Faire une demande</a></li>
+            <li><a href="suivi.html">Suivre une demande</a></li>
+            <li><a href="admin.html" class="admin-link">Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Page title -->
+    <section class="page-header">
+      <div class="container">
+        <h1>Déposer une demande de garantie</h1>
+        <p>
+          Veuillez compléter le formulaire ci‑dessous afin de soumettre votre
+          demande de prise en charge. Les champs marqués d’une étoile (*) sont
+          obligatoires.
+        </p>
+      </div>
+    </section>
+
+    <!-- Form section -->
+    <section class="form-section">
+      <div class="container">
+        <form id="demandeForm" class="demande-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="magasin">Magasin *</label>
+              <select id="magasin" name="magasin" required>
+                <option value="">Choisissez votre magasin</option>
+                <option value="Annemasse">Annemasse</option>
+                <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
+                <option value="Chasse-sur-Rhone">Chasse-sur-Rhône</option>
+                <option value="Chassieu">Chassieu</option>
+                <option value="Gleize">Gleizé</option>
+                <option value="La Motte-Servolex">La Motte-Servolex</option>
+                <option value="Les Echets">Les Échets</option>
+                <option value="Pavi">Pavi</option>
+                <option value="Rives">Rives</option>
+                <option value="Saint-Egreve">Saint-Égrève</option>
+                <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
+                <option value="Saint-Martin-d'heres">Saint-Martin-d’Hères</option>
+                <option value="Seynod">Seynod</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="nom">Nom et prénom *</label>
+              <input
+                type="text"
+                id="nom"
+                name="nom"
+                placeholder="Votre nom complet"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Adresse e‑mail *</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="exemple@domaine.com"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="marque_produit">Marque du produit *</label>
+              <input
+                type="text"
+                id="marque_produit"
+                name="marque_produit"
+                placeholder="Ex. Bosch, Siemens..."
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="produit_concerne">Produit concerné *</label>
+              <input
+                type="text"
+                id="produit_concerne"
+                name="produit_concerne"
+                placeholder="Ex. Chaudière, Pompe à chaleur..."
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="reference_piece">Référence de la pièce</label>
+              <input
+                type="text"
+                id="reference_piece"
+                name="reference_piece"
+                placeholder="Référence de la pièce"
+              />
+            </div>
+            <div class="form-group">
+              <label for="quantite_posee">Quantité posée</label>
+              <input
+                type="number"
+                id="quantite_posee"
+                name="quantite_posee"
+                min="0"
+                placeholder="1"
+              />
+            </div>
+            <div class="form-group">
+              <label for="immatriculation">Immatriculation</label>
+              <input
+                type="text"
+                id="immatriculation"
+                name="immatriculation"
+                placeholder="AA‑123‑BB"
+              />
+            </div>
+            <div class="form-group">
+              <label for="marque_vehicule">Marque du véhicule</label>
+              <input
+                type="text"
+                id="marque_vehicule"
+                name="marque_vehicule"
+                placeholder="Renault, Peugeot..."
+              />
+            </div>
+            <div class="form-group">
+              <label for="modele_vehicule">Modèle du véhicule</label>
+              <input
+                type="text"
+                id="modele_vehicule"
+                name="modele_vehicule"
+                placeholder="Modèle"
+              />
+            </div>
+            <div class="form-group">
+              <label for="num_serie">Numéro de série</label>
+              <input
+                type="text"
+                id="num_serie"
+                name="num_serie"
+                placeholder="Numéro de série"
+              />
+            </div>
+            <div class="form-group">
+              <label for="premiere_immat">Date de 1ère immatriculation</label>
+              <input type="date" id="premiere_immat" name="premiere_immat" />
+            </div>
+            <div class="form-group">
+              <label for="date_pose">Date de pose</label>
+              <input type="date" id="date_pose" name="date_pose" />
+            </div>
+            <div class="form-group">
+              <label for="date_constat">Date du constat</label>
+              <input type="date" id="date_constat" name="date_constat" />
+            </div>
+            <div class="form-group">
+              <label for="km_pose">Kilométrage à la pose</label>
+              <input
+                type="number"
+                id="km_pose"
+                name="km_pose"
+                min="0"
+                placeholder="km"
+              />
+            </div>
+            <div class="form-group">
+              <label for="km_constat">Kilométrage au constat</label>
+              <input
+                type="number"
+                id="km_constat"
+                name="km_constat"
+                min="0"
+                placeholder="km"
+              />
+            </div>
+            <div class="form-group">
+              <label for="bl_pose">Bon de livraison de pose</label>
+              <input type="text" id="bl_pose" name="bl_pose" placeholder="BL" />
+            </div>
+            <div class="form-group">
+              <label for="bl_constat">Bon de livraison du constat</label>
+              <input type="text" id="bl_constat" name="bl_constat" placeholder="BL" />
+            </div>
+            <div class="form-group form-full">
+              <label for="probleme_rencontre">Description du problème rencontré *</label>
+              <textarea
+                id="probleme_rencontre"
+                name="probleme_rencontre"
+                rows="4"
+                placeholder="Décrivez le problème..."
+                required
+              ></textarea>
+            </div>
+            <div class="form-group form-full">
+              <label for="files">Joindre des documents (photos, PDF, etc.)</label>
+              <input type="file" id="files" name="files" multiple />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Envoyer la demande</button>
+          </div>
+        </form>
+        <div id="message" class="message"></div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-content">
+        <p>&copy; <span id="year"></span> Durand Services Garantie</p>
+      </div>
+    </footer>
+
+    <script>
+      // Year update
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // Handle form submission
+      document.getElementById("demandeForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        // Compose request
+        try {
+          const response = await fetch("/api/demandes", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await response.json();
+          const msgDiv = document.getElementById("message");
+          if (response.ok) {
+            msgDiv.className = "message success";
+            msgDiv.textContent =
+              "Votre demande a été enregistrée avec succès. Un conseiller prendra contact avec vous prochainement.";
+            form.reset();
+          } else {
+            msgDiv.className = "message error";
+            msgDiv.textContent = result.error || "Une erreur est survenue.";
+          }
+          window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        } catch (err) {
+          const msgDiv = document.getElementById("message");
+          msgDiv.className = "message error";
+          msgDiv.textContent = "Impossible d’envoyer la demande. Veuillez réessayer plus tard.";
+        }
+      });
+    </script>
+  </body>
+</html>

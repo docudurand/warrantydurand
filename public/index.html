@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Durand Services Garantie – Accueil</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Main stylesheet -->
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <!-- Header / Navigation -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="brand">
+          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
+          <span>Durand Services Garantie</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="demande.html">Faire une demande</a></li>
+            <li><a href="suivi.html">Suivre une demande</a></li>
+            <li><a href="admin.html" class="admin-link">Admin</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container hero-content">
+        <h1>Votre tranquillité, notre engagement</h1>
+        <p>
+          Chez Durand Services Garantie, nous simplifions la gestion de vos
+          garanties produit. Déposez facilement votre demande, suivez son
+          traitement en temps réel et laissez‑nous nous occuper du reste.
+        </p>
+        <div class="cta-buttons">
+          <a href="demande.html" class="btn primary">Faire une demande</a>
+          <a href="suivi.html" class="btn secondary">Suivre une demande</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="container features-grid">
+        <div class="feature">
+          <h3>Processus simple</h3>
+          <p>
+            Remplissez un formulaire convivial et téléchargez vos justificatifs en
+            quelques clics.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Suivi en temps réel</h3>
+          <p>
+            Consultez l’état d’avancement de votre dossier à tout moment depuis
+            notre interface de suivi.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Service attentif</h3>
+          <p>
+            Notre équipe est à votre écoute pour répondre à vos questions et
+            accélérer le traitement de votre demande.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-content">
+        <p>&copy; <span id="year"></span> Durand Services Garantie. Tous droits réservés.</p>
+        <p>
+          <a href="mailto:contact@durandservices.fr">contact@durandservices.fr</a>
+          | 04 74 00 00 00
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Dynamic year in footer
+      document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
