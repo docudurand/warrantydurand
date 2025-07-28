@@ -184,6 +184,7 @@ async function saveBackupFTP() {
       await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
       backups.shift();
     }
+	console.log(`Sauvegarde ZIP créée sur le FTP : ${name}`);
   } finally {
     client.close();
   }
