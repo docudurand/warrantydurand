@@ -167,164 +167,102 @@ function cleanupFiles(arr) {
   }
 }
 
-async function saveBackupFTP() {
-  console.log("====> saveBackupFTP: démarrage");
-  const client = await getFTPClient();
-  const suffix = nowSuffixForZip();
-  const name = `sauvegarde-garantie-${suffix}.zip`;
-  const remoteZipPath = path.posix.join(FTP_BACKUP_FOLDER, name);
-
-  const tempDir = path.join(__dirname, "tmp_zip_" + suffix);
-  fs.mkdirSync(tempDir, { recursive: true });
-
-  const localJson = path.join(tempDir, "demandes.json");
-  try {
-    await client.downloadTo(localJson, JSON_FILE_FTP);
-    console.log("====> saveBackupFTP: demandes.json téléchargé");
-  } catch (e) {
-    fs.writeFileSync(localJson, "[]");
-    console.log("====> saveBackupFTP: demandes.json absent, créé vide");
-  }
-
-  const uploadsDir = path.join(tempDir, "uploads");
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  let uploadFiles = [];
-  try {
-    uploadFiles = await client.list(UPLOADS_FTP);
-    console.log("====> saveBackupFTP: fichiers upload listés ("+uploadFiles.length+")");
-  } catch (e) {
-    console.log("====> saveBackupFTP: ERREUR list uploads", e);
-  }
-  for(const f of uploadFiles){
-    if (f.type !== 0) continue;
-    const filePath = path.join(uploadsDir, f.name);
-    try {
-      await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
-    } catch (e) {
-      console.log("====> saveBackupFTP: ERREUR download", f.name, e);
+app.post("/api/admin/login", (req, res) => {
+  let pw = (req.body && req.body.password) ? req.body.password : "";
+  if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
+  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
+  for (const magasin of MAGASINS) {
+    const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
+    if (process.env[key] && pw === process.env[key]) {
+      return res.json({success:true, isSuper:false, isAdmin:false, magasin});
     }
   }
-  client.close();
+  res.json({success:false, message:"Mot de passe incorrect"});
+});
 
-  const localZip = path.join(__dirname, name);
-  await new Promise((resolve, reject) => {
-    const output = fs.createWriteStream(localZip);
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    output.on('close', resolve);
-    archive.on('error', reject);
-    archive.pipe(output);
-    archive.file(localJson, { name: "demandes.json" });
-    archive.directory(uploadsDir, "uploads");
-    archive.finalize();
-  });
+app.get("/api/admin/dossiers", async (req, res) => {
+  let data = await readDataFTP();
+  res.json(data);
+});
 
-  console.log("====> saveBackupFTP: zip local créé", localZip);
-
-  const client2 = await getFTPClient();
-  await client2.uploadFrom(localZip, remoteZipPath);
-  client2.close();
-
-  console.log("====> saveBackupFTP: zip uploadé sur FTP", remoteZipPath);
-
-  fs.rmSync(tempDir, { recursive: true, force: true });
-  if (fs.existsSync(localZip)) fs.unlinkSync(localZip);
-
-  const client3 = await getFTPClient();
-  const files = await client3.list(FTP_BACKUP_FOLDER);
-  const backups = files
-    .filter(f=>/^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{4}\.zip$/.test(f.name))
-    .sort((a,b)=>a.name.localeCompare(b.name));
-  while (backups.length > 5) {
-    await client3.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
-    backups.shift();
+app.post("/api/demandes", upload.array("document"), async (req, res) => {
+  try {
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+    let d = req.body;
+    d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+    d.date = new Date().toISOString();
+    d.statut = "enregistré";
+    d.files = [];
+    for (const f of req.files || []) {
+      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      await uploadFileToFTP(f.path, "uploads", remoteName);
+      d.files.push({ url: remoteName, original: f.originalname });
+      fs.unlinkSync(f.path);
+    }
+    d.reponse = "";
+    d.reponseFiles = [];
+    d.documentsAjoutes = [];
+    data.push(d);
+    await writeDataFTP(data);
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, message: err.message });
   }
-  client3.close();
-  console.log("====> saveBackupFTP: purge des anciens backups terminée");
-}
+});
 
+app.post("/api/admin/dossier/:id", upload.fields([
+  { name: "reponseFiles", maxCount: 10 },
+  { name: "documentsAjoutes", maxCount: 10 }
+]), async (req, res) => {
+  let { id } = req.params;
+  let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
+  let dossier = data.find(x=>x.id===id);
+  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
 
-async function getLogoBuffer() {
-  const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
-  const res = await axios.get(url, { responseType: "arraybuffer" });
-  return Buffer.from(res.data, "binary");
-}
+  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
+  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
+  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
 
-async function creerPDFDemande(d, nomFichier) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ margin: 32, size: "A4" });
-      const buffers = [];
-      doc.on("data", buffers.push.bind(buffers));
-      doc.on("end", () => resolve(Buffer.concat(buffers)));
-      const logo = await getLogoBuffer();
-      const PAGE_W = doc.page.width;
-      const logoW = 55, logoH = 55;
-      const x0 = 36;
-      let y0 = 36;
-      doc.image(logo, x0, y0, { width: logoW, height: logoH });
-      doc.font("Helvetica-Bold").fontSize(20).fillColor("#14548C");
-      doc.text("DURAND SERVICES GARANTIE", x0 + logoW + 12, y0 + 6, { align: "left", continued: false });
-      doc.font("Helvetica").fontSize(14).fillColor("#14548C");
-      doc.text(d.magasin || "", x0 + logoW + 12, y0 + 32, { align: "left" });
-      doc.fontSize(11).fillColor("#000");
-      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
-      let y = y0 + logoH + 32;
-      const tableW = PAGE_W - 2 * x0;
-      const colLabelW = 155;
-      const colValW = tableW - colLabelW;
-      const rowHeight = 22;
-      const labelFont = "Helvetica-Bold";
-      const valueFont = "Helvetica";
-      const rows = [
-        ["Nom du client", d.nom || ""],
-        ["Email", d.email || ""],
-        ["Magasin", d.magasin || "", "rowline"],
-        ["Marque du produit", d.marque_produit || ""],
-        ["Produit concerné", d.produit_concerne || ""],
-        ["Référence de la pièce", d.reference_piece || ""],
-        ["Quantité posée", d.quantite_posee || "", "rowline"],
-        ["Immatriculation", d.immatriculation || ""],
-        ["Marque", d.marque_vehicule || ""],
-        ["Modèle", d.modele_vehicule || ""],
-        ["Numéro de série", d.num_serie || ""],
-        ["1ère immatriculation", d.premiere_immat || "", "rowline"],
-        ["Date de pose", d.date_pose || ""],
-        ["Date du constat", d.date_constat || ""],
-        ["Kilométrage à la pose", d.km_pose || ""],
-        ["Kilométrage au constat", d.km_constat || ""],
-        ["N° BL 1ère Vente", d.bl_pose || ""],
-        ["N° BL 2ème Vente", d.bl_constat || "", "rowline"],
-        ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
-      ];
-      let totalRow = rows.reduce((sum, row) => sum + ((row[2] === "multiline") ? (row[1].split("\n").length) : 1), 0);
-      let tableH = rowHeight * totalRow;
-      let cornerRad = 14;
-      doc.roundedRect(x0, y, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
-      doc.lineWidth(1.7).roundedRect(x0, y, tableW, tableH, cornerRad).stroke("#3f628c");
-      let yCursor = y;
-      for (let i = 0; i < rows.length; i++) {
-        const [label, value, type] = rows[i];
-        let valueLines = (type === "multiline") ? value.split("\n") : [value];
-        let cellHeight = rowHeight * valueLines.length;
-        doc.font(labelFont).fontSize(11).fillColor("#000")
-          .text(label, x0 + 16, yCursor + 4, { width: colLabelW - 16, align: "left" });
-        doc.font(valueFont).fontSize(11).fillColor("#000");
-        for (let k = 0; k < valueLines.length; k++) {
-          doc.text(valueLines[k], x0 + colLabelW + 8, yCursor + 4 + k * rowHeight, { width: colValW - 16, align: "left" });
-        }
-        let drawLine = false;
-        if (type === "rowline") drawLine = true;
-        else if (i < rows.length - 1 && rows[i+1][2] !== "multiline" && type !== "multiline") drawLine = true;
-        if (i === rows.length - 1) drawLine = false;
-        if (drawLine) {
-          doc.moveTo(x0 + 8, yCursor + cellHeight).lineTo(x0 + tableW - 8, yCursor + cellHeight).strokeColor("#b3c5df").lineWidth(1).stroke();
-        }
-        yCursor += cellHeight;
-      }
-      doc.end();
-    } catch (e) { reject(e); }
-  });
-}
+  dossier.reponseFiles = dossier.reponseFiles || [];
+  dossier.documentsAjoutes = dossier.documentsAjoutes || [];
+
+  if (req.files && req.files.reponseFiles) {
+    for (const f of req.files.reponseFiles) {
+      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      await uploadFileToFTP(f.path, "uploads", remoteName);
+      dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
+      dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+      fs.unlinkSync(f.path);
+    }
+  }
+  if (req.files && req.files.documentsAjoutes) {
+    for (const f of req.files.documentsAjoutes) {
+      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      await uploadFileToFTP(f.path, "uploads", remoteName);
+      dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+      fs.unlinkSync(f.path);
+    }
+  }
+
+  await writeDataFTP(data);
+  res.json({success:true});
+});
+
+app.get("/api/mes-dossiers", async (req, res) => {
+  let email = (req.query.email||"").toLowerCase();
+  let data = await readDataFTP();
+  let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
+  res.json(dossiers);
+});
+
+app.get("/download/:file", async (req, res) => {
+  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
+  const remotePath = path.posix.join(UPLOADS_FTP, file);
+  const mimeType = mime.lookup(file) || undefined;
+  await streamFTPFileToRes(res, remotePath, file, mimeType);
+});
 
 app.get("/api/admin/exportzip", async (req, res) => {
   console.log("====> exportzip: démarrage");
@@ -385,7 +323,6 @@ app.get("/api/admin/exportzip", async (req, res) => {
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
-
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
