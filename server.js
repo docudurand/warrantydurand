@@ -543,51 +543,46 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
 });
 
 app.get("/api/admin/exportzip", async (req, res) => {
+  console.log("====> exportzip: démarrage");
+  const client = await getFTPClient();
   try {
-    console.log("====> exportzip: démarrage");
-    const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffixForZip() + ".zip";
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Type', 'application/zip');
+    const tmp = path.join(__dirname, "temp_demandes.json");
+    await client.downloadTo(tmp, JSON_FILE_FTP);
+    console.log("====> exportzip: téléchargement demandes.json");
+
+    let uploadFiles = [];
+    try {
+      const list = await client.list(UPLOADS_FTP);
+      uploadFiles = list.filter(f => f.type === 0);
+      console.log("====> exportzip: fichiers uploads trouvés", uploadFiles.length);
+    } catch (e) {
+      console.log("====> exportzip: ERREUR listage", e);
+    }
+
+    let tmpFiles = [];
+    for(const f of uploadFiles){
+      const tmpFile = path.join(__dirname, "temp_upload_" + f.name);
+      try {
+        await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
+        tmpFiles.push({local: tmpFile, archive: path.posix.join("uploads", f.name)});
+      } catch (err) {
+        console.log("====> exportzip: ERREUR download", f.name, err);
+      }
+    }
+    client.close();
+
     const archive = archiver('zip', { zlib: { level: 9 } });
+    res.setHeader('Content-Disposition', `attachment; filename="sauvegarde-garantie-${nowSuffix()}.zip"`);
+    res.setHeader('Content-Type', 'application/zip');
     archive.on('error', err => {
       console.error("Erreur archiver:", err);
       if (!res.headersSent) res.status(500).send({error: err.message});
     });
 
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    console.log("====> exportzip: téléchargement demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
     archive.file(tmp, { name: "demandes.json" });
-
-    let allFiles = [];
-    try {
-      allFiles = (await client.list(UPLOADS_FTP))
-        .filter(x=>!x.isDirectory)
-        .map(x=>path.posix.join(UPLOADS_FTP, x.name));
-      console.log("====> exportzip: fichiers uploads trouvés ("+allFiles.length+")");
-    } catch(e) {
-      console.error("====> exportzip: ERREUR listage uploads", e);
+    for(const f of tmpFiles){
+      archive.file(f.local, { name: f.archive });
     }
-
-    let tmpFiles = [];
-    let count = 0;
-    for (const remoteFile of allFiles) {
-      count++;
-      const relPath = path.posix.relative(FTP_BACKUP_FOLDER, remoteFile); // ex: uploads/nom.pdf
-      const localTmp = path.join(__dirname, "temp_upload_" + relPath.replace(/\//g,"_"));
-      try {
-        console.log(`====> exportzip: téléchargement ${remoteFile} (${count}/${allFiles.length})`);
-        await client.downloadTo(localTmp, remoteFile);
-        archive.file(localTmp, { name: relPath });
-        tmpFiles.push(localTmp);
-        await sleep(100);
-        console.log(`====> exportzip: OK ${remoteFile}`);
-      } catch (e) {
-        console.error(`====> exportzip: ERREUR téléchargement ${remoteFile}`, e);
-      }
-    }
-    client.close();
 
     archive.pipe(res);
     archive.finalize();
@@ -595,16 +590,24 @@ app.get("/api/admin/exportzip", async (req, res) => {
     archive.on('end', ()=>{
       if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
       for(const f of tmpFiles){
-        if(fs.existsSync(f)) fs.unlinkSync(f);
+        if(fs.existsSync(f.local)) fs.unlinkSync(f.local);
       }
       console.log("====> exportzip: nettoyage terminé");
     });
+
+  } catch (e) {
+    client.close();
+    console.error("Erreur exportzip:", e);
+    if (!res.headersSent) res.status(500).send({error: e.message});
+  }
+});
 
   } catch (e) {
     console.error("Erreur exportzip:", e);
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
+
 
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
