@@ -22,9 +22,11 @@
         </a>
         <nav>
           <ul class="nav-links">
+            <!-- Lien vers la page de demande -->
             <li><a href="demande.html">Faire une demande</a></li>
+            <!-- Lien vers la page de suivi -->
             <li><a href="suivi.html">Suivre une demande</a></li>
-            <li><a href="admin.html" class="active admin-link">Admin</a></li>
+            <!-- Aucun lien Admin n'est affiché pour éviter la navigation depuis Wix -->
           </ul>
         </nav>
       </div>
@@ -33,7 +35,7 @@
     <section class="page-header">
       <div class="container">
         <h1>Interface d'administration</h1>
-        <p>Accédez aux demandes de garantie et mettez à jour leur statut.</p>
+        <p>Accédez aux demandes de garantie, répondez aux clients et joignez des documents.</p>
       </div>
     </section>
 
@@ -41,7 +43,7 @@
       <div class="container">
         <!-- Password prompt -->
         <div id="loginSection" class="login-section">
-          <p>Veuillez saisir le mot de passe pour accéder à l'interface.</p>
+          <p>Veuillez saisir le mot de passe administrateur pour accéder à l'interface.</p>
           <input type="password" id="adminPassword" placeholder="Mot de passe" />
           <button id="loginButton" class="btn primary">Valider</button>
           <p id="loginError" class="error"></p>
@@ -75,7 +77,42 @@
             </select>
             <button id="refreshButton" class="btn secondary">Rafraîchir</button>
           </div>
+          <!-- Conteneur pour la liste des demandes -->
           <div id="adminResults" class="results"></div>
+          <!-- Formulaire d'édition d'un dossier -->
+          <div id="editSection" class="login-section hidden" style="margin-top:2rem;">
+            <h2>Modifier le dossier</h2>
+            <form id="editForm">
+              <input type="hidden" id="editId" />
+              <div class="form-group">
+                <label for="editStatut">Statut</label>
+                <select id="editStatut" name="statut">
+                  <option value="enregistré">Enregistré</option>
+                  <option value="en attente">En attente</option>
+                  <option value="pris en charge">Pris en charge</option>
+                  <option value="accepté">Accepté</option>
+                  <option value="refusé">Refusé</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="editReponse">Réponse au client</label>
+                <textarea id="editReponse" name="reponse" rows="3" placeholder="Votre message au client..."></textarea>
+              </div>
+              <div class="form-group">
+                <label for="editNumeroAvoir">Numéro d'avoir (optionnel)</label>
+                <input type="text" id="editNumeroAvoir" name="numero_avoir" placeholder="Numéro d'avoir" />
+              </div>
+              <div class="form-group">
+                <label for="editFiles">Ajouter des fichiers (PDF, photos...)</label>
+                <input type="file" id="editFiles" name="reponseFiles" multiple />
+              </div>
+              <div class="form-actions">
+                <button type="button" id="cancelEdit" class="btn secondary">Annuler</button>
+                <button type="submit" class="btn primary">Enregistrer</button>
+              </div>
+            </form>
+            <p id="editMessage" class="message"></p>
+          </div>
         </div>
       </div>
     </section>
@@ -89,19 +126,40 @@
     <script>
       document.getElementById("year").textContent = new Date().getFullYear();
 
-      const correctPassword = "Pich@rd2007";
+      // Variables globales pour conserver l'état de l'admin (superadmin, magasin) et la liste des dossiers chargés
+      let adminInfo = { isSuper: false, isAdmin: false, magasin: null };
+      let dossiers = [];
+
       const loginButton = document.getElementById("loginButton");
       const adminPanel = document.getElementById("adminPanel");
       const loginSection = document.getElementById("loginSection");
-      loginButton.addEventListener("click", () => {
+      const loginError = document.getElementById("loginError");
+
+      // Gestion du login via l'API
+      loginButton.addEventListener("click", async () => {
         const pwd = document.getElementById("adminPassword").value;
-        const error = document.getElementById("loginError");
-        if (pwd === correctPassword) {
-          loginSection.classList.add("hidden");
-          adminPanel.classList.remove("hidden");
-          loadDemands();
-        } else {
-          error.textContent = "Mot de passe incorrect.";
+        loginError.textContent = "";
+        if (!pwd) {
+          loginError.textContent = "Veuillez saisir le mot de passe.";
+          return;
+        }
+        try {
+          const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password: pwd }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            adminInfo = { isSuper: data.isSuper || false, isAdmin: data.isAdmin || false, magasin: data.magasin || null };
+            loginSection.classList.add("hidden");
+            adminPanel.classList.remove("hidden");
+            loadDemands();
+          } else {
+            loginError.textContent = data.message || "Mot de passe incorrect.";
+          }
+        } catch (e) {
+          loginError.textContent = "Erreur lors de la connexion.";
         }
       });
 
@@ -111,22 +169,29 @@
       document.getElementById("filterStatut").addEventListener("change", loadDemands);
       document.getElementById("filterMagasinAdmin").addEventListener("change", loadDemands);
 
+      // Charger toutes les demandes et construire le tableau
       async function loadDemands() {
-        const statut = document.getElementById("filterStatut").value;
-        const magasin = document.getElementById("filterMagasinAdmin").value;
-        const qs = new URLSearchParams();
-        if (statut) qs.append("statut", statut);
-        if (magasin) qs.append("magasin", magasin);
         try {
-          const res = await fetch(`/api/demandes?${qs.toString()}`);
+          const res = await fetch("/api/admin/dossiers");
           const data = await res.json();
+          dossiers = Array.isArray(data) ? data : [];
+          // Filtrage côté client selon les sélections
+          const statutSel = document.getElementById("filterStatut").value;
+          const magasinSel = document.getElementById("filterMagasinAdmin").value;
+          let filtered = dossiers;
+          if (statutSel) filtered = filtered.filter((d) => d.statut === statutSel);
+          if (magasinSel) filtered = filtered.filter((d) => d.magasin === magasinSel);
+          // Si l'admin est restreint à un magasin, filtrer également
+          if (!adminInfo.isSuper && !adminInfo.isAdmin && adminInfo.magasin) {
+            filtered = filtered.filter((d) => d.magasin === adminInfo.magasin);
+          }
           const container = document.getElementById("adminResults");
-          if (!data.length) {
+          if (!filtered.length) {
             container.innerHTML = `<p>Aucun dossier trouvé.</p>`;
             return;
           }
-          let html = `<table class="data-table admin-table"><thead><tr><th>Date</th><th>Nom</th><th>E‑mail</th><th>Magasin</th><th>Produit</th><th>Statut</th><th>Action</th></tr></thead><tbody>`;
-          data.forEach((d) => {
+          let html = `<table class="data-table admin-table"><thead><tr><th>Date</th><th>Nom</th><th>E‑mail</th><th>Magasin</th><th>Produit</th><th>Statut</th><th>Actions</th></tr></thead><tbody>`;
+          filtered.forEach((d) => {
             const date = new Date(d.date).toLocaleDateString();
             html += `<tr>
               <td>${date}</td>
@@ -143,32 +208,99 @@
                   <option value="accepté" ${d.statut === "accepté" ? "selected" : ""}>Accepté</option>
                   <option value="refusé" ${d.statut === "refusé" ? "selected" : ""}>Refusé</option>
                 </select>
+                <button class="btn secondary editButton" data-id="${d.id}">Éditer</button>
               </td>
             </tr>`;
           });
           html += `</tbody></table>`;
           container.innerHTML = html;
-          // Add listeners to select elements
-          document.querySelectorAll(".statusSelect").forEach((sel) => {
+          // Gestion des changements de statut rapides
+          container.querySelectorAll(".statusSelect").forEach((sel) => {
             sel.addEventListener("change", async function () {
               const id = this.getAttribute("data-id");
               const newStatus = this.value;
+              const formData = new FormData();
+              formData.append("statut", newStatus);
               try {
-                const res = await fetch(`/api/demandes/${id}`, {
-                  method: "PUT",
-                  body: new URLSearchParams({ statut: newStatus }),
+                await fetch(`/api/admin/dossier/${id}`, {
+                  method: "POST",
+                  body: formData,
                 });
-                await res.json();
                 loadDemands();
               } catch (err) {
                 alert("Erreur lors de la mise à jour du statut.");
               }
             });
           });
+          // Gestion du bouton Éditer
+          container.querySelectorAll(".editButton").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const id = btn.getAttribute("data-id");
+              openEditForm(id);
+            });
+          });
         } catch (err) {
           document.getElementById("adminResults").innerHTML = `<p class="error">Erreur de chargement des dossiers.</p>`;
         }
       }
+
+      // Afficher le formulaire d'édition pour un dossier donné
+      function openEditForm(id) {
+        const dossier = dossiers.find((d) => d.id === id);
+        if (!dossier) return;
+        document.getElementById("editId").value = dossier.id;
+        document.getElementById("editStatut").value = dossier.statut;
+        document.getElementById("editReponse").value = dossier.reponse || "";
+        document.getElementById("editNumeroAvoir").value = dossier.numero_avoir || "";
+        document.getElementById("editFiles").value = "";
+        document.getElementById("editMessage").textContent = "";
+        document.getElementById("editSection").classList.remove("hidden");
+        // Scroll vers le formulaire
+        document.getElementById("editSection").scrollIntoView({ behavior: "smooth" });
+      }
+
+      // Annuler l'édition
+      document.getElementById("cancelEdit").addEventListener("click", () => {
+        document.getElementById("editSection").classList.add("hidden");
+      });
+
+      // Soumettre la mise à jour complète du dossier
+      document.getElementById("editForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const id = document.getElementById("editId").value;
+        const statut = document.getElementById("editStatut").value;
+        const reponse = document.getElementById("editReponse").value;
+        const numero = document.getElementById("editNumeroAvoir").value;
+        const filesInput = document.getElementById("editFiles");
+        const formData = new FormData();
+        formData.append("statut", statut);
+        if (reponse) formData.append("reponse", reponse);
+        if (numero) formData.append("numero_avoir", numero);
+        // Ajouter les fichiers sélectionnés en tant que reponseFiles
+        for (const f of filesInput.files) {
+          formData.append("reponseFiles", f);
+        }
+        const msg = document.getElementById("editMessage");
+        try {
+          const resp = await fetch(`/api/admin/dossier/${id}`, {
+            method: "POST",
+            body: formData,
+          });
+          const result = await resp.json();
+          if (result.success || resp.ok) {
+            msg.className = "message success";
+            msg.textContent = "Le dossier a été mis à jour.";
+            document.getElementById("editSection").classList.add("hidden");
+            loadDemands();
+          } else {
+            msg.className = "message error";
+            msg.textContent = result.message || "Erreur lors de la mise à jour.";
+          }
+        } catch (err) {
+          msg.className = "message error";
+          msg.textContent = "Erreur lors de la mise à jour.";
+        }
+      });
     </script>
   </body>
 </html>
