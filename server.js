@@ -530,8 +530,9 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
 
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
+    console.log("====> exportzip: démarrage");
     const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffixNice() + ".zip";
+    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -541,30 +542,39 @@ app.get("/api/admin/exportzip", async (req, res) => {
     });
 
     const tmp = path.join(__dirname, "temp_demandes.json");
+    console.log("====> exportzip: téléchargement demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
+    archive.file(tmp, { name: "demandes.json" });
 
     const uploadFiles = await client.list(UPLOADS_FTP);
     let tmpFiles = [];
-    for(const f of uploadFiles){
-      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
-      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      tmpFiles.push({local: tmpFile, archive: path.posix.join("uploads", f.name)});
+    let count = 0;
+    for (const f of uploadFiles) {
+      if (!f.name.includes(".")) continue;
+      count++;
+      console.log(`====> exportzip: téléchargement ${f.name} (${count}/${uploadFiles.length})`);
+      const tmpFile = path.join(__dirname, "temp_upload_" + f.name);
+      try {
+        await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
+        archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
+        tmpFiles.push(tmpFile);
+        await sleep(200);
+        console.log(`====> exportzip: OK ${f.name}`);
+      } catch (e) {
+        console.error(`====> exportzip: ERREUR téléchargement ${f.name}`, e);
+      }
     }
     client.close();
-
-    archive.file(tmp, { name: "demandes.json" });
-    for(const f of tmpFiles){
-      archive.file(f.local, { name: f.archive });
-    }
 
     archive.pipe(res);
     archive.finalize();
 
-    archive.on('end', ()=>{
-      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      for(const f of tmpFiles){
-        if(fs.existsSync(f.local)) fs.unlinkSync(f.local);
+    archive.on('end', () => {
+      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      for (const f of tmpFiles) {
+        if (fs.existsSync(f)) fs.unlinkSync(f);
       }
+      console.log("====> exportzip: nettoyage terminé");
     });
 
   } catch (e) {
@@ -572,6 +582,7 @@ app.get("/api/admin/exportzip", async (req, res) => {
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
+
 
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
