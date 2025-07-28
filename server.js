@@ -154,20 +154,32 @@ async function saveBackupFTP() {
     const d = new Date();
     const pad = n => String(n).padStart(2, "0");
     const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    const name = `sauvegarde-garantie-${dateStr}.json`;
+    const name = `sauvegarde-garantie-${dateStr}.zip`;
     const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
 
-    await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
-    if (fs.existsSync("tmpb.json")) {
-      await client.uploadFrom("tmpb.json", remotePath);
-      fs.unlinkSync("tmpb.json");
-    }
+    const tmpJson = path.join(__dirname, "tmpb.json");
+    await client.downloadTo(tmpJson, JSON_FILE_FTP);
+
+    const tmpZip = path.join(__dirname, "tmpb.zip");
+    await new Promise((resolve, reject) => {
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      const output = fs.createWriteStream(tmpZip);
+      archive.on('error', reject);
+      output.on('close', resolve);
+      archive.pipe(output);
+      archive.file(tmpJson, { name: "demandes.json" });
+      archive.finalize();
+    });
+
+    await client.uploadFrom(tmpZip, remotePath);
+
+    if (fs.existsSync(tmpJson)) fs.unlinkSync(tmpJson);
+    if (fs.existsSync(tmpZip)) fs.unlinkSync(tmpZip);
 
     const files = await client.list(FTP_BACKUP_FOLDER);
     const backups = files
-      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
+      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".zip"))
       .sort((a, b) => a.name.localeCompare(b.name));
-
     while (backups.length > 5) {
       await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
       backups.shift();
@@ -176,6 +188,7 @@ async function saveBackupFTP() {
     client.close();
   }
 }
+
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
