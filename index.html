@@ -11,191 +11,232 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Styles intégrés pour un affichage autonome (Wix) -->
+    <!-- Styles intégrés pour Wix -->
     <style>
-      /* Palette de couleurs et variables globales */
-      :root {
-        --primary-color: #004080;
-        --secondary-color: #0072c6;
-        --accent-color: #00a7e1;
-        --light-bg: #f5f9fc;
-        --dark-text: #073763;
-        --neutral: #eeeeee;
-      }
-      /* Base et typographie */
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Montserrat", sans-serif;
-        color: var(--dark-text);
-        background-color: var(--light-bg);
-        line-height: 1.6;
-        scroll-behavior: smooth;
-      }
-      *,
-      *::before,
-      *::after {
-        box-sizing: inherit;
-      }
-      a {
-        color: var(--primary-color);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      a:hover {
-        color: var(--accent-color);
-      }
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem;
-      }
-      /* Barre de navigation simple */
-      .navbar {
-        background-color: #fff;
-        border-bottom: 1px solid var(--neutral);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-      }
-      .nav-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 64px;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: var(--primary-color);
-      }
-      .brand .logo {
-        height: 40px;
-        margin-right: 0.5rem;
-      }
-      .nav-links {
-        list-style: none;
-        display: flex;
-        margin: 0;
-        padding: 0;
-      }
+    /* Palette de couleurs et variables globales */
+    :root {
+      --primary-color: #004080;
+      --secondary-color: #0072c6;
+      --accent-color: #00a7e1;
+      --light-bg: #f5f9fc;
+      --dark-text: #073763;
+      --neutral: #eeeeee;
+      --success: #2e7d32;
+      --error: #c62828;
+    }
+
+    /* Reset et typographie */
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Montserrat", sans-serif;
+      color: var(--dark-text);
+      background-color: var(--light-bg);
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit;
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover {
+      color: var(--accent-color);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Barre de navigation */
+    .navbar {
+      background-color: #fff;
+      border-bottom: 1px solid var(--neutral);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+    .brand .logo {
+      height: 40px;
+      margin-right: 0.5rem;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-links li {
+      margin-left: 1.5rem;
+    }
+    .nav-links a {
+      position: relative;
+      padding: 0.5rem 0;
+      font-weight: 500;
+    }
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--primary-color);
+      border-radius: 2px;
+    }
+
+    /* Boutons */
+    .btn {
+      display: inline-block;
+      padding: 0.65rem 1.3rem;
+      border-radius: 4px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+      text-align: center;
+    }
+    .btn.primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+    .btn.primary:hover {
+      background-color: var(--secondary-color);
+    }
+    .btn.secondary {
+      background-color: var(--neutral);
+      color: var(--dark-text);
+    }
+    .btn.secondary:hover {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    /* Section héro */
+    .hero {
+      background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: #fff;
+      padding: 4rem 0;
+      text-align: center;
+      clip-path: ellipse(150% 100% at 50% 0);
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .hero p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cta-buttons .btn {
+      margin: 0 0.5rem;
+      min-width: 150px;
+    }
+
+    /* Section features */
+    .features {
+      padding: 3rem 0;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    .feature {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .feature h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+    .feature p {
+      margin: 0;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: #fff;
+      border-top: 1px solid var(--neutral);
+      padding: 1rem 0;
+      font-size: 0.9rem;
+      color: var(--dark-text);
+    }
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
       .nav-links li {
-        margin-left: 1.5rem;
-      }
-      .nav-links a {
-        position: relative;
-        padding: 0.5rem 0;
-        font-weight: 500;
-      }
-      .nav-links a.active::after {
-        content: "";
-        position: absolute;
-        bottom: -5px;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background-color: var(--primary-color);
-        border-radius: 2px;
-      }
-      /* Section héro */
-      .hero {
-        background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: #fff;
-        padding: 4rem 0;
-        text-align: center;
-        clip-path: ellipse(150% 100% at 50% 0);
+        margin-left: 0.75rem;
       }
       .hero h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        font-size: 2rem;
       }
-      .hero p {
-        font-size: 1.1rem;
-        margin-bottom: 2rem;
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
+      .hero {
+        padding: 3rem 1rem;
       }
-      .cta-buttons .btn {
-        margin: 0 0.5rem;
-        min-width: 150px;
-      }
-      /* Boutons */
-      .btn {
-        display: inline-block;
-        padding: 0.65rem 1.3rem;
-        border-radius: 4px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.2s, color 0.2s;
-        text-align: center;
-      }
-      .btn.primary {
-        background-color: var(--primary-color);
-        color: #fff;
-      }
-      .btn.primary:hover {
-        background-color: var(--secondary-color);
-      }
-      .btn.secondary {
-        background-color: var(--neutral);
-        color: var(--dark-text);
-      }
-      .btn.secondary:hover {
-        background-color: var(--accent-color);
-        color: #fff;
-      }
-      /* Footer */
-      .footer {
-        background-color: #fff;
-        border-top: 1px solid var(--neutral);
-        padding: 1rem 0;
-        font-size: 0.9rem;
-        color: var(--dark-text);
-      }
-      .footer-content {
-        display: flex;
+    }
+    @media (max-width: 480px) {
+      .nav-content {
         flex-direction: column;
-        align-items: center;
+        height: auto;
+        padding: 0.5rem 0;
+      }
+      .nav-links {
+        flex-direction: column;
         gap: 0.5rem;
+        margin-top: 0.5rem;
       }
-      /* Responsivité */
-      @media (max-width: 768px) {
-        .nav-links li {
-          margin-left: 0.75rem;
-        }
-        .hero h1 {
-          font-size: 2rem;
-        }
-        .hero {
-          padding: 3rem 1rem;
-        }
+      .features-grid {
+        grid-template-columns: 1fr;
       }
-      @media (max-width: 480px) {
-        .nav-content {
-          flex-direction: column;
-          height: auto;
-          padding: 0.5rem 0;
-        }
-        .nav-links {
-          flex-direction: column;
-          gap: 0.5rem;
-          margin-top: 0.5rem;
-        }
+      .cta-buttons {
+        flex-direction: column;
       }
+    }
     </style>
   </head>
   <body>
-    <!-- Navigation -->
+    <!-- Header / Navigation -->
     <header class="navbar">
       <div class="container nav-content">
         <a href="index.html" class="brand">
-          <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" alt="Logo DSG" class="logo" />
+          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
           <span>Durand Services Garantie</span>
         </a>
         <nav>
@@ -206,13 +247,15 @@
         </nav>
       </div>
     </header>
-    <!-- Héro -->
+
+    <!-- Hero Section -->
     <section class="hero">
-      <div class="container">
-        <h1>Bienvenue sur Durand Services Garantie</h1>
+      <div class="container hero-content">
+        <h1>Votre tranquillité, notre engagement</h1>
         <p>
-          Simplifiez vos démarches de garantie : soumettez votre demande en ligne et
-          suivez l'avancement de vos dossiers en toute simplicité.
+          Chez Durand Services Garantie, nous simplifions la gestion de vos
+          garanties produit. Déposez facilement votre demande, suivez son
+          traitement en temps réel et laissez‑nous nous occuper du reste.
         </p>
         <div class="cta-buttons">
           <a href="demande.html" class="btn primary">Faire une demande</a>
@@ -220,13 +263,47 @@
         </div>
       </div>
     </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <div class="container features-grid">
+        <div class="feature">
+          <h3>Processus simple</h3>
+          <p>
+            Remplissez un formulaire convivial et téléchargez vos justificatifs en
+            quelques clics.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Suivi en temps réel</h3>
+          <p>
+            Consultez l’état d’avancement de votre dossier à tout moment depuis
+            notre interface de suivi.
+          </p>
+        </div>
+        <div class="feature">
+          <h3>Service attentif</h3>
+          <p>
+            Notre équipe est à votre écoute pour répondre à vos questions et
+            accélérer le traitement de votre demande.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
       <div class="container footer-content">
-        <p>&copy; <span id="year"></span> Durand Services Garantie</p>
+        <p>&copy; <span id="year"></span> Durand Services Garantie. Tous droits réservés.</p>
+        <p>
+          <a href="mailto:contact@durandservices.fr">contact@durandservices.fr</a>
+          | 04 74 00 00 00
+        </p>
       </div>
     </footer>
+
     <script>
+      // Dynamic year in footer
       document.getElementById("year").textContent = new Date().getFullYear();
     </script>
   </body>

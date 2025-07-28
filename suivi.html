@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Suivi de mes dossiers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Intégration de Google Fonts et harmonisation des styles -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -21,6 +20,66 @@
       --neutral: #eeeeee;
       --success: #2e7d32;
       --error: #c62828;
+    }
+    .navbar {
+      background-color: #fff;
+      border-bottom: 1px solid var(--neutral);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary-color);
+    }
+    .brand .logo {
+      height: 40px;
+      margin-right: 0.5rem;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-links li {
+      margin-left: 1.5rem;
+    }
+    .nav-links a {
+      position: relative;
+      padding: 0.5rem 0;
+      font-weight: 500;
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--accent-color);
+    }
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--primary-color);
+      border-radius: 2px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
     }
     body {
       font-family: "Montserrat", sans-serif;
@@ -203,6 +262,20 @@
   </style>
 </head>
 <body>
+  <header class="navbar">
+    <div class="container nav-content">
+      <a href="index.html" class="brand">
+        <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" alt="Logo DSG" class="logo" />
+        <span>Durand Services Garantie</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+            <li><a href="https://durandservicesgara.wixsite.com/my-site-1/demande">Faire une demande</a></li>
+            <li><a href="https://durandservicesgara.wixsite.com/my-site-1/suivi">Suivre une demande</a></li>i>
+        </ul>
+      </nav>
+    </div>
+  </header>
   <div class="container">
     <h2>Suivi de mes dossiers</h2>
     <form id="form-suivi" onsubmit="event.preventDefault(); afficherDossiers();">
