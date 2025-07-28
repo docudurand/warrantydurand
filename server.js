@@ -44,7 +44,7 @@ const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
 const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie";
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
-const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
+const UPLOADS_FTP = "/Disque 1/sauvegardegarantie/uploads";
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -285,8 +285,8 @@ app.get("/api/admin/exportzip", async (req, res) => {
     for(const f of uploadFiles){
       const tmpFile = path.join(__dirname, "temp_upload_" + f.name);
       try {
-        await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-        tmpFiles.push({local: tmpFile, archive: path.posix.join("uploads", f.name)});
+        await client.downloadTo(tmpFile, `${UPLOADS_FTP}/${f.name}`);
+        tmpFiles.push({local: tmpFile, archive: `uploads/${f.name}`});
       } catch (err) {
         console.log("====> exportzip: ERREUR download", f.name, err);
       }
@@ -323,6 +323,18 @@ app.get("/api/admin/exportzip", async (req, res) => {
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
+app.get("/test-list-uploads", async (req, res) => {
+  const client = await getFTPClient();
+  try {
+    const list = await client.list(UPLOADS_FTP);
+    client.close();
+    res.json(list);
+  } catch(e) {
+    client.close();
+    res.json({error: e.message, path: UPLOADS_FTP});
+  }
+});
+
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
