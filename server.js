@@ -61,7 +61,6 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
-// FTP utils...
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -74,6 +73,7 @@ async function getFTPClient() {
   });
   return client;
 }
+
 async function readDataFTP() {
   const client = await getFTPClient();
   let json = [];
@@ -82,12 +82,11 @@ async function readDataFTP() {
     await client.downloadTo(tmp, JSON_FILE_FTP);
     json = JSON.parse(fs.readFileSync(tmp, "utf8"));
     fs.unlinkSync(tmp);
-  } catch (e) {
-    json = [];
-  }
+  } catch (e) { json = []; }
   client.close();
   return json;
 }
+
 async function writeDataFTP(data) {
   const client = await getFTPClient();
   const tmp = path.join(__dirname, "temp_demandes.json");
@@ -97,6 +96,7 @@ async function writeDataFTP(data) {
   fs.unlinkSync(tmp);
   client.close();
 }
+
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   const client = await getFTPClient();
   const remoteName = remoteFileName || path.basename(localPath);
@@ -104,12 +104,14 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   await client.uploadFrom(localPath, remotePath);
   client.close();
 }
+
 async function deleteFileFromFTP(remoteFileName) {
   const client = await getFTPClient();
   const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
   await client.remove(remotePath).catch(()=>{});
   client.close();
 }
+
 async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   const client = await getFTPClient();
   let tempPath = path.join(__dirname, "tempdl_"+fileName);
@@ -125,10 +127,12 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
     res.status(404).send("Not found");
   }
 }
+
 function nowSuffix() {
   const d = new Date();
   return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
 }
+
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -142,35 +146,83 @@ async function fetchFilesFromFTP(fileObjs) {
   client.close();
   return files;
 }
+
 function cleanupFiles(arr) {
   if (!arr || !arr.length) return;
   for (let f of arr) {
     if (f && f.path && fs.existsSync(f.path)) fs.unlinkSync(f.path);
   }
 }
+
 async function saveBackupFTP() {
+
   const client = await getFTPClient();
   const d = new Date();
-  const name = "sauvegarde-"+nowSuffix()+".json";
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
-  await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
-  if (fs.existsSync("tmpb.json")) {
-    await client.uploadFrom("tmpb.json", remotePath);
-    fs.unlinkSync("tmpb.json");
+  const suffix = nowSuffix();
+  const name = `sauvegarde-${suffix}.zip`;
+  const remoteZipPath = path.posix.join(FTP_BACKUP_FOLDER, name);
+
+  const tempDir = path.join(__dirname, "tmp_zip_" + suffix);
+  fs.mkdirSync(tempDir, { recursive: true });
+
+  const localJson = path.join(tempDir, "demandes.json");
+  try {
+    await client.downloadTo(localJson, JSON_FILE_FTP);
+  } catch (e) {
+
+    fs.writeFileSync(localJson, "[]");
   }
-  const files = await client.list(FTP_BACKUP_FOLDER);
-  const backups = files.filter(f=>f.name.startsWith("sauvegarde-")).sort((a,b)=>a.name.localeCompare(b.name));
-  while (backups.length > 10) {
-    await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
-    backups.shift();
+
+  const uploadsDir = path.join(tempDir, "uploads");
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  let uploadFiles = [];
+  try {
+    uploadFiles = await client.list(UPLOADS_FTP);
+  } catch (e) {}
+  for(const f of uploadFiles) {
+    const filePath = path.join(uploadsDir, f.name);
+    try {
+      await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
+    } catch (e) {}
   }
   client.close();
+
+  const localZip = path.join(__dirname, name);
+  await new Promise((resolve, reject) => {
+    const output = fs.createWriteStream(localZip);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    output.on('close', resolve);
+    archive.on('error', reject);
+    archive.pipe(output);
+    archive.file(localJson, { name: "demandes.json" });
+    archive.directory(uploadsDir, "uploads");
+    archive.finalize();
+  });
+
+  const client2 = await getFTPClient();
+  await client2.uploadFrom(localZip, remoteZipPath);
+  client2.close();
+
+  fs.rmSync(tempDir, { recursive: true, force: true });
+  if (fs.existsSync(localZip)) fs.unlinkSync(localZip);
+
+  const client3 = await getFTPClient();
+  const files = await client3.list(FTP_BACKUP_FOLDER);
+  const backups = files.filter(f=>/^sauvegarde-\d+\.zip$/.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name));
+  while (backups.length > 5) {
+    await client3.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
+    backups.shift();
+  }
+  client3.close();
 }
+
+
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data, "binary");
 }
+
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -287,7 +339,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 
 Cordialement
 L'équipe Durand Services Garantie.
-
 `,
         attachments: [
           {
@@ -313,6 +364,8 @@ L'équipe Durand Services Garantie.
       });
       cleanupFiles(attachments);
     }
+    res.json({ success: true });
+  } catch
     res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
@@ -398,18 +451,21 @@ app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
 });
+
 app.get("/api/mes-dossiers", async (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let data = await readDataFTP();
   let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
+
 app.get("/download/:file", async (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const remotePath = path.posix.join(UPLOADS_FTP, file);
   const mimeType = mime.lookup(file) || undefined;
   await streamFTPFileToRes(res, remotePath, file, mimeType);
 });
+
 app.post("/api/admin/login", (req, res) => {
   let pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
@@ -422,6 +478,7 @@ app.post("/api/admin/login", (req, res) => {
   }
   res.json({success:false, message:"Mot de passe incorrect"});
 });
+
 app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
@@ -438,6 +495,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   await saveBackupFTP();
   res.json({success:true});
 });
+
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
@@ -512,6 +570,7 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:false, message:e.message});
   }
 });
+
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
