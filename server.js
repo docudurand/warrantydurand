@@ -61,7 +61,6 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
-// FTP utils...
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -150,18 +149,15 @@ function cleanupFiles(arr) {
 }
 async function saveBackupFTP() {
   const client = await getFTPClient();
-
   const d = new Date();
   const pad = n => String(n).padStart(2, "0");
   const name = `sauvegarde-garantie-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
   const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
-
   await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
   if (fs.existsSync("tmpb.json")) {
     await client.uploadFrom("tmpb.json", remotePath);
     fs.unlinkSync("tmpb.json");
   }
-
   const files = await client.list(FTP_BACKUP_FOLDER);
   const backups = files
     .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
@@ -446,37 +442,47 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   await saveBackupFTP();
   res.json({success:true});
 });
+
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    const ftpFolder = FTP_BACKUP_FOLDER;
+    const now = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const fileName = `sauvegarde-garantie-${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.zip`;
+
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
     archive.on('error', err => res.status(500).send({error: err.message}));
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
-    archive.file(tmp, { name: "demandes.json" });
-    const uploadFiles = await client.list(UPLOADS_FTP);
-    for(const f of uploadFiles){
-      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
-      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
-    }
-    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
     archive.pipe(res);
-    archive.pipe(output);
+
+    async function addFTPFolderToArchive(ftpPath, archivePath = "") {
+      const list = await client.list(ftpPath);
+      for (const file of list) {
+        const remotePath = path.posix.join(ftpPath, file.name);
+        const zipPath = path.posix.join(archivePath, file.name);
+        if (file.isDirectory) {
+          await addFTPFolderToArchive(remotePath, zipPath);
+        } else {
+          const tempFile = path.join(__dirname, "tmp_zip_" + Date.now() + "_" + Math.random().toString(36).substr(2,5));
+          await client.downloadTo(tempFile, remotePath);
+          archive.file(tempFile, { name: zipPath });
+          archive.on('end', () => { if(fs.existsSync(tempFile)) fs.unlinkSync(tempFile); });
+        }
+      }
+    }
+
+    await addFTPFolderToArchive(ftpFolder);
+
     archive.finalize();
-    output.on("close", ()=>{
-      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
-      client.close();
-    });
+    archive.on('end', () => { client.close(); });
+    console.log(`[ZIP EXPORT] Sauvegarde zip exportée (${fileName})`);
   } catch (e) {
     res.status(500).send({error: e.message});
   }
 });
+
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
@@ -506,6 +512,8 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:false, message:e.message});
   }
 });
+
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
+
 app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
