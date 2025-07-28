@@ -560,12 +560,14 @@ app.get("/api/admin/exportzip", async (req, res) => {
     await client.downloadTo(tmp, JSON_FILE_FTP);
     archive.file(tmp, { name: "demandes.json" });
 
-    console.log("====> exportzip: listage récursif des fichiers dans uploads");
     let allFiles = [];
     try {
-      allFiles = await listAllFTPFiles(client, UPLOADS_FTP);
+      allFiles = (await client.list(UPLOADS_FTP))
+        .filter(x=>!x.isDirectory)
+        .map(x=>path.posix.join(UPLOADS_FTP, x.name));
+      console.log("====> exportzip: fichiers uploads trouvés ("+allFiles.length+")");
     } catch(e) {
-      console.error("====> exportzip: ERREUR listage récursif", e);
+      console.error("====> exportzip: ERREUR listage uploads", e);
     }
 
     let tmpFiles = [];
@@ -574,8 +576,6 @@ app.get("/api/admin/exportzip", async (req, res) => {
       count++;
       const relPath = path.posix.relative(FTP_BACKUP_FOLDER, remoteFile); // ex: uploads/nom.pdf
       const localTmp = path.join(__dirname, "temp_upload_" + relPath.replace(/\//g,"_"));
-      const dirTmp = path.dirname(localTmp);
-      fs.mkdirSync(dirTmp, { recursive: true });
       try {
         console.log(`====> exportzip: téléchargement ${remoteFile} (${count}/${allFiles.length})`);
         await client.downloadTo(localTmp, remoteFile);
