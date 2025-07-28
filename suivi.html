@@ -4,39 +4,202 @@
   <meta charset="UTF-8">
   <title>Suivi de mes dossiers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Intégration de Google Fonts et harmonisation des styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-    .container { max-width:1300px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:44px 28px 38px 28px; box-sizing: border-box;}
-    h2 { color:#006e90; font-size:2.10em; font-weight:bold; text-align:center; margin-bottom:38px; letter-spacing: 0.01em;}
-    .ligne1 { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 16px; flex-wrap: wrap; }
-    .ligne2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 24px; flex-wrap: wrap; }
-    .gauche { display: flex; align-items: center; gap: 8px; }
-    .droite { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-    label { font-size: 1.13em; color: #146083; font-weight: 500; }
-    input[type="text"], select { padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.09em; background: #f9fafb; }
-    input[type="text"].mail { min-width: 250px; }
-    input[type="text"].recherche { min-width: 180px; }
-    .suivi-btn { background:#006e90; color:#fff; border-radius:8px; border:none; padding:10px 32px; font-size:1.13em; font-weight:700; cursor:pointer; transition: background 0.16s; margin-left: 8px; }
-    .suivi-btn:hover { background: #1780b0; }
-    @media (max-width: 1050px) {
-      .ligne2 { flex-direction: column; align-items: stretch; gap: 13px;}
-      .gauche, .droite { justify-content: flex-start; }
+    :root {
+      --primary-color: #004080;
+      --secondary-color: #0072c6;
+      --accent-color: #00a7e1;
+      --light-bg: #f5f9fc;
+      --dark-text: #073763;
+      --neutral: #eeeeee;
+      --success: #2e7d32;
+      --error: #c62828;
     }
-    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
-    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em; word-break:break-word;}
-    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
-    tr:nth-child(even) td { background:#f4fafd;}
-    .msg-erreur { color:#bb1810; text-align:center; margin: 30px 0 20px; font-size:1.12em;}
-    .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
-    .hidden { display: none !important; }
-    .voir-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
-    .voir-btn:hover { background:#1780b0;}
-    .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
-    .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
-    .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
-    .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
-    .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
-    .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: var(--light-bg);
+      margin: 0;
+      color: var(--dark-text);
+    }
+    .container {
+      max-width: 1300px;
+      margin: 34px auto 0 auto;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 3px 20px #0001;
+      padding: 44px 28px 38px 28px;
+      box-sizing: border-box;
+    }
+    h2 {
+      color: var(--primary-color);
+      font-size: 2.10em;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 38px;
+      letter-spacing: 0.01em;
+    }
+    .ligne1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .ligne2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .gauche {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .droite {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    label {
+      font-size: 1.13em;
+      color: var(--primary-color);
+      font-weight: 500;
+    }
+    input[type="text"],
+    select {
+      padding: 8px 13px;
+      border-radius: 7px;
+      border: 1px solid #b4c8d8;
+      font-size: 1.09em;
+      background: #fff;
+      color: var(--dark-text);
+    }
+    input[type="text"].mail {
+      min-width: 250px;
+    }
+    input[type="text"].recherche {
+      min-width: 180px;
+    }
+    .suivi-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border-radius: 8px;
+      border: none;
+      padding: 10px 32px;
+      font-size: 1.13em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.16s;
+      margin-left: 8px;
+    }
+    .suivi-btn:hover {
+      background: var(--secondary-color);
+    }
+    @media (max-width: 1050px) {
+      .ligne2 {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 13px;
+      }
+      .gauche,
+      .droite {
+        justify-content: flex-start;
+      }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      table-layout: fixed;
+    }
+    th,
+    td {
+      border: 1px solid #e6edf1;
+      padding: 12px 7px;
+      text-align: center;
+      font-size: 1.09em;
+      word-break: break-word;
+    }
+    th {
+      background: var(--primary-color);
+      color: #fff;
+      font-size: 1.12em;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td {
+      background: var(--light-bg);
+    }
+    .msg-erreur {
+      color: var(--error);
+      text-align: center;
+      margin: 30px 0 20px;
+      font-size: 1.12em;
+    }
+    .pj-img {
+      max-width: 70px;
+      max-height: 54px;
+      border-radius: 3px;
+      box-shadow: 0 1px 3px #0002;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .voir-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      padding: 7px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      box-shadow: 0 1px 4px #0002;
+      transition: background 0.15s;
+    }
+    .voir-btn:hover {
+      background: var(--secondary-color);
+    }
+    .statut-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 1em;
+    }
+    .statut-dot {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      margin-right: 2px;
+    }
+    .statut-dot.enregistre {
+      background: #f8a900;
+      border: 2px solid #f7ce65;
+    }
+    .statut-dot.accepte {
+      background: #16c11c;
+      border: 2px solid #a6ebba;
+    }
+    .statut-dot.refuse {
+      background: #bb1810;
+      border: 2px solid #f49e9e;
+    }
+    .statut-dot.info {
+      background: #1978d2;
+      border: 2px solid #93c7fa;
+    }
   </style>
 </head>
 <body>
