@@ -44,7 +44,7 @@ const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
 const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie";
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
-const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
+const UPLOADS_FTP = "/Disque 1/sauvegardegarantie/uploads";
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
