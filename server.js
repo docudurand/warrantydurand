@@ -155,8 +155,9 @@ function cleanupFiles(arr) {
 }
 
 async function saveBackupFTP() {
+	console.log("====> saveBackupFTP: démarrage");
 
-  const client = await getFTPClient();
+   const client = await getFTPClient();
   const d = new Date();
   const suffix = nowSuffix();
   const name = `sauvegarde-${suffix}.zip`;
@@ -168,9 +169,10 @@ async function saveBackupFTP() {
   const localJson = path.join(tempDir, "demandes.json");
   try {
     await client.downloadTo(localJson, JSON_FILE_FTP);
+    console.log("====> saveBackupFTP: demandes.json téléchargé");
   } catch (e) {
-
     fs.writeFileSync(localJson, "[]");
+    console.log("====> saveBackupFTP: demandes.json absent, fichier vide créé");
   }
 
   const uploadsDir = path.join(tempDir, "uploads");
@@ -178,12 +180,18 @@ async function saveBackupFTP() {
   let uploadFiles = [];
   try {
     uploadFiles = await client.list(UPLOADS_FTP);
-  } catch (e) {}
+    console.log("====> saveBackupFTP: fichiers upload listés");
+  } catch (e) {
+    console.log("====> saveBackupFTP: erreur listing uploads", e);
+  }
   for(const f of uploadFiles) {
     const filePath = path.join(uploadsDir, f.name);
     try {
       await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
-    } catch (e) {}
+      console.log(`====> saveBackupFTP: ${f.name} téléchargé`);
+    } catch (e) {
+      console.log(`====> saveBackupFTP: ERREUR download ${f.name}`, e);
+    }
   }
   client.close();
 
@@ -198,9 +206,11 @@ async function saveBackupFTP() {
     archive.directory(uploadsDir, "uploads");
     archive.finalize();
   });
+  console.log("====> saveBackupFTP: zip local créé", localZip);
 
   const client2 = await getFTPClient();
   await client2.uploadFrom(localZip, remoteZipPath);
+  console.log("====> saveBackupFTP: zip uploadé sur FTP", remoteZipPath);
   client2.close();
 
   fs.rmSync(tempDir, { recursive: true, force: true });
@@ -213,6 +223,7 @@ async function saveBackupFTP() {
     await client3.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
     backups.shift();
   }
+  console.log("====> saveBackupFTP: purge des anciens backups terminée");
   client3.close();
 }
 
