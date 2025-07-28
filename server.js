@@ -595,14 +595,7 @@ app.get("/api/admin/exportzip", async (req, res) => {
       console.log("====> exportzip: nettoyage terminé");
     });
 
-  } catch (e) {
-    client.close();
-    console.error("Erreur exportzip:", e);
-    if (!res.headersSent) res.status(500).send({error: e.message});
-  }
-});
-
-  } catch (e) {
+   } catch (e) {
     console.error("Erreur exportzip:", e);
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
