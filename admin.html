@@ -2,28 +2,106 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>DSG</title>
+  <title>DSG – Administration</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
+  <!-- Google Fonts pour harmoniser avec les autres pages -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <!-- Variables de couleur et styles globaux pour unifier le design -->
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+    :root {
+      --primary-color: #004080;
+      --secondary-color: #0072c6;
+      --accent-color: #00a7e1;
+      --light-bg: #f5f9fc;
+      --dark-text: #073763;
+      --neutral: #eeeeee;
+      --success: #2e7d32;
+      --error: #c62828;
+    }
+    body {
+      font-family: "Montserrat", sans-serif;
+      background: var(--light-bg);
+      color: var(--dark-text);
+    }
+    /* Harmoniser les boutons */
+    .top-tools button,
+    .top-tools label,
+    .bouton,
+    .voir-btn,
+    .maj-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    .top-tools button:hover,
+    .top-tools label:hover,
+    .bouton:hover,
+    .voir-btn:hover,
+    .maj-btn:hover {
+      background: var(--secondary-color);
+    }
+    /* Ajuster les couleurs de titres et des éléments */
+    h2 {
+      color: var(--primary-color);
+    }
+    .tab {
+      background: var(--light-bg);
+      border: 1.5px solid var(--neutral);
+      color: var(--primary-color);
+    }
+    .tab.active {
+      background: var(--primary-color);
+      color: #fff;
+    }
+    /* Tableaux */
+    th {
+      background: var(--primary-color);
+      color: #fff;
+    }
+    tr:nth-child(even) td {
+      background: var(--light-bg);
+    }
+  </style>
+  <style>
+    body { font-family: "Montserrat", sans-serif; background: var(--light-bg); margin:0; color: var(--dark-text); }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
-    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-    .top-tools label { background:#c4d4ea; color:#1780b0; }
+    .top-tools button, .top-tools label {
+      background: var(--primary-color);
+      color: #fff;
+      border-radius: 20px 0 0 20px;
+      padding: 8px 20px 8px 16px;
+      border: none;
+      box-shadow: 0 2px 6px #0001;
+      font-size: 1.03em;
+      cursor: pointer;
+      display: block;
+      transition: background 0.13s, color 0.13s;
+    }
+    .top-tools label {
+      background: var(--neutral);
+      color: var(--primary-color);
+    }
     .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
     #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
-    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
+    h2 { color: var(--primary-color); font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
     .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
     .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
     .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
     .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
     .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
-    .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
-    .tab.active { background: #006e90; color: #fff; z-index: 1; }
+    .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: var(--light-bg); font-weight: 600; color: var(--primary-color); font-size: 1.14em; border: 1.5px solid var(--neutral); border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal; }
+    .tab.active { background: var(--primary-color); color: #fff; z-index: 1; }
     #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
     .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
     .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
@@ -36,12 +114,24 @@
     .counter-card .counter-value.red { color: #bb1810; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
-    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
-    tr:nth-child(even) td { background:#f4fafd;}
+    th { background: var(--primary-color); color:#fff; font-size:1.12em; font-weight:600; }
+    tr:nth-child(even) td { background: var(--light-bg); }
     td.action, th.action { min-width: 215px; max-width: 330px; }
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
-    .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
-    .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
+    .bouton, .voir-btn, .maj-btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      padding: 7px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      box-shadow: 0 1px 4px #0002;
+      transition: background 0.15s;
+    }
+    .bouton:hover, .voir-btn:hover, .maj-btn:hover {
+      background: var(--secondary-color);
+    }
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
     .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
@@ -88,8 +178,8 @@
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
-	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
-	.pj-documents a { font-size: 0.93em; word-break: break-all;}
+	.pj-documents { font-size: 0.870em; line-height: 1.2; word-break: break-all; white-space: normal; }
+	.pj-documents a { font-size: 0.87em; word-break: break-all;}
   </style>
 </head>
 <body>
