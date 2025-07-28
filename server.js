@@ -61,6 +61,24 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+async function listAllFTPFiles(client, folder) {
+  let all = [];
+  const items = await client.list(folder);
+  for (const item of items) {
+    const fullPath = path.posix.join(folder, item.name);
+    if (item.isDirectory) {
+      all = all.concat(await listAllFTPFiles(client, fullPath));
+    } else {
+      all.push(fullPath);
+    }
+  }
+  return all;
+}
+
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -128,11 +146,7 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   }
 }
 
-function nowSuffix() {
-  const d = new Date();
-  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
-}
-function nowSuffixNice() {
+function nowSuffixForZip() {
   const now = new Date();
   return (
     now.getFullYear() +
@@ -145,6 +159,11 @@ function nowSuffixNice() {
     String(now.getMinutes()).padStart(2, "0")
   );
 }
+function nowSuffix() {
+  const d = new Date();
+  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
+}
+
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -169,16 +188,7 @@ function cleanupFiles(arr) {
 async function saveBackupFTP() {
   console.log("====> saveBackupFTP: démarrage");
   const client = await getFTPClient();
-  const now = new Date();
-  const suffix =
-    now.getFullYear() +
-    "-" +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(now.getDate()).padStart(2, "0") +
-    "_" +
-    String(now.getHours()).padStart(2, "0") +
-    String(now.getMinutes()).padStart(2, "0");
+  const suffix = nowSuffixForZip();
   const name = `sauvegarde-garantie-${suffix}.zip`;
   const remoteZipPath = path.posix.join(FTP_BACKUP_FOLDER, name);
 
@@ -191,24 +201,28 @@ async function saveBackupFTP() {
     console.log("====> saveBackupFTP: demandes.json téléchargé");
   } catch (e) {
     fs.writeFileSync(localJson, "[]");
+    console.log("====> saveBackupFTP: demandes.json absent, créé vide");
   }
 
   const uploadsDir = path.join(tempDir, "uploads");
   fs.mkdirSync(uploadsDir, { recursive: true });
-  let uploadFiles = [];
+  let allFiles = [];
   try {
-    uploadFiles = await client.list(UPLOADS_FTP);
-    console.log("====> saveBackupFTP: fichiers upload listés");
+    allFiles = await listAllFTPFiles(client, UPLOADS_FTP);
+    console.log("====> saveBackupFTP: fichiers upload listés ("+allFiles.length+")");
   } catch (e) {
     console.log("====> saveBackupFTP: ERREUR list uploads", e);
   }
-  for(const f of uploadFiles) {
-    if (!f.name.includes(".")) continue; // ignore les dossiers
-    const filePath = path.join(uploadsDir, f.name);
+  for(const remoteFile of allFiles) {
+    const relPath = path.posix.relative(UPLOADS_FTP, remoteFile);
+    const filePath = path.join(uploadsDir, relPath);
+    const dirTmp = path.dirname(filePath);
+    fs.mkdirSync(dirTmp, { recursive: true });
     try {
-      await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
+      await client.downloadTo(filePath, remoteFile);
+      await sleep(100);
     } catch (e) {
-      console.log("====> saveBackupFTP: ERREUR download", f.name, e);
+      console.log("====> saveBackupFTP: ERREUR download", remoteFile, e);
     }
   }
   client.close();
@@ -532,7 +546,7 @@ app.get("/api/admin/exportzip", async (req, res) => {
   try {
     console.log("====> exportzip: démarrage");
     const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    const fileName = "sauvegarde-garantie-" + nowSuffixForZip() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -546,22 +560,31 @@ app.get("/api/admin/exportzip", async (req, res) => {
     await client.downloadTo(tmp, JSON_FILE_FTP);
     archive.file(tmp, { name: "demandes.json" });
 
-    const uploadFiles = await client.list(UPLOADS_FTP);
+    console.log("====> exportzip: listage récursif des fichiers dans uploads");
+    let allFiles = [];
+    try {
+      allFiles = await listAllFTPFiles(client, UPLOADS_FTP);
+    } catch(e) {
+      console.error("====> exportzip: ERREUR listage récursif", e);
+    }
+
     let tmpFiles = [];
     let count = 0;
-    for (const f of uploadFiles) {
-      if (!f.name.includes(".")) continue;
+    for (const remoteFile of allFiles) {
       count++;
-      console.log(`====> exportzip: téléchargement ${f.name} (${count}/${uploadFiles.length})`);
-      const tmpFile = path.join(__dirname, "temp_upload_" + f.name);
+      const relPath = path.posix.relative(FTP_BACKUP_FOLDER, remoteFile); // ex: uploads/nom.pdf
+      const localTmp = path.join(__dirname, "temp_upload_" + relPath.replace(/\//g,"_"));
+      const dirTmp = path.dirname(localTmp);
+      fs.mkdirSync(dirTmp, { recursive: true });
       try {
-        await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-        archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-        tmpFiles.push(tmpFile);
-        await sleep(200);
-        console.log(`====> exportzip: OK ${f.name}`);
+        console.log(`====> exportzip: téléchargement ${remoteFile} (${count}/${allFiles.length})`);
+        await client.downloadTo(localTmp, remoteFile);
+        archive.file(localTmp, { name: relPath });
+        tmpFiles.push(localTmp);
+        await sleep(100);
+        console.log(`====> exportzip: OK ${remoteFile}`);
       } catch (e) {
-        console.error(`====> exportzip: ERREUR téléchargement ${f.name}`, e);
+        console.error(`====> exportzip: ERREUR téléchargement ${remoteFile}`, e);
       }
     }
     client.close();
@@ -569,10 +592,10 @@ app.get("/api/admin/exportzip", async (req, res) => {
     archive.pipe(res);
     archive.finalize();
 
-    archive.on('end', () => {
-      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      for (const f of tmpFiles) {
-        if (fs.existsSync(f)) fs.unlinkSync(f);
+    archive.on('end', ()=>{
+      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      for(const f of tmpFiles){
+        if(fs.existsSync(f)) fs.unlinkSync(f);
       }
       console.log("====> exportzip: nettoyage terminé");
     });
@@ -582,7 +605,6 @@ app.get("/api/admin/exportzip", async (req, res) => {
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
-
 
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
