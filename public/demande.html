@@ -1,252 +1,455 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Demande de Garantie</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-    form {
-      max-width: 1100px;
-      margin:24px auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      font-size: 1.08em;
-    }
-    .bloc {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 13px 18px 12px 18px;
-      min-height: 94px;
-    }
-    .bloc label, .bloc .titre {
-      font-weight: bold;
-      font-size: 1.11em;
-      color: #194e72;
-      display: block;
-      margin-bottom: 8px;
-    }
-    .bloc .sublabel {
-      font-weight:normal;
-      color:#555;
-      margin-bottom:3px;
-      font-size: 1em;
-    }
-    .bloc input[type=text],
-    .bloc input[type=email],
-    .bloc input[type=number],
-    .bloc input[type=date],
-    .bloc select,
-    .bloc textarea {
-      width: 98%;
-      margin-bottom: 11px;
-      padding: 10px 8px;
-      border:1px solid #80878D;
-      border-radius:5px;
-      background: #f8fafc;
-      font-size: 1.09em;
-      min-height: 2.1em;
-      box-sizing: border-box;
-    }
-    .bloc textarea {
-      resize: vertical;
-      min-height:48px;
-    }
-    .full { grid-column:1/3; }
-    #msg-envoi {
-      text-align:center;
-      font-size:1.18em;
-      margin-top:9px;
-      min-height:32px;
-      font-weight: 500;
-    }
-    #msg-envoi.en-cours { color: #006e90; }
-    #msg-envoi.ok { color: #259a54; }
-    #msg-envoi.erreur { color: #d23b33; }
-    .titre-principal {
-      text-align: center;
-      color: #006e90;
-      font-size: 2.1em;
-      font-weight: bold;
-      margin-top: 34px;
-      margin-bottom: 22px;
-      letter-spacing: 0.03em;
-    }
-    .file-list { margin: 0.6em 0 0 0; padding: 0; list-style: none; }
-    .file-list li { margin-bottom: 4px; display: flex; align-items: center; gap: 12px;}
-    .file-remove { background: #d23b33; color: #fff; border: none; border-radius: 3px; padding: 2px 9px; cursor: pointer; font-size: 0.95em;}
-    .file-remove:hover { background: #a11610; }
-    @media (max-width:900px) {
-      form { grid-template-columns: 1fr; font-size:1em; }
-      .full { grid-column: 1/2; }
-    }
-  </style>
-</head>
-<body>
-  <h2 class="titre-principal">Demande de garantie</h2>
-<form id="demandeForm" enctype="multipart/form-data">
-
-  <div class="bloc">
-    <label>Nom du client :</label>
-    <input type="text" name="nom" required>
-    <label class="sublabel">Email :</label>
-    <input type="email" name="email" required>
-  </div>
-
-  <div class="bloc">
-    <label>Magasin :</label>
-    <select name="magasin" required>
-      <option value="">-- Choisissez le magasin --</option>
-      <option value="Annemasse">Annemasse</option>
-      <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
-      <option value="Chasse-sur-Rhone">Chasse-sur-Rhone</option>
-      <option value="Chassieu">Chassieu</option>
-      <option value="Gleize">Gleize</option>
-      <option value="La Motte-Servolex">La Motte-Servolex</option>
-      <option value="Les Echets">Les Echets</option>
-	  <option value="Pavi">Pavi</option>
-      <option value="Rives">Rives</option>
-      <option value="Saint-Egreve">Saint-Egreve</option>
-      <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
-      <option value="Saint-martin-d'heres">Saint-martin-d'heres</option>
-      <option value="Seynod">Seynod</option>
-    </select>
-  </div>
-
-  <div class="bloc">
-    <span class="titre">Produit</span>
-    <label class="sublabel">Marque du produit :</label>
-    <input type="text" name="marque_produit" required>
-    <label class="sublabel">Produit concerné :</label>
-    <input type="text" name="produit_concerne" required>
-    <label class="sublabel">Référence de la pièce :</label>
-    <input type="text" name="reference_piece" required>
-    <label class="sublabel">Quantité posée :</label>
-    <input type="number" name="quantite_posee" min="1" required>
-  </div>
-
-  <div class="bloc">
-    <span class="titre">Véhicule</span>
-    <label class="sublabel">Immatriculation :</label>
-    <input type="text" name="immatriculation" required>
-    <label class="sublabel">Marque :</label>
-    <input type="text" name="marque_vehicule">
-    <label class="sublabel">Modèle :</label>
-    <input type="text" name="modele_vehicule">
-    <label class="sublabel">Numéro de série :</label>
-    <input type="text" name="num_serie">
-    <label class="sublabel">1ère immatriculation :</label>
-    <input type="date" name="premiere_immat">
-  </div>
-
-  <div class="bloc">
-    <span class="titre">Problème</span>
-    <label class="sublabel">Date de pose :</label>
-    <input type="date" name="date_pose" required>
-    <label class="sublabel">Date du constat :</label>
-    <input type="date" name="date_constat" required>
-    <label class="sublabel">Kilométrage à la pose :</label>
-    <input type="number" name="km_pose" min="0" required>
-    <label class="sublabel">Kilométrage au constat :</label>
-    <input type="number" name="km_constat" min="0" required>
-    <label class="sublabel">N° BL 1ère Vente :</label>
-    <input type="text" name="bl_pose" required>
-    <label class="sublabel">N° BL 2ème Vente :</label>
-    <input type="text" name="bl_constat">
-  </div>
-
-  <div class="bloc">
-    <span class="titre">Problème rencontré :</span>
-    <textarea name="probleme_rencontre" rows="5" required></textarea>
-  </div>
-
-  <div class="bloc">
-    <label>Joindre des fichiers (photos, facture, etc) :</label>
-    <input type="file" id="input-files" multiple style="margin-bottom:7px;">
-    <ul id="file-list" class="file-list"></ul>
-  </div>
-
-  <div class="bloc full" style="text-align:right;">
-    <button id="btn-submit" type="submit" style="padding: 10px 24px; border:none; background:#006e90; color:#fff; font-size:1.08em; border-radius:6px; cursor:pointer;">
-      Envoyer la demande
-    </button>
-    <div id="msg-envoi"></div>
-  </div>
-
-</form>
-<script>
-const inputFiles = document.getElementById("input-files");
-const fileListUl = document.getElementById("file-list");
-let filesArray = [];
-
-function renderFileList() {
-  fileListUl.innerHTML = "";
-  filesArray.forEach((file, idx) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${file.name} <small>(${(file.size/1024).toFixed(1)} Ko)</small></span> <button type="button" class="file-remove" data-idx="${idx}">Supprimer</button>`;
-    fileListUl.appendChild(li);
-  });
-}
-
-inputFiles.addEventListener("change", function() {
-  for (let f of Array.from(this.files)) {
-    if (!filesArray.some(existing => existing.name === f.name && existing.size === f.size)) {
-      filesArray.push(f);
-    }
-  }
-  renderFileList();
-  this.value = "";
-});
-
-fileListUl.addEventListener("click", function(e){
-  if(e.target.classList.contains("file-remove")){
-    const idx = parseInt(e.target.dataset.idx);
-    filesArray.splice(idx, 1);
-    renderFileList();
-  }
-});
-
-const msgDiv = document.getElementById("msg-envoi");
-const btnSubmit = document.getElementById("btn-submit");
-const demandeForm = document.getElementById("demandeForm");
-
-demandeForm.onsubmit = async function(e) {
-  e.preventDefault();
-  msgDiv.textContent = "⏳ Envoi en cours...";
-  msgDiv.className = "en-cours";
-  btnSubmit.disabled = true;
-
-  let formData = new FormData(demandeForm);
-
-  for(let f of filesArray) {
-    formData.append('document', f);
-  }
-
-  try {
-    let resp = await fetch('https://durandservicesgarantie.onrender.com/api/demandes', {
-      method: 'POST',
-      body: formData
-    });
-
-    let json = await resp.json();
-    if(json.success) {
-      msgDiv.textContent = "✅ Demande envoyée avec succès !";
-      msgDiv.className = "ok";
-      demandeForm.reset();
-      filesArray = [];
-      renderFileList();
-    } else {
-      msgDiv.textContent = "❌ Erreur lors de l’envoi : " + (json.message || "Veuillez vérifier votre saisie ou réessayer.");
-      msgDiv.className = "erreur";
-    }
-  } catch(err) {
-    msgDiv.textContent = "❌ Erreur réseau lors de l’envoi : " + err.message;
-    msgDiv.className = "erreur";
-  }
-  btnSubmit.disabled = false;
-}
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Durand Services Garantie – Faire une demande</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Styles intégrés pour Wix -->
+    <style>
+      :root {
+        --primary-color: #004080;
+        --secondary-color: #0072c6;
+        --accent-color: #00a7e1;
+        --light-bg: #f5f9fc;
+        --dark-text: #073763;
+        --neutral: #eeeeee;
+        --success: #2e7d32;
+        --error: #c62828;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Montserrat", sans-serif;
+        color: var(--dark-text);
+        background-color: var(--light-bg);
+        line-height: 1.6;
+        scroll-behavior: smooth;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
+      }
+      a {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      a:hover {
+        color: var(--accent-color);
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+      }
+      /* Navigation */
+      .navbar {
+        background-color: #fff;
+        border-bottom: 1px solid var(--neutral);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+      .nav-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 64px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--primary-color);
+      }
+      .brand .logo {
+        height: 40px;
+        margin-right: 0.5rem;
+      }
+      .nav-links {
+        list-style: none;
+        display: flex;
+        margin: 0;
+        padding: 0;
+      }
+      .nav-links li {
+        margin-left: 1.5rem;
+      }
+      .nav-links a {
+        position: relative;
+        padding: 0.5rem 0;
+        font-weight: 500;
+      }
+      .nav-links a.active::after {
+        content: "";
+        position: absolute;
+        bottom: -5px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: var(--primary-color);
+        border-radius: 2px;
+      }
+      /* Buttons */
+      .btn {
+        display: inline-block;
+        padding: 0.65rem 1.3rem;
+        border-radius: 4px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s;
+        text-align: center;
+      }
+      .btn.primary {
+        background-color: var(--primary-color);
+        color: #fff;
+      }
+      .btn.primary:hover {
+        background-color: var(--secondary-color);
+      }
+      .btn.secondary {
+        background-color: var(--neutral);
+        color: var(--dark-text);
+      }
+      .btn.secondary:hover {
+        background-color: var(--accent-color);
+        color: #fff;
+      }
+      /* Page header */
+      .page-header {
+        background-color: #fff;
+        padding: 2rem 0;
+        border-bottom: 1px solid var(--neutral);
+      }
+      .page-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.8rem;
+      }
+      .page-header p {
+        margin: 0;
+        max-width: 700px;
+      }
+      /* Form */
+      .form-section {
+        padding: 2rem 0 4rem;
+      }
+      .demande-form .form-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+      .form-group label {
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+      }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        padding: 0.5rem;
+        border: 1px solid var(--neutral);
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: #fff;
+      }
+      .form-group textarea {
+        resize: vertical;
+      }
+      .form-full {
+        grid-column: 1 / -1;
+      }
+      .form-actions {
+        margin-top: 1.5rem;
+      }
+      .message {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+      .message.success {
+        background-color: #e8f5e9;
+        color: var(--success);
+        border: 1px solid var(--success);
+      }
+      .message.error {
+        background-color: #ffebee;
+        color: var(--error);
+        border: 1px solid var(--error);
+      }
+      .file-list {
+        margin: 0.5rem 0 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .file-list li {
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .file-remove {
+        background: var(--error);
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        padding: 2px 9px;
+        cursor: pointer;
+        font-size: 0.95em;
+      }
+      .file-remove:hover {
+        background: #a11610;
+      }
+      @media (max-width: 768px) {
+        .nav-links li {
+          margin-left: 0.75rem;
+        }
+        .page-header h1 {
+          font-size: 1.6rem;
+        }
+      }
+      @media (max-width: 480px) {
+        .nav-content {
+          flex-direction: column;
+          height: auto;
+          padding: 0.5rem 0;
+        }
+        .nav-links {
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+        .demande-form .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <a href="index.html" class="brand">
+          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
+          <span>Durand Services Garantie</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="demande.html" class="active">Faire une demande</a></li>
+            <li><a href="suivi.html">Suivre une demande</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <!-- Page header -->
+    <section class="page-header">
+      <div class="container">
+        <h1>Déposer une demande de garantie</h1>
+        <p>
+          Veuillez compléter le formulaire ci‑dessous afin de soumettre votre
+          demande de prise en charge. Les champs marqués d’une étoile (*) sont
+          obligatoires.
+        </p>
+      </div>
+    </section>
+    <!-- Form section -->
+    <section class="form-section">
+      <div class="container">
+        <form id="demandeForm" class="demande-form" enctype="multipart/form-data">
+          <div class="form-grid">
+            <!-- Nom & Email -->
+            <div class="form-group">
+              <label for="nom">Nom du client *</label>
+              <input type="text" id="nom" name="nom" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+            <!-- Magasin (full width) -->
+            <div class="form-group form-full">
+              <label for="magasin">Magasin *</label>
+              <select id="magasin" name="magasin" required>
+                <option value="">Choisissez le magasin</option>
+                <option value="Annemasse">Annemasse</option>
+                <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
+                <option value="Chasse-sur-Rhone">Chasse-sur-Rhone</option>
+                <option value="Chassieu">Chassieu</option>
+                <option value="Gleize">Gleize</option>
+                <option value="La Motte-Servolex">La Motte-Servolex</option>
+                <option value="Les Echets">Les Echets</option>
+                <option value="Pavi">Pavi</option>
+                <option value="Rives">Rives</option>
+                <option value="Saint-Egreve">Saint-Egreve</option>
+                <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
+                <option value="Saint-martin-d'heres">Saint-martin-d'heres</option>
+                <option value="Seynod">Seynod</option>
+              </select>
+            </div>
+            <!-- Produit -->
+            <div class="form-group">
+              <label for="marque_produit">Marque du produit *</label>
+              <input type="text" id="marque_produit" name="marque_produit" required />
+            </div>
+            <div class="form-group">
+              <label for="produit_concerne">Produit concerné *</label>
+              <input type="text" id="produit_concerne" name="produit_concerne" required />
+            </div>
+            <div class="form-group">
+              <label for="reference_piece">Référence de la pièce *</label>
+              <input type="text" id="reference_piece" name="reference_piece" required />
+            </div>
+            <div class="form-group">
+              <label for="quantite_posee">Quantité posée *</label>
+              <input type="number" id="quantite_posee" name="quantite_posee" min="1" required />
+            </div>
+            <!-- Véhicule -->
+            <div class="form-group">
+              <label for="immatriculation">Immatriculation *</label>
+              <input type="text" id="immatriculation" name="immatriculation" required />
+            </div>
+            <div class="form-group">
+              <label for="marque_vehicule">Marque du véhicule</label>
+              <input type="text" id="marque_vehicule" name="marque_vehicule" />
+            </div>
+            <div class="form-group">
+              <label for="modele_vehicule">Modèle du véhicule</label>
+              <input type="text" id="modele_vehicule" name="modele_vehicule" />
+            </div>
+            <div class="form-group">
+              <label for="num_serie">Numéro de série</label>
+              <input type="text" id="num_serie" name="num_serie" />
+            </div>
+            <div class="form-group">
+              <label for="premiere_immat">1ère immatriculation</label>
+              <input type="date" id="premiere_immat" name="premiere_immat" />
+            </div>
+            <!-- Dates et kilométrages -->
+            <div class="form-group">
+              <label for="date_pose">Date de pose *</label>
+              <input type="date" id="date_pose" name="date_pose" required />
+            </div>
+            <div class="form-group">
+              <label for="date_constat">Date du constat *</label>
+              <input type="date" id="date_constat" name="date_constat" required />
+            </div>
+            <div class="form-group">
+              <label for="km_pose">Kilométrage à la pose *</label>
+              <input type="number" id="km_pose" name="km_pose" min="0" required />
+            </div>
+            <div class="form-group">
+              <label for="km_constat">Kilométrage au constat *</label>
+              <input type="number" id="km_constat" name="km_constat" min="0" required />
+            </div>
+            <!-- BL -->
+            <div class="form-group">
+              <label for="bl_pose">N° BL 1ère Vente *</label>
+              <input type="text" id="bl_pose" name="bl_pose" required />
+            </div>
+            <div class="form-group">
+              <label for="bl_constat">N° BL 2ème Vente</label>
+              <input type="text" id="bl_constat" name="bl_constat" />
+            </div>
+            <!-- Problème rencontré -->
+            <div class="form-group form-full">
+              <label for="probleme_rencontre">Problème rencontré *</label>
+              <textarea id="probleme_rencontre" name="probleme_rencontre" rows="5" required></textarea>
+            </div>
+            <!-- Fichiers -->
+            <div class="form-group form-full">
+              <label for="input-files">Joindre des fichiers (photos, facture, etc.)</label>
+              <input type="file" id="input-files" multiple />
+              <ul id="file-list" class="file-list"></ul>
+            </div>
+            <!-- Actions -->
+            <div class="form-group form-full form-actions">
+              <button id="btn-submit" type="submit" class="btn primary">Envoyer la demande</button>
+              <div id="msg-envoi" class="message"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    <script>
+      // Gestion des pièces jointes en local avant envoi
+      const inputFiles = document.getElementById("input-files");
+      const fileListUl = document.getElementById("file-list");
+      let filesArray = [];
+      function renderFileList() {
+        fileListUl.innerHTML = "";
+        filesArray.forEach((file, idx) => {
+          const li = document.createElement("li");
+          li.innerHTML = `<span>${file.name} <small>(${(file.size/1024).toFixed(1)} Ko)</small></span> <button type="button" class="file-remove" data-idx="${idx}">Supprimer</button>`;
+          fileListUl.appendChild(li);
+        });
+      }
+      inputFiles.addEventListener("change", function () {
+        for (let f of Array.from(this.files)) {
+          if (!filesArray.some((existing) => existing.name === f.name && existing.size === f.size)) {
+            filesArray.push(f);
+          }
+        }
+        renderFileList();
+        this.value = "";
+      });
+      fileListUl.addEventListener("click", function (e) {
+        if (e.target.classList.contains("file-remove")) {
+          const idx = parseInt(e.target.dataset.idx);
+          filesArray.splice(idx, 1);
+          renderFileList();
+        }
+      });
+      const msgDiv = document.getElementById("msg-envoi");
+      const btnSubmit = document.getElementById("btn-submit");
+      const demandeForm = document.getElementById("demandeForm");
+      demandeForm.onsubmit = async function (e) {
+        e.preventDefault();
+        msgDiv.textContent = "⏳ Envoi en cours...";
+        msgDiv.className = "message";
+        btnSubmit.disabled = true;
+        let formData = new FormData(demandeForm);
+        for (let f of filesArray) {
+          formData.append("document", f);
+        }
+        try {
+          // Utiliser l'URL absolue du serveur Render pour l'envoi de la demande
+          let resp = await fetch("https://durandservicesgarantie.onrender.com/api/demandes", {
+            method: "POST",
+            body: formData,
+          });
+          let json = await resp.json();
+          if (json.success) {
+            msgDiv.textContent = "✅ Demande envoyée avec succès !";
+            msgDiv.classList.add("success");
+            demandeForm.reset();
+            filesArray = [];
+            renderFileList();
+          } else {
+            msgDiv.textContent =
+              "❌ Erreur lors de l’envoi : " + (json.message || "Veuillez vérifier votre saisie ou réessayer.");
+            msgDiv.classList.add("error");
+          }
+        } catch (err) {
+          msgDiv.textContent = "❌ Erreur réseau lors de l’envoi : " + err.message;
+          msgDiv.classList.add("error");
+        }
+        btnSubmit.disabled = false;
+      };
+    </script>
+  </body>
 </html>
