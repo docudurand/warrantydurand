@@ -150,21 +150,29 @@ function cleanupFiles(arr) {
 }
 async function saveBackupFTP() {
   const client = await getFTPClient();
+
   const d = new Date();
-  const name = "sauvegarde-"+nowSuffix()+".json";
+  const pad = n => String(n).padStart(2, "0");
+  const name = `sauvegarde-garantie-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;
   const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
+
   await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
   if (fs.existsSync("tmpb.json")) {
     await client.uploadFrom("tmpb.json", remotePath);
     fs.unlinkSync("tmpb.json");
   }
+
   const files = await client.list(FTP_BACKUP_FOLDER);
-  const backups = files.filter(f=>f.name.startsWith("sauvegarde-")).sort((a,b)=>a.name.localeCompare(b.name));
-  while (backups.length > 10) {
+  const backups = files
+    .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  while (backups.length > 5) {
     await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
     backups.shift();
   }
   client.close();
+  console.log(`[Sauvegarde Garantie] Fichier sauvegardé : ${name}`);
+  console.log(`[Sauvegarde Garantie] Sauvegardes restantes : ${backups.map(f=>f.name).join(", ")}`);
 }
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
