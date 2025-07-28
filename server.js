@@ -365,12 +365,11 @@ L'équipe Durand Services Garantie.
       cleanupFiles(attachments);
     }
     res.json({ success: true });
-  } catch
-    res.json({ success: true });
   } catch (err) {
     res.json({ success: false, message: err.message });
   }
 });
+
 
 app.post("/api/admin/dossier/:id", upload.fields([
   { name: "reponseFiles", maxCount: 10 },
