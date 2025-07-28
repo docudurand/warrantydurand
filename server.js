@@ -136,7 +136,7 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   await client.downloadTo(tempPath, remotePath).catch(()=>{});
   client.close();
   if (fs.existsSync(tempPath)) {
-    res.setHeader("Content-Disposition", attachment; filename="${fileName}");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     if (mimeType) res.setHeader("Content-Type", mimeType);
     const s = fs.createReadStream(tempPath);
     s.pipe(res);
@@ -294,7 +294,7 @@ app.get("/api/admin/exportzip", async (req, res) => {
     client.close();
 
     const archive = archiver('zip', { zlib: { level: 9 } });
-    res.setHeader('Content-Disposition', attachment; filename="sauvegarde-garantie-${nowSuffix()}.zip");
+    res.setHeader('Content-Disposition', `attachment; filename="sauvegarde-garantie-${nowSuffix()}.zip"`);
     res.setHeader('Content-Type', 'application/zip');
     archive.on('error', err => {
       console.error("Erreur archiver:", err);
