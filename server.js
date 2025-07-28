@@ -44,7 +44,7 @@ const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
 const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie";
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
-const UPLOADS_FTP = "/Disque 1/sauvegardegarantie/uploads";
+const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
 
 const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -61,22 +61,22 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+function nowSuffixForZip() {
+  const now = new Date();
+  return (
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0") +
+    "_" +
+    String(now.getHours()).padStart(2, "0") +
+    String(now.getMinutes()).padStart(2, "0")
+  );
 }
-
-async function listAllFTPFiles(client, folder) {
-  let all = [];
-  const items = await client.list(folder);
-  for (const item of items) {
-    const fullPath = path.posix.join(folder, item.name);
-    if (item.isDirectory) {
-      all = all.concat(await listAllFTPFiles(client, fullPath));
-    } else {
-      all.push(fullPath);
-    }
-  }
-  return all;
+function nowSuffix() {
+  const d = new Date();
+  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
 }
 
 async function getFTPClient() {
@@ -146,24 +146,6 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   }
 }
 
-function nowSuffixForZip() {
-  const now = new Date();
-  return (
-    now.getFullYear() +
-    "-" +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(now.getDate()).padStart(2, "0") +
-    "_" +
-    String(now.getHours()).padStart(2, "0") +
-    String(now.getMinutes()).padStart(2, "0")
-  );
-}
-function nowSuffix() {
-  const d = new Date();
-  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
-}
-
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -206,23 +188,20 @@ async function saveBackupFTP() {
 
   const uploadsDir = path.join(tempDir, "uploads");
   fs.mkdirSync(uploadsDir, { recursive: true });
-  let allFiles = [];
+  let uploadFiles = [];
   try {
-    allFiles = await listAllFTPFiles(client, UPLOADS_FTP);
-    console.log("====> saveBackupFTP: fichiers upload listés ("+allFiles.length+")");
+    uploadFiles = await client.list(UPLOADS_FTP);
+    console.log("====> saveBackupFTP: fichiers upload listés ("+uploadFiles.length+")");
   } catch (e) {
     console.log("====> saveBackupFTP: ERREUR list uploads", e);
   }
-  for(const remoteFile of allFiles) {
-    const relPath = path.posix.relative(UPLOADS_FTP, remoteFile);
-    const filePath = path.join(uploadsDir, relPath);
-    const dirTmp = path.dirname(filePath);
-    fs.mkdirSync(dirTmp, { recursive: true });
+  for(const f of uploadFiles){
+    if (f.type !== 0) continue;
+    const filePath = path.join(uploadsDir, f.name);
     try {
-      await client.downloadTo(filePath, remoteFile);
-      await sleep(100);
+      await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
     } catch (e) {
-      console.log("====> saveBackupFTP: ERREUR download", remoteFile, e);
+      console.log("====> saveBackupFTP: ERREUR download", f.name, e);
     }
   }
   client.close();
@@ -260,9 +239,9 @@ async function saveBackupFTP() {
     backups.shift();
   }
   client3.close();
-
   console.log("====> saveBackupFTP: purge des anciens backups terminée");
 }
+
 
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
@@ -347,201 +326,6 @@ async function creerPDFDemande(d, nomFichier) {
   });
 }
 
-app.post("/api/demandes", upload.array("document"), async (req, res) => {
-  try {
-    let data = await readDataFTP();
-    if (!Array.isArray(data)) data = [];
-    let d = req.body;
-    d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-    d.date = new Date().toISOString();
-    d.statut = "enregistré";
-    d.files = [];
-    for (const f of req.files || []) {
-      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
-      await uploadFileToFTP(f.path, "uploads", remoteName);
-      d.files.push({ url: remoteName, original: f.originalname });
-      fs.unlinkSync(f.path);
-    }
-    d.reponse = "";
-    d.reponseFiles = [];
-    d.documentsAjoutes = [];
-    data.push(d);
-    await writeDataFTP(data);
-    await saveBackupFTP();
-    let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-    let dateStr = "";
-    if (d.date) {
-      let dt = new Date(d.date);
-      if (!isNaN(dt)) dateStr = dt.toISOString().slice(0,10);
-    }
-    let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
-    const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
-    if (d.email) {
-      await mailer.sendMail({
-        from: "Garantie <" + process.env.GMAIL_USER + ">",
-        to: d.email,
-        subject: "Demande de Garantie Envoyée",
-        text:
-`Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.
-
-Cordialement
-L'équipe Durand Services Garantie.
-`,
-        attachments: [
-          {
-            filename: nomFichier,
-            content: pdfBuffer,
-            contentType: "application/pdf"
-          }
-        ]
-      });
-    }
-    const respMail = MAGASIN_MAILS[d.magasin] || "";
-    if (respMail) {
-      const attachments = await fetchFilesFromFTP(d.files);
-      await mailer.sendMail({
-        from: "Garantie <" + process.env.GMAIL_USER + ">",
-        to: respMail,
-        subject: `Nouvelle demande de garantie`,
-        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
-          Client : ${d.nom} (${d.email})<br>
-          Marque du produit : ${d.marque_produit||""}<br>
-          Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
-        attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
-      });
-      cleanupFiles(attachments);
-    }
-    res.json({ success: true });
-  } catch (err) {
-    res.json({ success: false, message: err.message });
-  }
-});
-
-
-app.post("/api/admin/dossier/:id", upload.fields([
-  { name: "reponseFiles", maxCount: 10 },
-  { name: "documentsAjoutes", maxCount: 10 }
-]), async (req, res) => {
-  let { id } = req.params;
-  let data = await readDataFTP();
-  if (!Array.isArray(data)) data = [];
-  let dossier = data.find(x=>x.id===id);
-  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
-
-  const oldStatut = dossier.statut;
-  const oldReponse = dossier.reponse;
-  const oldFilesLength = (dossier.reponseFiles||[]).length;
-
-  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
-  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
-  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
-
-  dossier.reponseFiles = dossier.reponseFiles || [];
-  dossier.documentsAjoutes = dossier.documentsAjoutes || [];
-
-  if (req.files && req.files.reponseFiles) {
-    for (const f of req.files.reponseFiles) {
-      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
-      await uploadFileToFTP(f.path, "uploads", remoteName);
-      dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
-      dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-      fs.unlinkSync(f.path);
-    }
-  }
-  if (req.files && req.files.documentsAjoutes) {
-    for (const f of req.files.documentsAjoutes) {
-      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
-      await uploadFileToFTP(f.path, "uploads", remoteName);
-      dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-      fs.unlinkSync(f.path);
-    }
-  }
-
-  await writeDataFTP(data);
-  await saveBackupFTP();
-
-  let mailDoitEtreEnvoye = false;
-  let changes = [];
-  if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
-  if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
-  if (req.files && req.files.reponseFiles && req.files.reponseFiles.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
-    changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
-  }
-  if (mailDoitEtreEnvoye && dossier.email) {
-    const attachments = await fetchFilesFromFTP(dossier.reponseFiles);
-    let html = `<div style="font-family:sans-serif;">
-      Bonjour,<br>
-      Votre dossier de garantie a été mis à jour.<br>
-      Produit : ${dossier.produit_concerne}<br>
-      Date : ${(new Date()).toLocaleDateString("fr-FR")}<br>
-      <ul>
-        ${changes.includes("statut") ? `<li><b>Nouveau statut :</b> ${dossier.statut}</li>` : ""}
-        ${changes.includes("réponse") ? `<li><b>Réponse :</b> ${dossier.reponse}</li>` : ""}
-        ${changes.includes("pièce jointe") ? `<li><b>Documents ajoutés à votre dossier.</b></li>` : ""}
-      </ul>
-      <br><br>L'équipe Garantie Durand<br><br>
-    </div>`;
-    await mailer.sendMail({
-      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
-      to: dossier.email,
-      subject: `Mise à jour dossier garantie Durand Services`,
-      html,
-      attachments: attachments.map(f=>({filename: f.filename, path: f.path}))
-    });
-    cleanupFiles(attachments);
-  }
-  res.json({success:true});
-});
-
-app.get("/api/admin/dossiers", async (req, res) => {
-  let data = await readDataFTP();
-  res.json(data);
-});
-
-app.get("/api/mes-dossiers", async (req, res) => {
-  let email = (req.query.email||"").toLowerCase();
-  let data = await readDataFTP();
-  let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
-  res.json(dossiers);
-});
-
-app.get("/download/:file", async (req, res) => {
-  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
-  const remotePath = path.posix.join(UPLOADS_FTP, file);
-  const mimeType = mime.lookup(file) || undefined;
-  await streamFTPFileToRes(res, remotePath, file, mimeType);
-});
-
-app.post("/api/admin/login", (req, res) => {
-  let pw = (req.body && req.body.password) ? req.body.password : "";
-  if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
-  if (pw === process.env["admin-pass"]) return res.json({success:true, isSuper:false, isAdmin:true});
-  for (const magasin of MAGASINS) {
-    const key = "magasin-"+magasin.replace(/[^\w]/g, "-")+"-pass";
-    if (process.env[key] && pw === process.env[key]) {
-      return res.json({success:true, isSuper:false, isAdmin:false, magasin});
-    }
-  }
-  res.json({success:false, message:"Mot de passe incorrect"});
-});
-
-app.delete("/api/admin/dossier/:id", async (req, res) => {
-  if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
-  let { id } = req.params;
-  let data = await readDataFTP();
-  if (!Array.isArray(data)) data = [];
-  let idx = data.findIndex(x=>x.id===id);
-  if (idx === -1) return res.json({success:false, message:"Introuvable"});
-  let dossier = data[idx];
-  if(dossier.files){ for(const f of dossier.files){ await deleteFileFromFTP(f.url); } }
-  if(dossier.reponseFiles){ for(const f of dossier.reponseFiles){ await deleteFileFromFTP(f.url); } }
-  if(dossier.documentsAjoutes){ for(const f of dossier.documentsAjoutes){ await deleteFileFromFTP(f.url); } }
-  data.splice(idx,1);
-  await writeDataFTP(data);
-  await saveBackupFTP();
-  res.json({success:true});
-});
-
 app.get("/api/admin/exportzip", async (req, res) => {
   console.log("====> exportzip: démarrage");
   const client = await getFTPClient();
@@ -552,13 +336,12 @@ app.get("/api/admin/exportzip", async (req, res) => {
 
     let uploadFiles = [];
     try {
-      const list = await client.list(UPLOADS_FTP);
-      uploadFiles = list.filter(f => f.type === 0);
+      uploadFiles = await client.list(UPLOADS_FTP);
+      uploadFiles = uploadFiles.filter(f => f.type === 0);
       console.log("====> exportzip: fichiers uploads trouvés", uploadFiles.length);
     } catch (e) {
       console.log("====> exportzip: ERREUR listage", e);
     }
-	console.log("====> exportzip: contenu du dossier uploads :", list);
 
     let tmpFiles = [];
     for(const f of uploadFiles){
@@ -596,53 +379,13 @@ app.get("/api/admin/exportzip", async (req, res) => {
       console.log("====> exportzip: nettoyage terminé");
     });
 
-   } catch (e) {
+  } catch (e) {
+    client.close();
     console.error("Erreur exportzip:", e);
     if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
 
-
-app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
-  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
-  try {
-    const zipPath = req.file.path;
-    await fs.createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
-      .promise();
-    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
-    if (fs.existsSync(jsonSrc)) {
-      const data = JSON.parse(fs.readFileSync(jsonSrc,"utf8"));
-      await writeDataFTP(data);
-    } else {
-      throw new Error("Le fichier demandes.json est manquant dans l'archive");
-    }
-    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
-    if (fs.existsSync(newUploads)) {
-      const files = fs.readdirSync(newUploads);
-      for(const f of files){
-        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
-      }
-    }
-    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
-    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-    await saveBackupFTP();
-    res.json({success:true});
-  } catch (e) {
-    res.json({success:false, message:e.message});
-  }
-});
-app.get("/test-list-uploads", async (req, res) => {
-  const client = await getFTPClient();
-  try {
-    const list = await client.list(UPLOADS_FTP);
-    client.close();
-    res.json(list);
-  } catch(e) {
-    client.close();
-    res.json({error: e.message});
-  }
-});
 
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
