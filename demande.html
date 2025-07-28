@@ -106,6 +106,7 @@
       <option value="Gleize">Gleize</option>
       <option value="La Motte-Servolex">La Motte-Servolex</option>
       <option value="Les Echets">Les Echets</option>
+	  <option value="Pavi">Pavi</option>
       <option value="Rives">Rives</option>
       <option value="Saint-Egreve">Saint-Egreve</option>
       <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
@@ -117,19 +118,19 @@
   <div class="bloc">
     <span class="titre">Produit</span>
     <label class="sublabel">Marque du produit :</label>
-    <input type="text" name="marque_produit">
+    <input type="text" name="marque_produit" required>
     <label class="sublabel">Produit concerné :</label>
-    <input type="text" name="produit_concerne">
+    <input type="text" name="produit_concerne" required>
     <label class="sublabel">Référence de la pièce :</label>
-    <input type="text" name="reference_piece">
+    <input type="text" name="reference_piece" required>
     <label class="sublabel">Quantité posée :</label>
-    <input type="number" name="quantite_posee" min="1">
+    <input type="number" name="quantite_posee" min="1" required>
   </div>
 
   <div class="bloc">
     <span class="titre">Véhicule</span>
     <label class="sublabel">Immatriculation :</label>
-    <input type="text" name="immatriculation">
+    <input type="text" name="immatriculation" required>
     <label class="sublabel">Marque :</label>
     <input type="text" name="marque_vehicule">
     <label class="sublabel">Modèle :</label>
@@ -143,22 +144,22 @@
   <div class="bloc">
     <span class="titre">Problème</span>
     <label class="sublabel">Date de pose :</label>
-    <input type="date" name="date_pose">
+    <input type="date" name="date_pose" required>
     <label class="sublabel">Date du constat :</label>
-    <input type="date" name="date_constat">
+    <input type="date" name="date_constat" required>
     <label class="sublabel">Kilométrage à la pose :</label>
-    <input type="number" name="km_pose" min="0">
+    <input type="number" name="km_pose" min="0" required>
     <label class="sublabel">Kilométrage au constat :</label>
-    <input type="number" name="km_constat" min="0">
+    <input type="number" name="km_constat" min="0" required>
     <label class="sublabel">N° BL 1ère Vente :</label>
-    <input type="text" name="bl_pose">
+    <input type="text" name="bl_pose" required>
     <label class="sublabel">N° BL 2ème Vente :</label>
     <input type="text" name="bl_constat">
   </div>
 
   <div class="bloc">
     <span class="titre">Problème rencontré :</span>
-    <textarea name="probleme_rencontre" rows="5"></textarea>
+    <textarea name="probleme_rencontre" rows="5" required></textarea>
   </div>
 
   <div class="bloc">
@@ -224,7 +225,7 @@ demandeForm.onsubmit = async function(e) {
   }
 
   try {
-    let resp = await fetch('https://warrantydurand.onrender.com/api/demandes', {
+    let resp = await fetch('https://durandservicesgarantie.onrender.com/api/demandes', {
       method: 'POST',
       body: formData
     });
