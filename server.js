@@ -445,30 +445,44 @@ app.get("/api/admin/exportzip", async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', err => res.status(500).send({error: err.message}));
+    archive.on('error', err => {
+      console.error("Erreur archiver:", err);
+      if (!res.headersSent) res.status(500).send({error: err.message});
+    });
+
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
-    archive.file(tmp, { name: "demandes.json" });
+
     const uploadFiles = await client.list(UPLOADS_FTP);
+    let tmpFiles = [];
     for(const f of uploadFiles){
       const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
       await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
+      tmpFiles.push({local: tmpFile, archive: path.posix.join("uploads", f.name)});
     }
-    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
+    client.close();
+
+    archive.file(tmp, { name: "demandes.json" });
+    for(const f of tmpFiles){
+      archive.file(f.local, { name: f.archive });
+    }
+
     archive.pipe(res);
-    archive.pipe(output);
     archive.finalize();
-    output.on("close", ()=>{
+
+    archive.on('end', ()=>{
       if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
-      client.close();
+      for(const f of tmpFiles){
+        if(fs.existsSync(f.local)) fs.unlinkSync(f.local);
+      }
     });
+
   } catch (e) {
-    res.status(500).send({error: e.message});
+    console.error("Erreur exportzip:", e);
+    if (!res.headersSent) res.status(500).send({error: e.message});
   }
 });
+
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
