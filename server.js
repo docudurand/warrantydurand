@@ -132,7 +132,19 @@ function nowSuffix() {
   const d = new Date();
   return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
 }
-
+function nowSuffixNice() {
+  const now = new Date();
+  return (
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0") +
+    "_" +
+    String(now.getHours()).padStart(2, "0") +
+    String(now.getMinutes()).padStart(2, "0")
+  );
+}
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -155,12 +167,19 @@ function cleanupFiles(arr) {
 }
 
 async function saveBackupFTP() {
-	console.log("====> saveBackupFTP: démarrage");
-
-   const client = await getFTPClient();
-  const d = new Date();
-  const suffix = nowSuffix();
-  const name = `sauvegarde-${suffix}.zip`;
+  console.log("====> saveBackupFTP: démarrage");
+  const client = await getFTPClient();
+  const now = new Date();
+  const suffix =
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0") +
+    "_" +
+    String(now.getHours()).padStart(2, "0") +
+    String(now.getMinutes()).padStart(2, "0");
+  const name = `sauvegarde-garantie-${suffix}.zip`;
   const remoteZipPath = path.posix.join(FTP_BACKUP_FOLDER, name);
 
   const tempDir = path.join(__dirname, "tmp_zip_" + suffix);
@@ -172,7 +191,6 @@ async function saveBackupFTP() {
     console.log("====> saveBackupFTP: demandes.json téléchargé");
   } catch (e) {
     fs.writeFileSync(localJson, "[]");
-    console.log("====> saveBackupFTP: demandes.json absent, fichier vide créé");
   }
 
   const uploadsDir = path.join(tempDir, "uploads");
@@ -182,15 +200,15 @@ async function saveBackupFTP() {
     uploadFiles = await client.list(UPLOADS_FTP);
     console.log("====> saveBackupFTP: fichiers upload listés");
   } catch (e) {
-    console.log("====> saveBackupFTP: erreur listing uploads", e);
+    console.log("====> saveBackupFTP: ERREUR list uploads", e);
   }
   for(const f of uploadFiles) {
+    if (!f.name.includes(".")) continue; // ignore les dossiers
     const filePath = path.join(uploadsDir, f.name);
     try {
       await client.downloadTo(filePath, path.posix.join(UPLOADS_FTP, f.name));
-      console.log(`====> saveBackupFTP: ${f.name} téléchargé`);
     } catch (e) {
-      console.log(`====> saveBackupFTP: ERREUR download ${f.name}`, e);
+      console.log("====> saveBackupFTP: ERREUR download", f.name, e);
     }
   }
   client.close();
@@ -206,27 +224,31 @@ async function saveBackupFTP() {
     archive.directory(uploadsDir, "uploads");
     archive.finalize();
   });
+
   console.log("====> saveBackupFTP: zip local créé", localZip);
 
   const client2 = await getFTPClient();
   await client2.uploadFrom(localZip, remoteZipPath);
-  console.log("====> saveBackupFTP: zip uploadé sur FTP", remoteZipPath);
   client2.close();
+
+  console.log("====> saveBackupFTP: zip uploadé sur FTP", remoteZipPath);
 
   fs.rmSync(tempDir, { recursive: true, force: true });
   if (fs.existsSync(localZip)) fs.unlinkSync(localZip);
 
   const client3 = await getFTPClient();
   const files = await client3.list(FTP_BACKUP_FOLDER);
-  const backups = files.filter(f=>/^sauvegarde-\d+\.zip$/.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name));
+  const backups = files
+    .filter(f=>/^sauvegarde-garantie-\d{4}-\d{2}-\d{2}_\d{4}\.zip$/.test(f.name))
+    .sort((a,b)=>a.name.localeCompare(b.name));
   while (backups.length > 5) {
     await client3.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
     backups.shift();
   }
-  console.log("====> saveBackupFTP: purge des anciens backups terminée");
   client3.close();
-}
 
+  console.log("====> saveBackupFTP: purge des anciens backups terminée");
+}
 
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
@@ -509,7 +531,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    const fileName = "sauvegarde-garantie-" + nowSuffixNice() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
