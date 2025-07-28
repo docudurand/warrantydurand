@@ -451,7 +451,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
+    const fileName = "sauvegarde-demandes-" + nowSuffix() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -459,26 +459,17 @@ app.get("/api/admin/exportzip", async (req, res) => {
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
     archive.file(tmp, { name: "demandes.json" });
-    const uploadFiles = await client.list(UPLOADS_FTP);
-    for(const f of uploadFiles){
-      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
-      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
-    }
-    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
     archive.pipe(res);
-    archive.pipe(output);
     archive.finalize();
-    output.on("close", ()=>{
-      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
+    archive.on("end", () => {
+      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
       client.close();
     });
   } catch (e) {
     res.status(500).send({error: e.message});
   }
 });
+
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
@@ -493,13 +484,6 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     } else {
       throw new Error("Le fichier demandes.json est manquant dans l'archive");
     }
-    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
-    if (fs.existsSync(newUploads)) {
-      const files = fs.readdirSync(newUploads);
-      for(const f of files){
-        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
-      }
-    }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
     await saveBackupFTP();
@@ -508,6 +492,7 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:false, message:e.message});
   }
 });
+
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
