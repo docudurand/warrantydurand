@@ -24,7 +24,6 @@
           <ul class="nav-links">
             <li><a href="demande.html">Faire une demande</a></li>
             <li><a href="suivi.html" class="active">Suivre une demande</a></li>
-            <li><a href="admin.html" class="admin-link">Admin</a></li>
           </ul>
         </nav>
       </div>
@@ -57,25 +56,6 @@
               />
             </div>
             <div class="form-group">
-              <label for="filterMagasin">Magasin (optionnel)</label>
-              <select id="filterMagasin" name="magasin">
-                <option value="">Tous</option>
-                <option value="Annemasse">Annemasse</option>
-                <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
-                <option value="Chasse-sur-Rhone">Chasse-sur-Rhône</option>
-                <option value="Chassieu">Chassieu</option>
-                <option value="Gleize">Gleizé</option>
-                <option value="La Motte-Servolex">La Motte-Servolex</option>
-                <option value="Les Echets">Les Échets</option>
-                <option value="Pavi">Pavi</option>
-                <option value="Rives">Rives</option>
-                <option value="Saint-Egreve">Saint-Égrève</option>
-                <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
-                <option value="Saint-Martin-d'heres">Saint-Martin-d’Hères</option>
-                <option value="Seynod">Seynod</option>
-              </select>
-            </div>
-            <div class="form-group">
               <button type="submit" class="btn primary">Rechercher</button>
             </div>
           </div>
@@ -97,10 +77,9 @@
       document.getElementById("searchForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("searchEmail").value.trim();
-        const magasin = document.getElementById("filterMagasin").value;
         const query = new URLSearchParams();
+        // ajouter uniquement l'e‑mail dans la requête
         if (email) query.append("email", email);
-        if (magasin) query.append("magasin", magasin);
         try {
           const response = await fetch(`/api/demandes?${query.toString()}`);
           const data = await response.json();
@@ -114,10 +93,11 @@
           data.forEach((d) => {
             const date = new Date(d.date).toLocaleDateString();
             const files = (d.files || [])
-              .map(
-                (f) =>
-                  `<a href="${f.url}" target="_blank" rel="noopener" class="file-link">${f.original}</a>`
-              )
+              .map((f) => {
+                // Construire un lien absolu vers la pièce jointe sur le serveur Render
+                const baseUrl = "https://durandservicesgarantie.onrender.com";
+                return `<a href="${baseUrl}/download/${f.url}" target="_blank" rel="noopener" class="file-link">${f.original}</a>`;
+              })
               .join("<br>");
             html += `<tr><td>${date}</td><td>${d.magasin || ""}</td><td>${d.produit_concerne || ""}</td><td>${d.marque_produit || ""}</td><td class="status" data-status="${d.statut}">${d.statut}</td><td>${files}</td></tr>`;
           });
