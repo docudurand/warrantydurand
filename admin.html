@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f5f9fc; margin:0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
     .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
@@ -88,8 +88,8 @@
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
-	.pj-documents { font-size: 0.870em; line-height: 1.2; word-break: break-all; white-space: normal; }
-	.pj-documents a { font-size: 0.87em; word-break: break-all;}
+	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
+	.pj-documents a { font-size: 0.93em; word-break: break-all;}
   </style>
 </head>
 <body>
@@ -474,11 +474,6 @@ function supprimerDossier(id) {
     }
   });
 }
-function formatDateFR(dateStr) {
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return `${("0" + d.getDate()).slice(-2)}-${("0" + (d.getMonth() + 1)).slice(-2)}-${String(d.getFullYear()).slice(-2)}`;
-}
 function voirDossier(id) {
   let d = allDossiers.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
@@ -552,10 +547,10 @@ function voirDossier(id) {
         <tr><th>Marque</th><td>${d.marque_vehicule||""}</td></tr>
         <tr><th>Modèle</th><td>${d.modele_vehicule||""}</td></tr>
         <tr><th>Numéro de série</th><td>${d.num_serie||""}</td></tr>
-        <tr><th>1ère immatriculation</th><td>${formatDateFR(d.premiere_immat)}</td></tr>
+        <tr><th>1ère immatriculation</th><td>${d.premiere_immat||""}</td></tr>
         <tr><td colspan="2" class="fiche-title">Problème</td></tr>
-        <tr><th>Date de pose</th><td>${formatDateFR(d.date_pose)}</td></tr>
-        <tr><th>Date du constat</th><td>${formatDateFR(d.date_constat)}</td></tr>
+        <tr><th>Date de pose</th><td>${d.date_pose||""}</td></tr>
+        <tr><th>Date du constat</th><td>${d.date_constat||""}</td></tr>
         <tr><th>Kilométrage à la pose</th><td>${d.km_pose||""}</td></tr>
         <tr><th>Kilométrage au constat</th><td>${d.km_constat||""}</td></tr>
         <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose||""}</td></tr>
