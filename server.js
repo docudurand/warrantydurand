@@ -558,6 +558,7 @@ app.get("/api/admin/exportzip", async (req, res) => {
     } catch (e) {
       console.log("====> exportzip: ERREUR listage", e);
     }
+	console.log("====> exportzip: contenu du dossier uploads :", list);
 
     let tmpFiles = [];
     for(const f of uploadFiles){
@@ -629,6 +630,17 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
+  }
+});
+app.get("/test-list-uploads", async (req, res) => {
+  const client = await getFTPClient();
+  try {
+    const list = await client.list(UPLOADS_FTP);
+    client.close();
+    res.json(list);
+  } catch(e) {
+    client.close();
+    res.json({error: e.message});
   }
 });
 
