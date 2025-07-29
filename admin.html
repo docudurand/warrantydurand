@@ -426,12 +426,12 @@ function afficherDossiers(magasin, forceFiltres=false) {
     <span>${statutChip(d.statut)}</span>
     <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
     <label>
-      <b>Envoie avoir client</b>
+      <b>Envoie document au client</b>
       <input type="file" name="reponseFiles" multiple>
     </label>
   </div>
   <label>
-    <b>Ajout document</b>
+    <b>Ajout document dans dossier</b>
     <input type="file" name="documentsAjoutes" multiple>
   </label>
   <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
