@@ -313,14 +313,18 @@ function afficherDossiers(magasin, forceFiltres=false) {
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
 
   if(rechercheClient && rechercheClient.trim().length > 0){
-    const rc = rechercheClient.trim().toLowerCase();
-    dossiers = dossiers.filter(d =>
+  const rc = rechercheClient.trim().toLowerCase();
+  dossiers = dossiers.filter(d => {
+    const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+    return (
       (d.nom||"").toLowerCase().includes(rc) ||
       (d.produit_concerne||"").toLowerCase().includes(rc) ||
       (d.reference_piece||"").toLowerCase().includes(rc) ||
-      (d.marque_produit||"").toLowerCase().includes(rc)
+      (d.marque_produit||"").toLowerCase().includes(rc) ||
+      numero.includes(rc)
     );
-  }
+  });
+}
 
   afficherCompteurs(dossiers);
   afficherFiltres(dossiers);
