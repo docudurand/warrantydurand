@@ -4,16 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Durand Services Garantie – Accueil</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Styles intégrés pour Wix -->
     <style>
-    /* Palette de couleurs et variables globales */
+
     :root {
       --primary-color: #004080;
       --secondary-color: #0072c6;
@@ -25,7 +23,7 @@
       --error: #c62828;
     }
 
-    /* Reset et typographie */
+
     html,
     body {
       margin: 0;
@@ -59,7 +57,7 @@
       padding: 0 1rem;
     }
 
-    /* Barre de navigation */
+
     .navbar {
       background-color: #fff;
       border-bottom: 1px solid var(--neutral);
@@ -109,7 +107,6 @@
       border-radius: 2px;
     }
 
-    /* Boutons */
     .btn {
       display: inline-block;
       padding: 0.65rem 1.3rem;
@@ -136,7 +133,6 @@
       color: #fff;
     }
 
-    /* Section héro */
     .hero {
       background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
       color: #fff;
@@ -160,7 +156,6 @@
       min-width: 150px;
     }
 
-    /* Section features */
     .features {
       padding: 3rem 0;
     }
@@ -185,7 +180,6 @@
       margin: 0;
     }
 
-    /* Footer */
     .footer {
       background-color: #fff;
       border-top: 1px solid var(--neutral);
@@ -232,23 +226,19 @@
     </style>
   </head>
   <body>
-    <!-- Header / Navigation -->
     <header class="navbar">
       <div class="container nav-content">
         <a href="index.html" class="brand">
-          <img src="./images/logo1.png" alt="Logo DSG" class="logo" />
+          <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" alt="Logo DSG" class="logo" />
           <span>Durand Services Garantie</span>
         </a>
         <nav>
           <ul class="nav-links">
-            <li><a href="demande.html">Faire une demande</a></li>
-            <li><a href="suivi.html">Suivre une demande</a></li>
           </ul>
         </nav>
       </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
       <div class="container hero-content">
         <h1>Votre tranquillité, notre engagement</h1>
@@ -258,13 +248,12 @@
           traitement en temps réel et laissez‑nous nous occuper du reste.
         </p>
         <div class="cta-buttons">
-          <a href="demande.html" class="btn primary">Faire une demande</a>
-          <a href="suivi.html" class="btn secondary">Suivre une demande</a>
+           <span class="btn primary" style="pointer-events: none; cursor: default;">Faire une demande</span>
+			<span class="btn secondary" style="pointer-events: none; cursor: default;">Suivre une demande</span>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
     <section class="features">
       <div class="container features-grid">
         <div class="feature">
@@ -291,19 +280,14 @@
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
       <div class="container footer-content">
         <p>&copy; <span id="year"></span> Durand Services Garantie. Tous droits réservés.</p>
-        <p>
-          <a href="mailto:contact@durandservices.fr">contact@durandservices.fr</a>
-          | 04 74 00 00 00
-        </p>
+       
       </div>
     </footer>
 
     <script>
-      // Dynamic year in footer
       document.getElementById("year").textContent = new Date().getFullYear();
     </script>
   </body>
