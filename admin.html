@@ -594,18 +594,9 @@ function voirDossier(id) {
           }
         </td></tr>
         <tr class="hide-print"><th>Réponse</th><td>
-          ${(d.reponse||"")}
-          ${(d.reponseFiles||[]).length
-              ? "<br>"+d.reponseFiles.map(f=>{
-                let ext = f.original.split('.').pop().toLowerCase();
-                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
-                } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                }
-              }).join("<br>")
-              : ""}
-        </td></tr>
+  ${(d.reponse||"")}
+</td></tr>
+
         <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
