@@ -343,6 +343,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
 
   let html = `<table>
     <tr>
+      <th>Numéro de dossier</th>
       <th>Date</th>
       <th>Client</th>
       <th>Produit</th>
@@ -367,6 +368,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     );
 
     html += `<tr>
+      <td>${d.numero_dossier || ''}</td>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
@@ -395,7 +397,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-      <td colspan="${isSuperAdmin ? 11 : 10}">
+      <td colspan="${isSuperAdmin ? 12 : 11}">
         <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
           <select class="statut-select" name="statut">
             <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
@@ -527,7 +529,7 @@ function voirDossier(id) {
     <div class="fiche-header">
       <img src="${logoUrl}" alt="Logo DSG">
       <span class="magasin-title">${d.magasin||""}</span>
-      <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}</span>
+      <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}<br>Numéro de dossier : ${d.numero_dossier || ''}</span>
     </div>
     <div class="fiche-table">
       <div class="fiche-actions">

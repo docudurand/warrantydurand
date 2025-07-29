@@ -154,42 +154,28 @@ async function saveBackupFTP() {
     const d = new Date();
     const pad = n => String(n).padStart(2, "0");
     const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    const name = `sauvegarde-garantie-${dateStr}.zip`;
+    const name = `sauvegarde-garantie-${dateStr}.json`;
     const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
 
-    const tmpJson = path.join(__dirname, "tmpb.json");
-    await client.downloadTo(tmpJson, JSON_FILE_FTP);
-
-    const tmpZip = path.join(__dirname, "tmpb.zip");
-    await new Promise((resolve, reject) => {
-      const archive = archiver('zip', { zlib: { level: 9 } });
-      const output = fs.createWriteStream(tmpZip);
-      archive.on('error', reject);
-      output.on('close', resolve);
-      archive.pipe(output);
-      archive.file(tmpJson, { name: "demandes.json" });
-      archive.finalize();
-    });
-
-    await client.uploadFrom(tmpZip, remotePath);
-
-    if (fs.existsSync(tmpJson)) fs.unlinkSync(tmpJson);
-    if (fs.existsSync(tmpZip)) fs.unlinkSync(tmpZip);
+    await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
+    if (fs.existsSync("tmpb.json")) {
+      await client.uploadFrom("tmpb.json", remotePath);
+      fs.unlinkSync("tmpb.json");
+    }
 
     const files = await client.list(FTP_BACKUP_FOLDER);
     const backups = files
-      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".zip"))
+      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
       .sort((a, b) => a.name.localeCompare(b.name));
+
     while (backups.length > 5) {
       await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
       backups.shift();
     }
-	console.log(`Sauvegarde ZIP créée sur le FTP : ${name}`);
   } finally {
     client.close();
   }
 }
-
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
@@ -213,7 +199,15 @@ async function creerPDFDemande(d, nomFichier) {
       doc.font("Helvetica").fontSize(14).fillColor("#14548C");
       doc.text(d.magasin || "", x0 + logoW + 12, y0 + 32, { align: "left" });
       doc.fontSize(11).fillColor("#000");
-      doc.text("Créé le : " + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""), PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
+      // Print the creation date and dossier number in the top right corner.
+      // The date appears on the first line and the dossier number directly beneath,
+      // both using the same font and size for consistency.
+      const dateStrFr = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+      const numero = d.numero_dossier ? d.numero_dossier : "";
+      // Draw date
+      doc.text("Créé le : " + dateStrFr, PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
+      // Draw dossier number just below
+      doc.text("Numéro de dossier : " + numero, PAGE_W - 150, y0 + 20, { align: "left", width: 120 });
       let y = y0 + logoH + 32;
       const tableW = PAGE_W - 2 * x0;
       const colLabelW = 155;
@@ -275,10 +269,25 @@ async function creerPDFDemande(d, nomFichier) {
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
+    // Always work with an array for existing dossiers
     if (!Array.isArray(data)) data = [];
     let d = req.body;
     d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     d.date = new Date().toISOString();
+
+    // Assign a unique four‑digit dossier number.  We scan existing dossiers
+    // to find the highest assigned number (if any), then increment it.  The
+    // result is left‑padded with zeros to always occupy four digits.  This
+    // ensures each dossier gets a unique identifier with no collisions.
+    let maxNum = 0;
+    for (const dossier of data) {
+      // Parse only numeric parts of the property
+      const n = parseInt(dossier.numero_dossier, 10);
+      if (!Number.isNaN(n) && n > maxNum) maxNum = n;
+    }
+    const nextNum = String(maxNum + 1).padStart(4, "0");
+    d.numero_dossier = nextNum;
+
     d.statut = "enregistré";
     d.files = [];
     for (const f of req.files || []) {
@@ -465,7 +474,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
 app.get("/api/admin/exportzip", async (req, res) => {
   try {
     const client = await getFTPClient();
-    const fileName = "sauvegarde-demandes-" + nowSuffix() + ".zip";
+    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
     const archive = archiver('zip', { zlib: { level: 9 } });
@@ -473,17 +482,26 @@ app.get("/api/admin/exportzip", async (req, res) => {
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
     archive.file(tmp, { name: "demandes.json" });
+    const uploadFiles = await client.list(UPLOADS_FTP);
+    for(const f of uploadFiles){
+      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
+      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
+      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
+      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
+    }
+    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
     archive.pipe(res);
+    archive.pipe(output);
     archive.finalize();
-    archive.on("end", () => {
-      if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+    output.on("close", ()=>{
+      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
       client.close();
     });
   } catch (e) {
     res.status(500).send({error: e.message});
   }
 });
-
 app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
   if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
   try {
@@ -498,6 +516,13 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     } else {
       throw new Error("Le fichier demandes.json est manquant dans l'archive");
     }
+    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
+    if (fs.existsSync(newUploads)) {
+      const files = fs.readdirSync(newUploads);
+      for(const f of files){
+        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
+      }
+    }
     fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
     if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
     await saveBackupFTP();
@@ -506,7 +531,6 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:false, message:e.message});
   }
 });
-
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
 app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
