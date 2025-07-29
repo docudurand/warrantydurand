@@ -90,6 +90,17 @@
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
 	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
 	.pj-documents a { font-size: 0.93em; word-break: break-all;}
+	.mini-form-encadre {
+  border: 2px solid #111;
+  background: #e8f3fa;
+  border-radius: 4px;
+  padding: 18px 24px 18px 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  margin-bottom: 0;
+  margin-right: 18px;
+}
   </style>
 </head>
 <body>
@@ -403,27 +414,30 @@ function afficherDossiers(magasin, forceFiltres=false) {
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
       <td colspan="${isSuperAdmin ? 12 : 11}">
         <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
-          <select class="statut-select" name="statut">
-            <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-            <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-            <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-            <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-          </select>
-          <span>${statutChip(d.statut)}</span>
-          <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <label>
-  <b>Envoie avoir client</b>
-  <input type="file" name="reponseFiles" multiple>
-</label>
-<label>
-  <b>Ajout document</b>
-  <input type="file" name="documentsAjoutes" multiple>
-</label>
-          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
-          <button type="submit" class="bouton">Mettre à jour</button>
-          <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
-          <span class="admin-msg"></span>
-        </form>
+  <div class="mini-form-encadre">
+    <select class="statut-select" name="statut">
+      <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+      <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+      <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+      <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+    </select>
+    <span>${statutChip(d.statut)}</span>
+    <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+    <label>
+      <b>Envoie avoir client</b>
+      <input type="file" name="reponseFiles" multiple>
+    </label>
+  </div>
+  <label>
+    <b>Ajout document</b>
+    <input type="file" name="documentsAjoutes" multiple>
+  </label>
+  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
+  <button type="submit" class="bouton">Mettre à jour</button>
+  <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
+  <span class="admin-msg"></span>
+</form>
+
       </td>
     </tr>`;
   });
