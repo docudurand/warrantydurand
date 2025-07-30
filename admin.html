@@ -81,10 +81,36 @@
       width: 100%;
       box-sizing: border-box;
     }
+    /* ---- AJOUT IMPORTANT POUR MENU EN LIGNE ---- */
+    .mini-form-encadre .mini-form-flex {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 18px;
+      width: 100%;
+      align-items: flex-end;
+    }
+    .mini-form-encadre .mini-form-flex > * {
+      margin-bottom: 0 !important;
+      white-space: nowrap;
+    }
+    .mini-form-encadre textarea {
+      min-width: 180px;
+      max-width: 300px;
+    }
+    @media (max-width: 900px) {
+      .mini-form-encadre .mini-form-flex {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .mini-form-encadre textarea {
+        min-width: 100px;
+        max-width: 100%;
+      }
+    }
     .mini-form-avert {
       width: 100%;
       text-align: center;
-      font-size: 0.98em;
+      font-size: 0.85em !important;
       font-weight: 500;
       color: #234156;
       margin-bottom: 8px;
@@ -431,12 +457,12 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <td colspan="${isSuperAdmin ? 12 : 11}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
       <div class="mini-form-encadre">
-        <div class="mini-form-avert" style="font-size:0.49em;">
+        <div class="mini-form-avert">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; align-items: flex-end;">
+        <div class="mini-form-flex">
           <select class="statut-select" name="statut">
             <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
             <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
@@ -445,7 +471,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
           </select>
           <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <label style="display:flex;align-items:center;gap:6px;margin-bottom:0;">
+          <label style="display:flex;align-items:center;gap:6px;">
             <b style="font-weight:500;">Envoie document au client</b>
             <input type="file" name="reponseFiles" multiple>
           </label>
