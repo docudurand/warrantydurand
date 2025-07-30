@@ -41,7 +41,7 @@
     .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
-    .mini-form-row td { background: #e8f3fa !important; border-top: 0 !important; border-bottom: 2px solid #b3c9d9 !important; padding-top: 19px !important; padding-bottom: 19px !important;}
+    .mini-form-row td { background: #e8f3fa; border-top: 0 ; border-bottom: 2px solid #b3c9d9 ; padding-top: 19px ; padding-bottom: 19px ;}
     .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
     .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
     .mini-form input[type="file"] { margin-top:0; }
@@ -89,7 +89,7 @@
       align-items: flex-end;
     }
     .mini-form-encadre .mini-form-flex > * {
-      margin-bottom: 0 !important;
+      margin-bottom: 0;
       white-space: nowrap;
     }
     .mini-form-encadre textarea {
@@ -109,7 +109,7 @@
     .mini-form-avert {
       width: 100%;
       text-align: center;
-      font-size: 0.79em !important;
+      font-size: 0.79em;
       font-weight: 500;
       color: #234156;
       margin-bottom: 4px;
@@ -155,7 +155,7 @@
 .mini-form-encadre { margin-bottom: 0; }
 .mini-form-flex > div { min-width: 140px; }
 @media (max-width: 900px) {
-  .mini-form-flex { flex-direction: column !important; gap: 15px; }
+  .mini-form-flex { flex-direction: column ; gap: 15px; }
 }
 .mini-form-flex textarea {
   min-width: 110px;
@@ -166,8 +166,8 @@
 }
 .mini-form-flex select,
 .mini-form-flex input[type="file"] {
-  font-size: 0.96em !important;
-  padding: 5px 9px !important;
+  font-size: 0.96em;
+  padding: 5px 9px;
 }
   </style>
 </head>
@@ -476,16 +476,16 @@ function afficherDossiers(magasin, forceFiltres=false) {
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 12 : 11}">
-    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
-      <div class="mini-form-encadre" style="padding:12px 16px 10px 16px; gap:7px;">
-        <div class="mini-form-avert" style="font-size:0.79em !important; margin-bottom:4px;">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;align-items:flex-start;gap:26px;justify-content:flex-start;width:100%;">
+      <div class="mini-form-encadre" style="padding:11px 18px 8px 18px; gap:5px; min-width:0; flex: 1;">
+        <div class="mini-form-avert" style="font-size:0.79em; margin-bottom:2px;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
         <div class="mini-form-flex" style="gap:15px;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
-            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Statut</label>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Statut</label>
             <select class="statut-select" name="statut" style="margin-bottom:0;padding:5px 9px;">
               <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
               <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
@@ -493,27 +493,25 @@ function afficherDossiers(magasin, forceFiltres=false) {
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1;">
-            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:130px;max-width:230px;min-height:28px;font-size:0.96em;padding:4px 6px;" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:1;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Réponse (optionnel)</label>
+            <textarea name="reponse" style="width:100%;min-width:150px;max-width:230px;min-height:26px;font-size:0.96em;padding:4px 7px;" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
-            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Envoie document au client</label>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Envoie document au client</label>
             <input type="file" name="reponseFiles" multiple style="font-size:0.96em;">
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;margin:9px 0 6px 0;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
-          <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Ajout document dans dossier</label>
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:260px;max-width:310px;flex-shrink:0;margin-top:7px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;">
+          <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Ajout document dans dossier</label>
           <input type="file" name="documentsAjoutes" multiple style="font-size:0.96em;">
         </div>
-        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:120px;font-size:0.96em;padding:4px 7px;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0px;">
-          <button type="submit" class="bouton" style="font-size:0.97em;padding:6px 17px;">Mettre à jour</button>
-          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;font-size:0.97em;padding:6px 17px;" onclick="fermerMiniForm('${id}')">Annuler</button>
-          <span class="admin-msg" style="margin-top:7px;min-height:18px;display:inline-block;font-size:0.97em;"></span>
-        </div>
+        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:150px;width:98%;font-size:0.96em;padding:5px 9px;">
+        <button type="submit" class="bouton" style="font-size:1em;width:100%;margin:5px 0 0 0;">Mettre à jour</button>
+        <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;width:100%;" onclick="fermerMiniForm('${id}')">Annuler</button>
+        <span class="admin-msg" style="margin-top:7px;min-height:18px;display:inline-block;width:100%;font-size:0.97em;text-align:center;"></span>
       </div>
     </form>
   </td>
@@ -662,12 +660,12 @@ function voirDossier(id) {
       .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
       .print-btn:hover { background:#1780b0; }
       @media print {
-        .print-btn { display:none !important; }
+        .print-btn { display:none; }
         body { background: #fff; }
         .fiche-table { box-shadow: none; border:1px solid #888;}
         .fiche-header { padding-top:10px; }
-        .hide-print { display:none !important; }
-        .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
+        .hide-print { display:none; }
+        .fiche-date { display:block; position:absolute; top:24px; right:40px; font-size:1.09em;}
       }
       .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
       .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
