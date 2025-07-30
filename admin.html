@@ -100,6 +100,24 @@
       margin-right: 18px;
       min-height: 70px;
     }
+	.mini-form-avert {
+  width: 100%;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #234156;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.mini-form-avert .emoji {
+  font-size: 1.16em;
+  color: #f2a000;
+}
   </style>
 </head>
 <body>
@@ -434,33 +452,38 @@ function afficherDossiers(magasin, forceFiltres=false) {
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
     <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-      <td colspan="${isSuperAdmin ? 12 : 11}">
-        <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
-  <div class="mini-form-encadre">
-    <select class="statut-select" name="statut">
-      <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-      <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-      <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-      <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-    </select>
-    <span>${statutChip(d.statut)}</span>
-    <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-    <label>
-      <b>Envoie document au client</b>
-      <input type="file" name="reponseFiles" multiple>
-    </label>
-  </div>
-  <label>
-    <b>Ajout document dans dossier</b>
-    <input type="file" name="documentsAjoutes" multiple>
-  </label>
-  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
-  <button type="submit" class="bouton">Mettre à jour</button>
-  <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
-  <span class="admin-msg"></span>
-</form>
-      </td>
-    </tr>`;
+  <td colspan="${isSuperAdmin ? 12 : 11}">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
+      <div class="mini-form-encadre">
+        <div class="mini-form-avert">
+          <span class="emoji">⚠️</span>
+          TOUTE MODIFICATION DANS CE CADRE EST ENVOYEE PAR MAIL AU CLIENT
+          <span class="emoji">⚠️</span>
+        </div>
+        <select class="statut-select" name="statut">
+          <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+          <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+          <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+          <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+        </select>
+        <span>${statutChip(d.statut)}</span>
+        <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+        <label>
+          <b>Envoie document au client</b>
+          <input type="file" name="reponseFiles" multiple>
+        </label>
+      </div>
+      <label>
+        <b>Ajout document dans dossier</b>
+        <input type="file" name="documentsAjoutes" multiple>
+      </label>
+      <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
+      <button type="submit" class="bouton">Mettre à jour</button>
+      <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
+      <span class="admin-msg"></span>
+    </form>
+  </td>
+</tr>
   });
   html += `</table>`;
   document.getElementById('dossier-list').innerHTML = html;
