@@ -66,6 +66,7 @@
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
     .mini-form-encadre {
+	overflow-x: auto;
       border: 2px solid #111;
       background: #e8f3fa;
       border-radius: 4px;
@@ -219,17 +220,25 @@
 .mini-form-upload-block .file-list {
   width: 100%;
   max-width: 240px;
-  margin-top: 6px;
-  padding: 0;
-  list-style: none;
-  word-break: break-all;
+  overflow-x: auto;
+ word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 .mini-form-upload-block .file-list li {
-  font-size: 0.96em;
-  margin-bottom: 3px;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  max-width: 100%;
+ max-width: 220px;
+  overflow-x: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.mini-form-upload-block .file-list li span {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
 }
   </style>
 </head>
