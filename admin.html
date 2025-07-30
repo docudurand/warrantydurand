@@ -62,18 +62,18 @@
       display: inline-block;
       max-width: 210px;
     }
-    .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
+    .mini-form label { font-size: 0.98em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
     .mini-form-encadre {
       border: 2px solid #111;
       background: #e8f3fa;
       border-radius: 4px;
-      padding: 20px 24px 18px 24px;
+      padding: 12px 16px 10px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 7px;
       margin-bottom: 0;
       margin-right: 18px;
       min-width: 0;
@@ -109,10 +109,10 @@
     .mini-form-avert {
       width: 100%;
       text-align: center;
-      font-size: 0.85em !important;
+      font-size: 0.79em !important;
       font-weight: 500;
       color: #234156;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
       margin-top: 0;
       letter-spacing: 0.01em;
       display: flex;
@@ -153,9 +153,21 @@
   margin-bottom: 2px;
 }
 .mini-form-encadre { margin-bottom: 0; }
-.mini-form-flex > div { min-width: 210px; }
+.mini-form-flex > div { min-width: 140px; }
 @media (max-width: 900px) {
-  .mini-form-flex { flex-direction: column !important; gap: 16px !important; }
+  .mini-form-flex { flex-direction: column !important; gap: 15px; }
+}
+.mini-form-flex textarea {
+  min-width: 110px;
+  max-width: 230px;
+  min-height: 28px;
+  font-size: 0.96em;
+  padding: 4px 6px;
+}
+.mini-form-flex select,
+.mini-form-flex input[type="file"] {
+  font-size: 0.96em !important;
+  padding: 5px 9px !important;
 }
   </style>
 </head>
@@ -465,42 +477,42 @@ function afficherDossiers(magasin, forceFiltres=false) {
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 12 : 11}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
-      <div class="mini-form-encadre">
-        <div class="mini-form-avert">
+      <div class="mini-form-encadre" style="padding:12px 16px 10px 16px; gap:7px;">
+        <div class="mini-form-avert" style="font-size:0.79em !important; margin-bottom:4px;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div class="mini-form-flex" style="gap:32px;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px;">
-            <label style="font-size:1em;font-weight:500;color:#195e7c;">Statut</label>
-            <select class="statut-select" name="statut">
+        <div class="mini-form-flex" style="gap:15px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Statut</label>
+            <select class="statut-select" name="statut" style="margin-bottom:0;padding:5px 9px;">
               <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
               <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
               <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px;flex:1;">
-            <label style="font-size:1em;font-weight:500;color:#195e7c;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:160px;max-width:340px;" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1;">
+            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Réponse (optionnel)</label>
+            <textarea name="reponse" style="width:100%;min-width:130px;max-width:230px;min-height:28px;font-size:0.96em;padding:4px 6px;" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px;">
-            <label style="font-size:1em;font-weight:500;color:#195e7c;">Envoie document au client</label>
-            <input type="file" name="reponseFiles" multiple>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+            <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Envoie document au client</label>
+            <input type="file" name="reponseFiles" multiple style="font-size:0.96em;">
           </div>
         </div>
       </div>
-      <div style="display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap;margin:15px 0 8px 0;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:7px;">
-          <label style="font-size:1em;font-weight:500;color:#195e7c;">Ajout document dans dossier</label>
-          <input type="file" name="documentsAjoutes" multiple>
+      <div style="display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap;margin:9px 0 6px 0;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+          <label style="font-size:0.98em;font-weight:500;color:#195e7c;margin-bottom:0;">Ajout document dans dossier</label>
+          <input type="file" name="documentsAjoutes" multiple style="font-size:0.96em;">
         </div>
-        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:150px;">
+        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:120px;font-size:0.96em;padding:4px 7px;">
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0px;">
-          <button type="submit" class="bouton">Mettre à jour</button>
-          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:10px;" onclick="fermerMiniForm('${id}')">Annuler</button>
-          <span class="admin-msg" style="margin-top:9px;min-height:19px;display:inline-block;"></span>
+          <button type="submit" class="bouton" style="font-size:0.97em;padding:6px 17px;">Mettre à jour</button>
+          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;font-size:0.97em;padding:6px 17px;" onclick="fermerMiniForm('${id}')">Annuler</button>
+          <span class="admin-msg" style="margin-top:7px;min-height:18px;display:inline-block;font-size:0.97em;"></span>
         </div>
       </div>
     </form>
