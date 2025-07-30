@@ -9,10 +9,8 @@
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
-    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-    .top-tools label { background:#c4d4ea; color:#1780b0; }
+    .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
     .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
-    #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
@@ -65,42 +63,8 @@
       display: inline-block;
       max-width: 210px;
     }
-    .mini-form-encadre {
-      border: 2px solid #111;
-      background: #e8f3fa;
-      border-radius: 4px;
-      padding: 20px 24px 18px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 0;
-      margin-right: 18px;
-      min-width: 0;
-      max-width: 900px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .mini-form-avert {
-      width: 100%;
-      text-align: center;
-      font-size: 0.98em;
-      font-weight: 500;
-      color: #234156;
-      margin-bottom: 8px;
-      margin-top: 0;
-      letter-spacing: 0.01em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      flex-wrap: wrap;
-      background: none;
-    }
-    .mini-form-avert .emoji {
-      font-size: 1.10em;
-      color: #f2a000;
-    }
+    .mini-form-row > td { width: 100vw; box-sizing: border-box; }
+    .mini-form { max-width: 100%; width: 100%; }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -124,19 +88,42 @@
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
+    .mini-form-encadre {
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 8px 32px 22px 22px;
+      display: flex;
+      align-items: flex-end;
+      gap: 15px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-height: 70px;
+    }
+	.mini-form-avert {
+  width: 100%;
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #234156;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.mini-form-avert .emoji {
+  font-size: 1.16em;
+  color: #f2a000;
+}
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
   <div class="top-tools" id="top-tools" style="display:none;">
-    <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
-    <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
-      <label for="import-zip" title="Restaurer une sauvegarde">
-        ⬆️ Restaurer
-        <input type="file" id="import-zip" name="backupzip" accept=".zip" style="display:none;">
-      </label>
-    </form>
-    <span id="importzip-msg"></span>
+    <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
   <div id="login">
     <h2>Connexion admin</h2>
@@ -167,82 +154,87 @@
     <div id="dossier-list"></div>
   </div>
   <script>
-    let isSuperAdmin = false;
-    let isAdmin = false;
-    let magasinUnique = null;
-    const MAGASINS = [
-      "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
-    ];
-    let allDossiers = [];
-    let currentMagasin = null;
-    let filtres = { mois: "", annee: "", statut: "" };
-    let rechercheClient = "";
-    let ongletActif = null;
+let isSuperAdmin = false;
+let isAdmin = false;
+let magasinUnique = null;
+const MAGASINS = [
+  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+];
+let allDossiers = [];
+let currentMagasin = null;
+let filtres = { mois: "", annee: "", statut: "" };
+let rechercheClient = "";
+let ongletActif = null;
 
-    // Fonctions ZIP (import/export)
-    document.getElementById("btn-exportzip").onclick = function(){
-      const a = document.createElement('a');
-      a.href = "/api/admin/exportzip";
-      a.download = "sauvegarde-demandes.zip";
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => document.body.removeChild(a), 300);
-    };
-    document.getElementById("import-zip").onchange = function(){
-      let file = this.files[0];
-      if (!file) return;
-      let fd = new FormData();
-      fd.append("backupzip", file);
-      document.getElementById("importzip-msg").textContent = "Importation...";
-      fetch("/api/admin/importzip", {
-        method:"POST",
-        body:fd
-      }).then(r=>r.json()).then(json=>{
-        if(json.success){
-          document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
-          if(typeof chargerDossiers==="function") chargerDossiers();
-        } else {
-          document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
-        }
-        setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
-      });
-    };
+function statutChip(statut) {
+  let s = (statut||"").toLowerCase();
+  if (s==="enregistré") return <span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>;
+  if (s==="accepté") return <span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>;
+  if (s==="refusé") return <span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>;
+  if (s==="en attente d'info") return <span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>;
+  return statut||"";
+}
 
-    function statutChip(statut) {
-      let s = (statut||"").toLowerCase();
-      if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
-      if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
-      if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
-      if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
-      return statut||"";
+function toggleSuperAdminUI() {
+  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+}
+
+document.getElementById("btn-export-excel").onclick = function(){
+  if(ongletActif === "global") {
+    const a = document.createElement('a');
+    a.href = "/api/admin/export-excel";
+    a.download = "dossiers-globales.xlsx";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 300);
+  } else {
+    alert("Vous devez être dans l’onglet Données globales pour exporter.");
+  }
+};
+document.getElementById("import-zip").onchange = function(){
+  let file = this.files[0];
+  if (!file) return;
+  let fd = new FormData();
+  fd.append("backupzip", file);
+  document.getElementById("importzip-msg").textContent = "Importation...";
+  fetch("/api/admin/importzip", {
+    method:"POST",
+    body:fd
+  }).then(r=>r.json()).then(json=>{
+    if(json.success){
+      document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
+      if(typeof chargerDossiers==="function") chargerDossiers();
+    } else {
+      document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
     }
-    function toggleSuperAdminUI() {
-      document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+    setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
+  });
+};
+
+function adminLogin() {
+  let pw = document.getElementById('admin-pass').value;
+  fetch('/api/admin/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  })
+  .then(resp=>resp.json())
+  .then(json=>{
+    if(json.success){
+      isSuperAdmin = !!json.isSuper;
+      isAdmin = !!json.isAdmin;
+      magasinUnique = json.magasin || null;
+      currentMagasin = magasinUnique || MAGASINS[0];
+      document.getElementById('login').style.display = "none";
+      document.getElementById('admin-content').style.display = "block";
+      toggleSuperAdminUI();
+      chargerDossiers();
+    } else {
+      document.getElementById('login-msg').textContent = json.message
+|| "Erreur";
     }
-    function adminLogin() {
-      let pw = document.getElementById('admin-pass').value;
-      fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({password: pw})
-      })
-      .then(resp=>resp.json())
-      .then(json=>{
-        if(json.success){
-          isSuperAdmin = !!json.isSuper;
-          isAdmin = !!json.isAdmin;
-          magasinUnique = json.magasin || null;
-          currentMagasin = magasinUnique || MAGASINS[0];
-          document.getElementById('login').style.display = "none";
-          document.getElementById('admin-content').style.display = "block";
-          toggleSuperAdminUI();
-          chargerDossiers();
-        } else {
-          document.getElementById('login-msg').textContent = json.message || "Erreur";
-        }
-      });
-    }
-    window.adminLogin = adminLogin;
+  });
+}
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
@@ -250,12 +242,12 @@ function chargerDossiers() {
     afficherOnglets();
     if (!allDossiers || allDossiers.length === 0) {
       document.getElementById("dossier-list").innerHTML =
-        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        <div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
         font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
         ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
         Il est probable que le serveur vient de redémarrer.<br>
         <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
-        </div>`;
+        </div>;
       return;
     }
     if (ongletActif === "global") {
@@ -269,11 +261,11 @@ function chargerDossiers() {
 function afficherOnglets() {
   let t = '';
   if (isAdmin || isSuperAdmin) {
-    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
+    t += <div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>;
   }
   if (isAdmin || isSuperAdmin) {
     MAGASINS.forEach((m, i) => {
-      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+      t += <div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>;
     });
     document.getElementById('tabs').innerHTML = t;
     document.getElementById('onglet-global').onclick = function() {
@@ -290,7 +282,7 @@ function afficherOnglets() {
     });
   } else if(magasinUnique){
     document.getElementById('tabs').innerHTML =
-      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
+      <div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>;
   }
 }
 
@@ -304,12 +296,12 @@ function afficherCompteurs(dossiers) {
   let html = "";
   stats.forEach(stat => {
     const n = dossiers.filter(d => d.statut === stat.val).length;
-    html += `
+    html += 
       <div class="counter-card">
         <span class="counter-label ${stat.color}">${stat.label}</span>
         <span class="counter-value ${stat.color}">${n}</span>
       </div>
-    `;
+    ;
   });
   document.getElementById("status-counters").innerHTML = html;
 }
@@ -332,10 +324,10 @@ function afficherFiltres(dossiers, options={}) {
 
   const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
-  moisSel.innerHTML = `<option value="">Tous</option>`;
-  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-  anneeSel.innerHTML = `<option value="">Toutes</option>`;
-  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
+  moisSel.innerHTML = <option value="">Tous</option>;
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += <option value="${m}">${moisLib[i]}</option>; });
+  anneeSel.innerHTML = <option value="">Toutes</option>;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += <option value="${a}">${a}</option>; });
 
   document.getElementById("filters-row").style.display = "flex";
   document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
@@ -404,7 +396,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     dossiers = dossiers.filter(d=>d.statut===filtres.statut);
   }
 
-  let html = `<table>
+  let html = <table>
     <tr>
       <th style="width: 90px;">Numéro de dossier</th>
       <th>Date</th>
@@ -418,7 +410,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th class="action">Mettre à jour</th>
       <th class="action">Voir</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
-    </tr>`;
+    </tr>;
   dossiers.forEach(d=>{
     let id = d.id;
 
@@ -430,7 +422,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       f && f.url && arr.findIndex(x => x.url === f.url) === i
     );
 
-    html += `<tr>
+    html += <tr>
       <td>${d.numero_dossier || ''}</td>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
@@ -446,9 +438,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
             ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                  return <a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>;
                 } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                  return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
                 }
               }).join("<br>")
             : ""
@@ -457,31 +449,29 @@ function afficherDossiers(magasin, forceFiltres=false) {
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-      ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
-    html += `
-<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+      ${isSuperAdmin ? <td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td> : ''}
+    </tr>
+    <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 12 : 11}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
       <div class="mini-form-encadre">
         <div class="mini-form-avert">
           <span class="emoji">⚠️</span>
-          TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
+          TOUTE MODIFICATION DANS CE CADRE EST ENVOYEE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; justify-content: center;">
-          <select class="statut-select" name="statut">
-            <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-            <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-            <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-            <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-          </select>
-          <span>${statutChip(d.statut)}</span>
-          <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <label>
-            <b>Envoie document au client</b>
-            <input type="file" name="reponseFiles" multiple>
-          </label>
-        </div>
+        <select class="statut-select" name="statut">
+          <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+          <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+          <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+          <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+        </select>
+        <span>${statutChip(d.statut)}</span>
+        <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+        <label>
+          <b>Envoie document au client</b>
+          <input type="file" name="reponseFiles" multiple>
+        </label>
       </div>
       <label>
         <b>Ajout document dans dossier</b>
@@ -493,9 +483,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <span class="admin-msg"></span>
     </form>
   </td>
-</tr>`;
+</tr>
   });
-  html += `</table>`;
+  html += </table>;
   document.getElementById('dossier-list').innerHTML = html;
 
   document.querySelectorAll('.maj-btn').forEach(btn => {
@@ -516,7 +506,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
       this.querySelector('.admin-msg').textContent = "Envoi...";
-      let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+      let resp = await fetch(/api/admin/dossier/${id}, { method:"POST", body:fd });
       let json = await resp.json();
       if (json.success) {
         this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
@@ -561,7 +551,7 @@ function afficherGlobal() {
   afficherFiltres(allDossiers, {statut: false});
   document.getElementById("status-counters").innerHTML = "";
 
-  let html = `<table>
+  let html = <table>
     <tr>
       <th>Date</th>
       <th>Magasin</th>
@@ -569,18 +559,18 @@ function afficherGlobal() {
       <th>Produit concerné</th>
       <th>Référence de la pièce</th>
       <th>Problème rencontré</th>
-    </tr>`;
+    </tr>;
   dossiers.forEach(d=>{
-    html += `<tr>
+    html += <tr>
       <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
       <td>${d.magasin||''}</td>
       <td>${d.marque_produit||''}</td>
       <td>${d.produit_concerne||''}</td>
       <td>${d.reference_piece||''}</td>
       <td>${d.probleme_rencontre||''}</td>
-    </tr>`;
+    </tr>;
   });
-  html += `</table>`;
+  html += </table>;
   document.getElementById('dossier-list').innerHTML = html;
 }
 
@@ -590,7 +580,7 @@ function fermerMiniForm(id){
 
 function supprimerDossier(id) {
   if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
-  fetch(`/api/admin/dossier/${id}`, {
+  fetch(/api/admin/dossier/${id}, {
     method: "DELETE",
     headers: {'x-superadmin': '1'}
   }).then(r=>r.json()).then(json=>{
@@ -615,8 +605,8 @@ function voirDossier(id) {
       dateStr = dt.toISOString().slice(0,10);
     }
   }
-  let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
-  let detailHtml = `
+  let nomFichier = ${clientNom}${dateStr ? "_" + dateStr : ""};
+  let detailHtml = 
     <html><head>
     <meta charset="UTF-8">
     <title>${nomFichier}</title>
@@ -692,9 +682,9 @@ function voirDossier(id) {
               : d.files.map(f=>{
                   let ext = f.original.split('.').pop().toLowerCase();
                   if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                    return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                    return <a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>;
                   } else {
-                    return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                    return <a href="/download/${f.url}" target="_blank">${f.original}</a>;
                   }
                 }).join("<br>")
           }
@@ -724,7 +714,7 @@ function voirDossier(id) {
       };
     <\/script>
     </body></html>
-  `;
+  ;
   let w = window.open("", "_blank", "width=820,height=900");
   w.document.write(detailHtml);
   w.document.close();
