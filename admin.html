@@ -88,21 +88,20 @@
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
     .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
-	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
-	.pj-documents a { font-size: 0.93em; word-break: break-all;}
-	.mini-form-encadre {
-  border: 2px solid #111;
-  background: #e8f3fa;
-  border-radius: 4px;
-  padding: 8px 32px 22px 22px;
-  display: flex;
-  align-items: flex-end;
-  gap: 15px;
-  margin-bottom: 0;
-  margin-right: 18px;
-  min-height: 70px;
-}
-
+    .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
+    .pj-documents a { font-size: 0.93em; word-break: break-all;}
+    .mini-form-encadre {
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 8px 32px 22px 22px;
+      display: flex;
+      align-items: flex-end;
+      gap: 15px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-height: 70px;
+    }
   </style>
 </head>
 <body>
@@ -133,7 +132,7 @@
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
-      <label>Statut :
+      <label id="statut-filter-label">Statut :
         <select id="statut-filter">
           <option value="">Tous</option>
           <option value="enregistré">Enregistré</option>
@@ -156,6 +155,7 @@ let allDossiers = [];
 let currentMagasin = null;
 let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
+let ongletActif = null; // "magasin" ou "global"
 
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
@@ -217,7 +217,8 @@ function adminLogin() {
       toggleSuperAdminUI();
       chargerDossiers();
     } else {
-      document.getElementById('login-msg').textContent = json.message || "Erreur";
+      document.getElementById('login-msg').textContent = json.message
+|| "Erreur";
     }
   });
 }
@@ -236,19 +237,33 @@ function chargerDossiers() {
         </div>`;
       return;
     }
-    afficherDossiers(currentMagasin, true);
+    if (ongletActif === "global") {
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin, true);
+    }
   });
 }
 
 function afficherOnglets() {
   let t = '';
-  if(isAdmin || isSuperAdmin){
+  if (isAdmin || isSuperAdmin) {
+    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
+  }
+  if (isAdmin || isSuperAdmin) {
     MAGASINS.forEach((m, i) => {
-      t += `<div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
     });
     document.getElementById('tabs').innerHTML = t;
+    document.getElementById('onglet-global').onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
+    }
     MAGASINS.forEach((m, i) => {
       document.getElementById('onglet-' + i).onclick = function() {
+        ongletActif = null;
+        document.getElementById("statut-filter-label").style.display = "";
         afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
       }
     });
@@ -278,7 +293,7 @@ function afficherCompteurs(dossiers) {
   document.getElementById("status-counters").innerHTML = html;
 }
 
-function afficherFiltres(dossiers) {
+function afficherFiltres(dossiers, options={}) {
   let moisSel = document.getElementById("mois-filter");
   let anneeSel = document.getElementById("annee-filter");
   let statutSel = document.getElementById("statut-filter");
@@ -302,6 +317,7 @@ function afficherFiltres(dossiers) {
   Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
+  document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
   moisSel.value = filtres.mois;
   anneeSel.value = filtres.annee;
@@ -311,33 +327,42 @@ function afficherFiltres(dossiers) {
     filtres.mois = moisSel.value;
     filtres.annee = anneeSel.value;
     filtres.statut = statutSel.value;
-    afficherDossiers(currentMagasin);
+    if(ongletActif === "global"){
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin);
+    }
   };
 }
 
 document.getElementById('search-client').addEventListener('input', function() {
   rechercheClient = this.value;
-  afficherDossiers(currentMagasin);
+  if(ongletActif === "global"){
+    afficherGlobal();
+  } else {
+    afficherDossiers(currentMagasin);
+  }
 });
 
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
+  ongletActif = null;
   afficherOnglets();
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
 
   if(rechercheClient && rechercheClient.trim().length > 0){
-  const rc = rechercheClient.trim().toLowerCase();
-  dossiers = dossiers.filter(d => {
-    const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-    return (
-      (d.nom||"").toLowerCase().includes(rc) ||
-      (d.produit_concerne||"").toLowerCase().includes(rc) ||
-      (d.reference_piece||"").toLowerCase().includes(rc) ||
-      (d.marque_produit||"").toLowerCase().includes(rc) ||
-      numero.includes(rc)
-    );
-  });
-}
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => {
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+      return (
+        (d.nom||"").toLowerCase().includes(rc) ||
+        (d.produit_concerne||"").toLowerCase().includes(rc) ||
+        (d.reference_piece||"").toLowerCase().includes(rc) ||
+        (d.marque_produit||"").toLowerCase().includes(rc) ||
+        numero.includes(rc)
+      );
+    });
+  }
 
   afficherCompteurs(dossiers);
   afficherFiltres(dossiers);
@@ -394,8 +419,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
-	  <div class="pj-documents">
-    ${
+      <div class="pj-documents">
+        ${
           fichiersDocs.length
             ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
@@ -407,7 +432,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
               }).join("<br>")
             : ""
         }
-		</div>
+      </div>
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
@@ -439,7 +464,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
   <span class="admin-msg"></span>
 </form>
-
       </td>
     </tr>`;
   });
@@ -479,6 +503,59 @@ function afficherDossiers(magasin, forceFiltres=false) {
   });
 }
 
+function afficherGlobal() {
+  ongletActif = "global";
+  afficherOnglets();
+  let dossiers = allDossiers.slice();
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => (
+      (d.marque_produit||"").toLowerCase().includes(rc) ||
+      (d.produit_concerne||"").toLowerCase().includes(rc) ||
+      (d.reference_piece||"").toLowerCase().includes(rc) ||
+      (d.probleme_rencontre||"").toLowerCase().includes(rc)
+    ));
+  }
+
+  afficherFiltres(allDossiers, {statut: false});
+  document.getElementById("status-counters").innerHTML = "";
+
+  let html = `<table>
+    <tr>
+      <th>Date</th>
+      <th>Magasin</th>
+      <th>Marque du produit</th>
+      <th>Produit concerné</th>
+      <th>Référence de la pièce</th>
+      <th>Problème rencontré</th>
+    </tr>`;
+  dossiers.forEach(d=>{
+    html += `<tr>
+      <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+      <td>${d.magasin||''}</td>
+      <td>${d.marque_produit||''}</td>
+      <td>${d.produit_concerne||''}</td>
+      <td>${d.reference_piece||''}</td>
+      <td>${d.probleme_rencontre||''}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  document.getElementById('dossier-list').innerHTML = html;
+}
+
 function fermerMiniForm(id){
   document.getElementById('mini-row-'+id).style.display = "none";
 }
@@ -496,6 +573,7 @@ function supprimerDossier(id) {
     }
   });
 }
+
 function voirDossier(id) {
   let d = allDossiers.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
@@ -506,7 +584,7 @@ function voirDossier(id) {
   if (d.date) {
     let dt = new Date(d.date);
     if (!isNaN(dt)) {
-      dateStr = dt.toISOString().slice(0,10); // "YYYY-MM-DD"
+      dateStr = dt.toISOString().slice(0,10);
     }
   }
   let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
@@ -596,7 +674,6 @@ function voirDossier(id) {
         <tr class="hide-print"><th>Réponse</th><td>
   ${(d.reponse||"")}
 </td></tr>
-
         <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
