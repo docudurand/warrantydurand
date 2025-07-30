@@ -193,6 +193,13 @@
       font-size: 0.96em;
       padding: 5px 9px;
     }
+	.mini-form-upload-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 185px;
+}
   </style>
 </head>
 <body>
@@ -241,7 +248,6 @@ let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
 let ongletActif = null;
 
-// Buffer pour fichiers
 const fileBuffers = {};
 
 function statutChip(statut) {
@@ -532,11 +538,11 @@ function afficherDossiers(magasin, forceFiltres=false) {
         </div>
       </div>
       <div style="display:flex;flex-direction:row;align-items:flex-end;gap:18px;min-width:370px;max-width:750px;flex-shrink:0;margin-top:2px;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:45px;">
-          <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
-          <input type="file" name="documentsAjoutes" multiple>
-          <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
-        </div>
+        <div class="mini-form-upload-vertical" style="margin-bottom:45px;">
+  <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+  <input type="file" name="documentsAjoutes" multiple>
+  <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+</div>
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:40px;margin-left:50px;">
           <label style="font-size:1em;font-weight:600;color:#195e7c;">Numéro d'avoir</label>
           <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px;width:160px;font-size:0.96em;padding:5px 8px;">
@@ -574,7 +580,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
 
-      // Ajout fichiers du buffer
       ["reponseFiles", "documentsAjoutes"].forEach(field=>{
         if(fileBuffers[id] && fileBuffers[id][field]) {
           fileBuffers[id][field].forEach(f=>{
@@ -599,7 +604,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
   });
 }
 
-// --- Gestion fichiers JS buffer sur le mini-form ---
 function initMiniFormBuffer(id) {
   if(!fileBuffers[id]) fileBuffers[id] = {};
   ["reponseFiles", "documentsAjoutes"].forEach(field=>{
