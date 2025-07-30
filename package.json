@@ -18,7 +18,7 @@
     "nodemailer": "^6.9.13",
     "unzipper": "^0.10.14",
     "node-cron": "^3.0.3",
-    "pdfkit": "^0.13.0"
+    "pdfkit": "^0.13.0",
 	"exceljs": "^4.3.0"
   }
 }
