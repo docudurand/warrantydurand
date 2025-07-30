@@ -81,7 +81,6 @@
       width: 100%;
       box-sizing: border-box;
     }
-    /* ---- AJOUT IMPORTANT POUR MENU EN LIGNE ---- */
     .mini-form-encadre .mini-form-flex {
       display: flex;
       flex-wrap: nowrap;
@@ -147,6 +146,12 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
+	.mini-form-flex label[style*="flex-direction:column"] b {
+  font-size: 1em;
+  font-weight: 500;
+  color: #195e7c;
+  margin-bottom: 2px;
+}
   </style>
 </head>
 <body>
@@ -182,7 +187,6 @@
     </div>
     <div id="dossier-list"></div>
   </div>
-  <!-- SCRIPT UNIQUE -->
   <script>
 let isSuperAdmin = false;
 let isAdmin = false;
@@ -463,19 +467,19 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <span class="emoji">⚠️</span>
         </div>
         <div class="mini-form-flex">
-          <select class="statut-select" name="statut">
-            <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-            <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-            <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-            <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-          </select>
-          <span>${statutChip(d.statut)}</span>
-          <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <label style="display:flex;align-items:center;gap:6px;">
-            <b style="font-weight:500;">Envoie document au client</b>
-            <input type="file" name="reponseFiles" multiple>
-          </label>
-        </div>
+  <select class="statut-select" name="statut">
+    <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+    <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+    <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+    <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+  </select>
+  <span>${statutChip(d.statut)}</span>
+  <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+  <label style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:0;">
+    <b style="font-weight:500; margin-bottom:2px;">Envoie document au client</b>
+    <input type="file" name="reponseFiles" multiple>
+  </label>
+</div>
       </div>
       <label>
         <b>Ajout document dans dossier</b>
