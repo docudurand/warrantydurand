@@ -493,7 +493,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:30px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
             <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
           </div>
@@ -512,7 +512,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <label style="font-size:1em;font-weight:600;color:#195e7c;">Numéro d'avoir</label>
           <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px;width:160px;font-size:0.96em;padding:5px 8px;">
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:244px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:164px;">
           <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
           <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
           <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
