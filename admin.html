@@ -476,15 +476,15 @@ function afficherDossiers(magasin, forceFiltres=false) {
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 12 : 11}">
-    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:flex-start;gap:28px;justify-content:flex-start;width:100%;">
-      <div class="mini-form-encadre" style="padding:13px 20px 12px 20px;min-width:0;max-width:980px;flex:1;">
-        <div class="mini-form-avert" style="font-size:0.88em;margin-bottom:7px;">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
+      <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
+        <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div class="mini-form-flex" style="gap:19px;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:135px;">
+        <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
             <select class="statut-select" name="statut">
               <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
@@ -493,30 +493,29 @@ function afficherDossiers(magasin, forceFiltres=false) {
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1;min-width:180px;max-width:265px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:120px;max-width:240px;min-height:28px;font-size:0.96em;padding:4px 7px;">${d.reponse||""}</textarea>
+            <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:180px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:185px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
             <input type="file" name="reponseFiles" multiple>
           </div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:11px;min-width:290px;max-width:340px;flex-shrink:0;margin-top:8px;">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:11px;min-width:238px;max-width:320px;flex-shrink:0;margin-top:5px;">
         <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;">
           <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
           <input type="file" name="documentsAjoutes" multiple>
         </div>
-        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:150px;width:98%;font-size:0.96em;padding:5px 9px;">
-        <button type="submit" class="bouton" style="font-size:1em;width:100%;margin:6px 0 0 0;">Mettre à jour</button>
-        <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;width:100%;" onclick="fermerMiniForm('${id}')">Annuler</button>
-        <span class="admin-msg" style="margin-top:7px;min-height:18px;display:inline-block;width:100%;font-size:0.97em;text-align:center;"></span>
+        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:130px;width:100%;font-size:0.96em;padding:5px 8px;">
+        <button type="submit" class="bouton" style="font-size:1em;width:125px;align-self:flex-end;">Mettre à jour</button>
+        <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;width:125px;align-self:flex-end;" onclick="fermerMiniForm('${id}')">Annuler</button>
+        <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:125px;font-size:0.97em;text-align:center;"></span>
       </div>
     </form>
   </td>
 </tr>
-
 `;
   });
   html += `</table>`;
