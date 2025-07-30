@@ -82,6 +82,8 @@
       box-sizing: border-box;
     }
     .mini-form-flex {
+	display: flex;
+  flex-direction: row;
   gap: 28px;
   align-items: flex-end;
   justify-content: flex-start;
@@ -96,8 +98,8 @@
       white-space: nowrap;
     }
     .mini-form-encadre textarea {
-      min-width: 180px;
-      max-width: 300px;
+      min-width: 145px;
+      max-width: 320px;
     }
     @media (max-width: 900px) {
       .mini-form-encadre .mini-form-flex {
@@ -181,7 +183,7 @@
     }
     .mini-form-encadre { margin-bottom: 0; }
     .mini-form-flex > div { min-width: 140px; }
-    @media (max-width: 900px) {
+    @media (max-width: 650px) {
       .mini-form-flex { flex-direction: column ; gap: 15px; }
     }
     .mini-form-flex textarea {
