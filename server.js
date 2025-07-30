@@ -62,7 +62,6 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
-// FTP utils...
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -200,14 +199,9 @@ async function creerPDFDemande(d, nomFichier) {
       doc.font("Helvetica").fontSize(14).fillColor("#14548C");
       doc.text(d.magasin || "", x0 + logoW + 12, y0 + 32, { align: "left" });
       doc.fontSize(11).fillColor("#000");
-      // Print the creation date and dossier number in the top right corner.
-      // The date appears on the first line and the dossier number directly beneath,
-      // both using the same font and size for consistency.
       const dateStrFr = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
       const numero = d.numero_dossier ? d.numero_dossier : "";
-      // Draw date
       doc.text("Créé le : " + dateStrFr, PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
-      // Draw dossier number just below
       doc.text("Numéro de dossier : " + numero, PAGE_W - 150, y0 + 20, { align: "left", width: 120 });
       let y = y0 + logoH + 32;
       const tableW = PAGE_W - 2 * x0;
@@ -270,19 +264,13 @@ async function creerPDFDemande(d, nomFichier) {
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
-    // Always work with an array for existing dossiers
     if (!Array.isArray(data)) data = [];
     let d = req.body;
     d.id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
     d.date = new Date().toISOString();
 
-    // Assign a unique four‑digit dossier number.  We scan existing dossiers
-    // to find the highest assigned number (if any), then increment it.  The
-    // result is left‑padded with zeros to always occupy four digits.  This
-    // ensures each dossier gets a unique identifier with no collisions.
     let maxNum = 0;
     for (const dossier of data) {
-      // Parse only numeric parts of the property
       const n = parseInt(dossier.numero_dossier, 10);
       if (!Number.isNaN(n) && n > maxNum) maxNum = n;
     }

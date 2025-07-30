@@ -6,10 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --primary-color: #004080;
@@ -185,12 +182,6 @@
       margin: 30px 0 20px;
       font-size: 1.12em;
     }
-    .pj-img {
-      max-width: 70px;
-      max-height: 54px;
-      border-radius: 3px;
-      box-shadow: 0 1px 3px #0002;
-    }
     .voir-btn {
       background: var(--primary-color);
       color: #fff;
@@ -273,9 +264,19 @@ const inputMail = document.getElementById("input-mail");
 if (localStorage.getItem("suiviEmail")) inputMail.value = localStorage.getItem("suiviEmail");
 inputMail.addEventListener("input", () => localStorage.setItem("suiviEmail", inputMail.value.trim()));
 
-["mois-filter", "annee-filter", "statut-filter"].forEach(id => {
-  document.getElementById(id).onchange = afficherListe;
-});
+document.getElementById("mois-filter").onchange = function() {
+  filtres.mois = this.value;
+  afficherListe();
+};
+document.getElementById("annee-filter").onchange = function() {
+  filtres.annee = this.value;
+  afficherListe();
+};
+document.getElementById("statut-filter").onchange = function() {
+  filtres.statut = this.value;
+  afficherListe();
+};
+
 document.getElementById("input-recherche").oninput = afficherListe;
 
 function afficherDossiers() {
@@ -328,9 +329,12 @@ function afficherListe() {
 
   if (recherche) {
     dossiers = dossiers.filter(d => {
-      const nom = (d.nom || "").toLowerCase();
-      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-      return nom.includes(recherche) || numero.includes(recherche);
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0").toLowerCase();
+      const produit = (d.produit_concerne || "").toLowerCase();
+      const immat = (d.immatriculation || "").toLowerCase();
+      return numero.includes(recherche)
+        || produit.includes(recherche)
+        || immat.includes(recherche);
     });
   }
 
@@ -349,7 +353,7 @@ function afficherListe() {
   }
 
   if (filtres.statut) {
-    dossiers = dossiers.filter(d => d.statut === filtres.statut);
+    dossiers = dossiers.filter(d => (d.statut||"").toLowerCase() === filtres.statut.toLowerCase());
   }
 
   document.getElementById("ligne2-filtres").classList.remove("hidden");
@@ -359,32 +363,31 @@ function afficherListe() {
     return;
   }
 
-  let html = `<table>
-    <tr>
-      <th style="width: 90px;">Numéro de dossier</th>
-      <th>Date</th>
-      <th>Produit</th>
-      <th>Immatriculation</th>
-      <th>Statut</th>
-      <th>Réponse</th>
-      <th>Pièces jointes</th>
-      <th>Voir</th>
-    </tr>`;
-  dossiers.forEach(d => {
-    html += `<tr>
-      <td>${d.numero_dossier || ''}</td>
-      <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
-      <td>${d.produit_concerne || ""}</td>
-      <td>${d.immatriculation || ""}</td>
-      <td>${statutChip(d.statut)}</td>
-      <td>${d.reponse ? d.reponse.replace(/\n/g, "<br>") : ""}</td>
-      <td>${(d.files || []).map(f => f.original).join("<br>")}</td>
-      <td><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-    </tr>`;
-  });
-  html += `</table>`;
-  document.getElementById("dossiers-list").innerHTML = html;
+let html = `<table>
+  <tr>
+    <th style="width: 90px;">Numéro de dossier</th>
+    <th>Date</th>
+    <th>Produit</th>
+    <th>Immatriculation</th>
+    <th>Statut</th>
+    <th>Réponse</th>
+    <th>Voir</th>
+  </tr>`;
+dossiers.forEach(d => {
+  html += `<tr>
+    <td>${d.numero_dossier || ''}</td>
+    <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
+    <td>${d.produit_concerne || ""}</td>
+    <td>${d.immatriculation || ""}</td>
+    <td>${statutChip(d.statut)}</td>
+    <td>${d.reponse ? d.reponse.replace(/\n/g, "<br>") : ""}</td>
+    <td><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+  </tr>`;
+});
+html += `</table>`;
+document.getElementById("dossiers-list").innerHTML = html;
 }
+
 function voirDossier(id) {
   let d = dossiersData.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
@@ -415,7 +418,6 @@ function voirDossier(id) {
       .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
       .fiche-table tr { border-bottom:1px solid #f0f0f0;}
       .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
-      .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
       .fiche-actions { text-align:right; margin-bottom:14px;}
       .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
       .print-btn:hover { background:#1780b0; }
@@ -468,33 +470,7 @@ function voirDossier(id) {
         <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
         <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
         <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
-        <tr class="hide-print"><th>Pièces jointes</th><td>
-          ${
-            (d.files||[]).length === 0
-              ? 'Aucune'
-              : d.files.map(f=>{
-                  let ext = f.original.split('.').pop().toLowerCase();
-                  if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                    return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
-                  } else {
-                    return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                  }
-                }).join("<br>")
-          }
-        </td></tr>
-        <tr class="hide-print"><th>Réponse</th><td>
-          ${(d.reponse||"")}
-          ${(d.reponseFiles||[]).length
-              ? "<br>"+d.reponseFiles.map(f=>{
-                let ext = f.original.split('.').pop().toLowerCase();
-                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
-                } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                }
-              }).join("<br>")
-              : ""}
-        </td></tr>
+        <tr class="hide-print"><th>Réponse</th><td>${d.reponse||""}</td></tr>
         <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
@@ -523,6 +499,5 @@ function voirDossier(id) {
   w.document.close();
 }
 </script>
-
 </body>
 </html>
