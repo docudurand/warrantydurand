@@ -12,6 +12,7 @@ import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import axios from "axios";
+import ExcelJS from "exceljs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -530,6 +531,39 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
   } catch (e) {
     res.json({success:false, message:e.message});
   }
+});
+app.get("/api/admin/export-excel", async (req, res) => {
+  let data = await readDataFTP();
+  const columns = [
+    { header: "Date", key: "date" },
+    { header: "Magasin", key: "magasin" },
+    { header: "Marque du produit", key: "marque_produit" },
+    { header: "Produit concerné", key: "produit_concerne" },
+    { header: "Référence de la pièce", key: "reference_piece" },
+    { header: "Problème rencontré", key: "probleme_rencontre" },
+    { header: "Nom client", key: "nom" },
+    { header: "Email", key: "email" },
+    { header: "Statut", key: "statut" },
+    { header: "Réponse", key: "reponse" },
+    { header: "Numéro d'avoir", key: "numero_avoir" },
+  ];
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Demandes globales");
+  ws.columns = columns;
+  data.forEach(d => {
+    let obj = {};
+    columns.forEach(col => {
+      let val = d[col.key] || "";
+      if(col.key === "date" && val) val = new Date(val).toLocaleDateString("fr-FR");
+      if(typeof val === "string") val = val.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+      obj[col.key] = val;
+    });
+    ws.addRow(obj);
+  });
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="dossiers-globales.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
 });
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
