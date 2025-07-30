@@ -9,7 +9,10 @@
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
-    .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
+    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
+    .top-tools label { background:#c4d4ea; color:#1780b0; }
+    .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
+    #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
@@ -118,12 +121,22 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
+    .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
+    .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
+    .pj-documents a { font-size: 0.93em; word-break: break-all;}
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
   <div class="top-tools" id="top-tools" style="display:none;">
-    <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
+    <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
+    <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
+      <label for="import-zip" title="Restaurer une sauvegarde">
+        ⬆️ Restaurer
+        <input type="file" id="import-zip" name="backupzip" accept=".zip" style="display:none;">
+      </label>
+    </form>
+    <span id="importzip-msg"></span>
   </div>
   <div id="login">
     <h2>Connexion admin</h2>
@@ -153,57 +166,83 @@
     </div>
     <div id="dossier-list"></div>
   </div>
-  
   <script>
-let isSuperAdmin = false;
-let isAdmin = false;
-let magasinUnique = null;
-const MAGASINS = [
-  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
-];
-let allDossiers = [];
-let currentMagasin = null;
-let filtres = { mois: "", annee: "", statut: "" };
-let rechercheClient = "";
-let ongletActif = null;
+    let isSuperAdmin = false;
+    let isAdmin = false;
+    let magasinUnique = null;
+    const MAGASINS = [
+      "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+    ];
+    let allDossiers = [];
+    let currentMagasin = null;
+    let filtres = { mois: "", annee: "", statut: "" };
+    let rechercheClient = "";
+    let ongletActif = null;
 
-function statutChip(statut) {
-  let s = (statut||"").toLowerCase();
-  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
-  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
-  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
-  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
-  return statut||"";
-}
+    // Fonctions ZIP (import/export)
+    document.getElementById("btn-exportzip").onclick = function(){
+      const a = document.createElement('a');
+      a.href = "/api/admin/exportzip";
+      a.download = "sauvegarde-demandes.zip";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 300);
+    };
+    document.getElementById("import-zip").onchange = function(){
+      let file = this.files[0];
+      if (!file) return;
+      let fd = new FormData();
+      fd.append("backupzip", file);
+      document.getElementById("importzip-msg").textContent = "Importation...";
+      fetch("/api/admin/importzip", {
+        method:"POST",
+        body:fd
+      }).then(r=>r.json()).then(json=>{
+        if(json.success){
+          document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
+          if(typeof chargerDossiers==="function") chargerDossiers();
+        } else {
+          document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
+        }
+        setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
+      });
+    };
 
-function toggleSuperAdminUI() {
-  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
-}
-
-function adminLogin() {
-  let pw = document.getElementById('admin-pass').value;
-  fetch('/api/admin/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({password: pw})
-  })
-  .then(resp=>resp.json())
-  .then(json=>{
-    if(json.success){
-      isSuperAdmin = !!json.isSuper;
-      isAdmin = !!json.isAdmin;
-      magasinUnique = json.magasin || null;
-      currentMagasin = magasinUnique || MAGASINS[0];
-      document.getElementById('login').style.display = "none";
-      document.getElementById('admin-content').style.display = "block";
-      toggleSuperAdminUI();
-      chargerDossiers();
-    } else {
-      document.getElementById('login-msg').textContent = json.message || "Erreur";
+    function statutChip(statut) {
+      let s = (statut||"").toLowerCase();
+      if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+      if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+      if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+      if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+      return statut||"";
     }
-  });
-}
-window.adminLogin = adminLogin;
+    function toggleSuperAdminUI() {
+      document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+    }
+    function adminLogin() {
+      let pw = document.getElementById('admin-pass').value;
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({password: pw})
+      })
+      .then(resp=>resp.json())
+      .then(json=>{
+        if(json.success){
+          isSuperAdmin = !!json.isSuper;
+          isAdmin = !!json.isAdmin;
+          magasinUnique = json.magasin || null;
+          currentMagasin = magasinUnique || MAGASINS[0];
+          document.getElementById('login').style.display = "none";
+          document.getElementById('admin-content').style.display = "block";
+          toggleSuperAdminUI();
+          chargerDossiers();
+        } else {
+          document.getElementById('login-msg').textContent = json.message || "Erreur";
+        }
+      });
+    }
+    window.adminLogin = adminLogin;
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
