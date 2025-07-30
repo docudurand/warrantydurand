@@ -150,7 +150,49 @@
     .file-remove:hover {
       background: #a11610;
     }
-    /* ... tes autres media queries etc ... */
+    @media (max-width:1050px) {
+      #admin-content { padding: 10px 2vw 10px 2vw;}
+      .counter-card { padding:18px 7vw;}
+      h2 { font-size:1.28em;}
+      .top-tools { padding-right: 0.5vw;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
+    @media (max-width:700px) {
+      #admin-content {max-width: 99vw; padding: 2vw 1vw;}
+      .tabs { gap:4px;}
+      .tab { min-width: 86px; font-size:0.94em;}
+      #status-counters {flex-direction:column;align-items:center;gap:13px;}
+      .counter-card { min-width: 160px; padding:13px 1vw;}
+      .mini-form textarea { min-width: 60vw;}
+      .banniere { min-height: 32px; max-height: 80px;}
+      .top-tools { margin-top: 14px; margin-bottom: 18px; flex-direction: column; align-items: flex-end;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
+    .mini-form-flex label[style*="flex-direction:column"] b {
+      font-size: 1em;
+      font-weight: 500;
+      color: #195e7c;
+      margin-bottom: 2px;
+    }
+    .mini-form-encadre { margin-bottom: 0; }
+    .mini-form-flex > div { min-width: 140px; }
+    @media (max-width: 900px) {
+      .mini-form-flex { flex-direction: column ; gap: 15px; }
+    }
+    .mini-form-flex textarea {
+      min-width: 110px;
+      max-width: 230px;
+      min-height: 28px;
+      font-size: 0.96em;
+      padding: 4px 6px;
+    }
+    .mini-form-flex select,
+    .mini-form-flex input[type="file"] {
+      font-size: 0.96em;
+      padding: 5px 9px;
+    }
   </style>
 </head>
 <body>
@@ -199,10 +241,21 @@ let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
 let ongletActif = null;
 
-// Buffer JS pour fichiers ajoutés AVANT envoi (comme demande.html)
-const fileBuffers = {}; // { id: { reponseFiles: [File], documentsAjoutes: [File] } }
+// Buffer pour fichiers
+const fileBuffers = {};
 
-// ... toutes les fonctions statutChip, toggleSuperAdminUI, etc ... comme dans ton code ...
+function statutChip(statut) {
+  let s = (statut||"").toLowerCase();
+  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+  return statut||"";
+}
+
+function toggleSuperAdminUI() {
+  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+}
 
 document.getElementById("btn-export-excel").onclick = function(){
   window.open('/api/admin/export-excel', '_blank');
@@ -233,14 +286,165 @@ function adminLogin() {
 }
 window.adminLogin = adminLogin;
 
-// ---------- MODIFIE ICI (lignes modifiées pour fileBuffer) --------------
+function chargerDossiers() {
+  fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
+    allDossiers = data;
+    afficherOnglets();
+    if (!allDossiers || allDossiers.length === 0) {
+      document.getElementById("dossier-list").innerHTML =
+        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
+        ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
+        Il est probable que le serveur vient de redémarrer.<br>
+        <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
+        </div>`;
+      return;
+    }
+    if (ongletActif === "global") {
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin, true);
+    }
+  });
+}
+
+function afficherOnglets() {
+  let t = '';
+  if (isAdmin || isSuperAdmin) {
+    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
+  }
+  if (isAdmin || isSuperAdmin) {
+    MAGASINS.forEach((m, i) => {
+      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+    });
+    document.getElementById('tabs').innerHTML = t;
+    document.getElementById('onglet-global').onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
+    }
+    MAGASINS.forEach((m, i) => {
+      document.getElementById('onglet-' + i).onclick = function() {
+        ongletActif = null;
+        document.getElementById("statut-filter-label").style.display = "";
+        afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
+      }
+    });
+  } else if(magasinUnique){
+    document.getElementById('tabs').innerHTML =
+      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
+  }
+}
+
+function afficherCompteurs(dossiers) {
+  const stats = [
+    { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
+    { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
+    { label: "En attente d'info", val: "en attente d'info", color:"green" },
+    { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
+  ];
+  let html = "";
+  stats.forEach(stat => {
+    const n = dossiers.filter(d => d.statut === stat.val).length;
+    html += `
+      <div class="counter-card">
+        <span class="counter-label ${stat.color}">${stat.label}</span>
+        <span class="counter-value ${stat.color}">${n}</span>
+      </div>
+    `;
+  });
+  document.getElementById("status-counters").innerHTML = html;
+}
+
+function afficherFiltres(dossiers, options={}) {
+  let moisSel = document.getElementById("mois-filter");
+  let anneeSel = document.getElementById("annee-filter");
+  let statutSel = document.getElementById("statut-filter");
+  let moisSet = new Set(), anneeSet = new Set();
+
+  dossiers.forEach(d => {
+    let date = new Date(d.date);
+    if (!isNaN(date)) {
+      let mois = ("0" + (date.getMonth() + 1)).slice(-2);
+      let annee = date.getFullYear().toString();
+      moisSet.add(mois);
+      anneeSet.add(annee);
+    }
+  });
+
+  const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+  moisSel.innerHTML = `<option value="">Tous</option>`;
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
+  anneeSel.innerHTML = `<option value="">Toutes</option>`;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
+
+  document.getElementById("filters-row").style.display = "flex";
+  document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
+
+  moisSel.value = filtres.mois;
+  anneeSel.value = filtres.annee;
+  statutSel.value = filtres.statut;
+
+  moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
+    filtres.mois = moisSel.value;
+    filtres.annee = anneeSel.value;
+    filtres.statut = statutSel.value;
+    if(ongletActif === "global"){
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin);
+    }
+  };
+}
+
+document.getElementById('search-client').addEventListener('input', function() {
+  rechercheClient = this.value;
+  if(ongletActif === "global"){
+    afficherGlobal();
+  } else {
+    afficherDossiers(currentMagasin);
+  }
+});
+
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
   ongletActif = null;
   afficherOnglets();
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
 
-  // ...filtrage...
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => {
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+      return (
+        (d.nom||"").toLowerCase().includes(rc) ||
+        (d.produit_concerne||"").toLowerCase().includes(rc) ||
+        (d.reference_piece||"").toLowerCase().includes(rc) ||
+        (d.marque_produit||"").toLowerCase().includes(rc) ||
+        numero.includes(rc)
+      );
+    });
+  }
+
+  afficherCompteurs(dossiers);
+  afficherFiltres(dossiers);
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(filtres.statut) {
+    dossiers = dossiers.filter(d=>d.statut===filtres.statut);
+  }
 
   let html = `<table>
     <tr>
@@ -259,6 +463,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     </tr>`;
   dossiers.forEach(d=>{
     let id = d.id;
+
     let fichiersDocs = [].concat(
       d.documentsAjoutes||[],
       d.reponseFiles||[]
@@ -266,6 +471,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     fichiersDocs = fichiersDocs.filter((f, i, arr) =>
       f && f.url && arr.findIndex(x => x.url === f.url) === i
     );
+
     html += `<tr>
       <td>${d.numero_dossier || ''}</td>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
@@ -320,18 +526,18 @@ function afficherDossiers(magasin, forceFiltres=false) {
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:185px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
-            <input type="file" name="reponseFiles" multiple onchange="handleFileSelect(event, '${id}', 'reponseFiles')" />
-            <ul class="file-list" id="reponseFiles-list-${id}"></ul>
+            <input type="file" name="reponseFiles" multiple>
+            <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
           </div>
         </div>
       </div>
       <div style="display:flex;flex-direction:row;align-items:flex-end;gap:18px;min-width:370px;max-width:750px;flex-shrink:0;margin-top:2px;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:45px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:45px;">
           <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
-          <input type="file" name="documentsAjoutes" multiple onchange="handleFileSelect(event, '${id}', 'documentsAjoutes')" />
-          <ul class="file-list" id="documentsAjoutes-list-${id}"></ul>
+          <input type="file" name="documentsAjoutes" multiple>
+          <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:40px;margin-left:50px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:40px;margin-left:50px;">
           <label style="font-size:1em;font-weight:600;color:#195e7c;">Numéro d'avoir</label>
           <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px;width:160px;font-size:0.96em;padding:5px 8px;">
         </div>
@@ -355,12 +561,9 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = btn.getAttribute('data-id');
       let row = document.getElementById('mini-row-'+id);
       if(row) {
-        // Reset des buffers fichiers pour ce dossier
-        fileBuffers[id] = { reponseFiles: [], documentsAjoutes: [] };
-        renderFileList(id, "reponseFiles");
-        renderFileList(id, "documentsAjoutes");
         row.style.display = "table-row";
         row.scrollIntoView({behavior:"smooth",block:"center"});
+        setTimeout(()=>initMiniFormBuffer(id), 20);
       }
     };
   });
@@ -371,15 +574,14 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
 
-      // Ajout fichiers buffers JS
-      if (fileBuffers[id]) {
-        for (let f of (fileBuffers[id].reponseFiles || [])) {
-          fd.append("reponseFiles", f);
+      // Ajout fichiers du buffer
+      ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+        if(fileBuffers[id] && fileBuffers[id][field]) {
+          fileBuffers[id][field].forEach(f=>{
+            fd.append(field, f);
+          });
         }
-        for (let f of (fileBuffers[id].documentsAjoutes || [])) {
-          fd.append("documentsAjoutes", f);
-        }
-      }
+      });
 
       this.querySelector('.admin-msg').textContent = "Envoi...";
       let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
@@ -397,40 +599,219 @@ function afficherDossiers(magasin, forceFiltres=false) {
   });
 }
 
-// GESTION FICHIERS (BUFFER JS)
-function handleFileSelect(event, id, type) {
-  if (!fileBuffers[id]) fileBuffers[id] = { reponseFiles: [], documentsAjoutes: [] };
-  const files = Array.from(event.target.files);
-  fileBuffers[id][type] = fileBuffers[id][type].concat(files);
-  renderFileList(id, type);
-  event.target.value = "";
-}
+// --- Gestion fichiers JS buffer sur le mini-form ---
+function initMiniFormBuffer(id) {
+  if(!fileBuffers[id]) fileBuffers[id] = {};
+  ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+    if(!fileBuffers[id][field]) fileBuffers[id][field] = [];
+    let input = document.querySelector(`#form-${id} input[name='${field}']`);
+    let ul = document.getElementById(`file-list-${field}-${id}`);
+    if(!input || !ul) return;
+    input.value = ""; // reset file input
+    ul.innerHTML = "";
 
-function renderFileList(id, type) {
-  const ul = document.getElementById(`${type}-list-${id}`);
-  if (!ul) return;
+    input.addEventListener("change", function() {
+      Array.from(input.files).forEach(f=>fileBuffers[id][field].push(f));
+      renderFileListBuffer(id, field);
+      input.value = "";
+    });
+
+    renderFileListBuffer(id, field);
+  });
+}
+function renderFileListBuffer(id, field) {
+  let ul = document.getElementById(`file-list-${field}-${id}`);
+  if(!ul) return;
+  let arr = fileBuffers[id] && fileBuffers[id][field] ? fileBuffers[id][field] : [];
   ul.innerHTML = "";
-  const arr = (fileBuffers[id] && fileBuffers[id][type]) ? fileBuffers[id][type] : [];
-  arr.forEach((file, idx) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<span>${file.name} <small>(${(file.size / 1024).toFixed(1)} Ko)</small></span> <button type="button" class="file-remove" onclick="removeFile('${id}','${type}',${idx})">Supprimer</button>`;
+  arr.forEach((file, i)=>{
+    let li = document.createElement("li");
+    li.innerHTML = `<span>${file.name}</span>
+      <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer('${id}','${field}',${i})">✕</button>`;
     ul.appendChild(li);
   });
 }
+window.removeFileBuffer = function(id, field, idx) {
+  if(fileBuffers[id] && fileBuffers[id][field]) {
+    fileBuffers[id][field].splice(idx,1);
+    renderFileListBuffer(id, field);
+  }
+}
 
-window.handleFileSelect = handleFileSelect;
+function afficherGlobal() {
+  ongletActif = "global";
+  afficherOnglets();
+  let dossiers = allDossiers.slice();
 
-window.removeFile = function(id, type, idx) {
-  if (!fileBuffers[id]) return;
-  fileBuffers[id][type].splice(idx, 1);
-  renderFileList(id, type);
-};
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => (
+      (d.marque_produit||"").toLowerCase().includes(rc) ||
+      (d.produit_concerne||"").toLowerCase().includes(rc) ||
+      (d.reference_piece||"").toLowerCase().includes(rc) ||
+      (d.probleme_rencontre||"").toLowerCase().includes(rc)
+    ));
+  }
+
+  afficherFiltres(allDossiers, {statut: false});
+  document.getElementById("status-counters").innerHTML = "";
+
+  let html = `<table>
+    <tr>
+      <th>Date</th>
+      <th>Magasin</th>
+      <th>Marque du produit</th>
+      <th>Produit concerné</th>
+      <th>Référence de la pièce</th>
+      <th>Problème rencontré</th>
+    </tr>`;
+  dossiers.forEach(d=>{
+    html += `<tr>
+      <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+      <td>${d.magasin||''}</td>
+      <td>${d.marque_produit||''}</td>
+      <td>${d.produit_concerne||''}</td>
+      <td>${d.reference_piece||''}</td>
+      <td>${d.probleme_rencontre||''}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  document.getElementById('dossier-list').innerHTML = html;
+}
 
 function fermerMiniForm(id){
   document.getElementById('mini-row-'+id).style.display = "none";
 }
 
-// ... toutes les autres fonctions globales (afficherGlobal, supprimerDossier, voirDossier, etc) ...
+function supprimerDossier(id) {
+  if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+  fetch(`/api/admin/dossier/${id}`, {
+    method: "DELETE",
+    headers: {'x-superadmin': '1'}
+  }).then(r=>r.json()).then(json=>{
+    if(json.success){
+      chargerDossiers();
+    } else {
+      alert(json.message || "Erreur lors de la suppression");
+    }
+  });
+}
+
+function voirDossier(id) {
+  let d = allDossiers.find(x=>x.id===id);
+  if (!d) return alert("Dossier introuvable !");
+  let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+  let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+  let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+  let dateStr = "";
+  if (d.date) {
+    let dt = new Date(d.date);
+    if (!isNaN(dt)) {
+      dateStr = dt.toISOString().slice(0,10);
+    }
+  }
+  let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
+  let detailHtml = `
+    <html><head>
+    <meta charset="UTF-8">
+    <title>${nomFichier}</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+      .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
+      .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
+      .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
+      .fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}
+      .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
+      .fiche-table table { width:100%; border-collapse:collapse; }
+      .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
+      .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
+      .fiche-table tr { border-bottom:1px solid #f0f0f0;}
+      .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
+      .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
+      .fiche-actions { text-align:right; margin-bottom:14px;}
+      .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
+      .print-btn:hover { background:#1780b0; }
+      @media print {
+        .print-btn { display:none; }
+        body { background: #fff; }
+        .fiche-table { box-shadow: none; border:1px solid #888;}
+        .fiche-header { padding-top:10px; }
+        .hide-print { display:none; }
+        .fiche-date { display:block; position:absolute; top:24px; right:40px; font-size:1.09em;}
+      }
+      .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+      .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+      .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+      .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+      .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+      .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+    </style>
+    </head><body>
+    <div class="fiche-header">
+      <img src="${logoUrl}" alt="Logo DSG">
+      <span class="magasin-title">${d.magasin||""}</span>
+      <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}<br>Numéro de dossier : ${d.numero_dossier || ''}</span>
+    </div>
+    <div class="fiche-table">
+      <div class="fiche-actions">
+        <button class="print-btn" onclick="renameAndPrint('${nomFichier}')">🖨️ Imprimer</button>
+      </div>
+      <table>
+        <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
+        <tr><th>Email</th><td>${d.email||""}</td></tr>
+        <tr><th>Magasin</th><td>${d.magasin||""}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Produit</td></tr>
+        <tr><th>Marque du produit</th><td>${d.marque_produit||""}</td></tr>
+        <tr><th>Produit concerné</th><td>${d.produit_concerne||""}</td></tr>
+        <tr><th>Référence de la pièce</th><td>${d.reference_piece||""}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Problème rencontré</td></tr>
+        <tr><td colspan="2">${d.probleme_rencontre||""}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Statut</td></tr>
+        <tr><td colspan="2">${statutChip(d.statut)}</td></tr>
+        <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
+        <tr><th>Numéro d'avoir</th><td>${d.numero_avoir||""}</td></tr>
+        <tr><th>Documents ajoutés</th>
+          <td>${
+            [].concat(d.documentsAjoutes||[], d.reponseFiles||[]).map(f=>{
+              if(f && f.url) {
+                let ext = (f.original||"").split('.').pop().toLowerCase();
+                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                } else {
+                  return `<a href="/download/${f.url}" target="_blank">${f.original||""}</a>`;
+                }
+              }
+              return '';
+            }).join("<br>")
+          }</td>
+        </tr>
+      </table>
+    </div>
+    <script>
+      function renameAndPrint(filename) {
+        document.title = filename;
+        window.print();
+        setTimeout(()=>{document.title='${nomFichier}';},400);
+      }
+    <\/script>
+    </body></html>
+  `;
+  let win = window.open("", "_blank");
+  win.document.write(detailHtml);
+  win.document.close();
+}
 
   </script>
 </body>
