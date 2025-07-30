@@ -476,46 +476,47 @@ function afficherDossiers(magasin, forceFiltres=false) {
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 12 : 11}">
-    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;align-items:flex-start;gap:26px;justify-content:flex-start;width:100%;">
-      <div class="mini-form-encadre" style="padding:11px 18px 8px 18px; gap:5px; min-width:0; flex: 1;">
-        <div class="mini-form-avert" style="font-size:0.79em; margin-bottom:2px;">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:flex-start;gap:28px;justify-content:flex-start;width:100%;">
+      <div class="mini-form-encadre" style="padding:13px 20px 12px 20px;min-width:0;max-width:980px;flex:1;">
+        <div class="mini-form-avert" style="font-size:0.88em;margin-bottom:7px;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div class="mini-form-flex" style="gap:15px;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Statut</label>
-            <select class="statut-select" name="statut" style="margin-bottom:0;padding:5px 9px;">
+        <div class="mini-form-flex" style="gap:19px;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:135px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
+            <select class="statut-select" name="statut">
               <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
               <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
               <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
             </select>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:1;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:150px;max-width:230px;min-height:26px;font-size:0.96em;padding:4px 7px;" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;flex:1;min-width:180px;max-width:265px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
+            <textarea name="reponse" style="width:100%;min-width:120px;max-width:240px;min-height:28px;font-size:0.96em;padding:4px 7px;">${d.reponse||""}</textarea>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Envoie document au client</label>
-            <input type="file" name="reponseFiles" multiple style="font-size:0.96em;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:180px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
+            <input type="file" name="reponseFiles" multiple>
           </div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:260px;max-width:310px;flex-shrink:0;margin-top:7px;">
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;">
-          <label style="font-size:1em;font-weight:600;color:#195e7c;margin-bottom:0;">Ajout document dans dossier</label>
-          <input type="file" name="documentsAjoutes" multiple style="font-size:0.96em;">
+      <div style="display:flex;flex-direction:column;align-items:flex-start;gap:11px;min-width:290px;max-width:340px;flex-shrink:0;margin-top:8px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;">
+          <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+          <input type="file" name="documentsAjoutes" multiple>
         </div>
         <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:150px;width:98%;font-size:0.96em;padding:5px 9px;">
-        <button type="submit" class="bouton" style="font-size:1em;width:100%;margin:5px 0 0 0;">Mettre à jour</button>
+        <button type="submit" class="bouton" style="font-size:1em;width:100%;margin:6px 0 0 0;">Mettre à jour</button>
         <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:7px;width:100%;" onclick="fermerMiniForm('${id}')">Annuler</button>
         <span class="admin-msg" style="margin-top:7px;min-height:18px;display:inline-block;width:100%;font-size:0.97em;text-align:center;"></span>
       </div>
     </form>
   </td>
 </tr>
+
 `;
   });
   html += `</table>`;
