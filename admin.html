@@ -9,10 +9,7 @@
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
-    .top-tools button, .top-tools label { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-    .top-tools label { background:#c4d4ea; color:#1780b0; }
-    .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
-    #importzip-msg { margin-left: 14px; font-size: 1.03em; color: #1780b0; }
+    .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
@@ -65,8 +62,42 @@
       display: inline-block;
       max-width: 210px;
     }
-    .mini-form-row > td { width: 100vw; box-sizing: border-box; }
-    .mini-form { max-width: 100%; width: 100%; }
+    .mini-form-encadre {
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 20px 24px 18px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-width: 0;
+      max-width: 900px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .mini-form-avert {
+      width: 100%;
+      text-align: center;
+      font-size: 0.98em;
+      font-weight: 500;
+      color: #234156;
+      margin-bottom: 8px;
+      margin-top: 0;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      background: none;
+    }
+    .mini-form-avert .emoji {
+      font-size: 1.10em;
+      color: #f2a000;
+    }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -87,22 +118,12 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
-    .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
-	.pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
-	.pj-documents a { font-size: 0.93em; word-break: break-all;}
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
   <div class="top-tools" id="top-tools" style="display:none;">
-    <button id="btn-exportzip" title="Télécharger une sauvegarde complète">⬇️ Sauvegarde</button>
-    <form id="form-importzip" enctype="multipart/form-data" style="margin:0;padding:0;">
-      <label for="import-zip" title="Restaurer une sauvegarde">
-        ⬆️ Restaurer
-        <input type="file" id="import-zip" name="backupzip" accept=".zip" style="display:none;">
-      </label>
-    </form>
-    <span id="importzip-msg"></span>
+    <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
   <div id="login">
     <h2>Connexion admin</h2>
@@ -120,7 +141,7 @@
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
-      <label>Statut :
+      <label id="statut-filter-label">Statut :
         <select id="statut-filter">
           <option value="">Tous</option>
           <option value="enregistré">Enregistré</option>
@@ -132,6 +153,8 @@
     </div>
     <div id="dossier-list"></div>
   </div>
+
+  <!-- TOUT LE SCRIPT EST ICI EN BAS ! -->
   <script>
 let isSuperAdmin = false;
 let isAdmin = false;
@@ -143,6 +166,7 @@ let allDossiers = [];
 let currentMagasin = null;
 let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
+let ongletActif = null;
 
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
@@ -154,36 +178,8 @@ function statutChip(statut) {
 }
 
 function toggleSuperAdminUI() {
-  document.getElementById("top-tools").style.display = isSuperAdmin ? "flex" : "none";
+  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
 }
-
-document.getElementById("btn-exportzip").onclick = function(){
-  const a = document.createElement('a');
-  a.href = "/api/admin/exportzip";
-  a.download = "sauvegarde-demandes.zip";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => document.body.removeChild(a), 300);
-};
-document.getElementById("import-zip").onchange = function(){
-  let file = this.files[0];
-  if (!file) return;
-  let fd = new FormData();
-  fd.append("backupzip", file);
-  document.getElementById("importzip-msg").textContent = "Importation...";
-  fetch("/api/admin/importzip", {
-    method:"POST",
-    body:fd
-  }).then(r=>r.json()).then(json=>{
-    if(json.success){
-      document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
-      if(typeof chargerDossiers==="function") chargerDossiers();
-    } else {
-      document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
-    }
-    setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
-  });
-};
 
 function adminLogin() {
   let pw = document.getElementById('admin-pass').value;
@@ -208,6 +204,7 @@ function adminLogin() {
     }
   });
 }
+window.adminLogin = adminLogin;
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
@@ -223,19 +220,33 @@ function chargerDossiers() {
         </div>`;
       return;
     }
-    afficherDossiers(currentMagasin, true);
+    if (ongletActif === "global") {
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin, true);
+    }
   });
 }
 
 function afficherOnglets() {
   let t = '';
-  if(isAdmin || isSuperAdmin){
+  if (isAdmin || isSuperAdmin) {
+    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
+  }
+  if (isAdmin || isSuperAdmin) {
     MAGASINS.forEach((m, i) => {
-      t += `<div class="tab${m === currentMagasin ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
     });
     document.getElementById('tabs').innerHTML = t;
+    document.getElementById('onglet-global').onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
+    }
     MAGASINS.forEach((m, i) => {
       document.getElementById('onglet-' + i).onclick = function() {
+        ongletActif = null;
+        document.getElementById("statut-filter-label").style.display = "";
         afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
       }
     });
@@ -265,7 +276,7 @@ function afficherCompteurs(dossiers) {
   document.getElementById("status-counters").innerHTML = html;
 }
 
-function afficherFiltres(dossiers) {
+function afficherFiltres(dossiers, options={}) {
   let moisSel = document.getElementById("mois-filter");
   let anneeSel = document.getElementById("annee-filter");
   let statutSel = document.getElementById("statut-filter");
@@ -289,6 +300,7 @@ function afficherFiltres(dossiers) {
   Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
+  document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
   moisSel.value = filtres.mois;
   anneeSel.value = filtres.annee;
@@ -298,33 +310,42 @@ function afficherFiltres(dossiers) {
     filtres.mois = moisSel.value;
     filtres.annee = anneeSel.value;
     filtres.statut = statutSel.value;
-    afficherDossiers(currentMagasin);
+    if(ongletActif === "global"){
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin);
+    }
   };
 }
 
 document.getElementById('search-client').addEventListener('input', function() {
   rechercheClient = this.value;
-  afficherDossiers(currentMagasin);
+  if(ongletActif === "global"){
+    afficherGlobal();
+  } else {
+    afficherDossiers(currentMagasin);
+  }
 });
 
 function afficherDossiers(magasin, forceFiltres=false) {
   currentMagasin = magasin;
+  ongletActif = null;
   afficherOnglets();
   let dossiers = allDossiers.filter(d=>d.magasin===magasin);
 
   if(rechercheClient && rechercheClient.trim().length > 0){
-  const rc = rechercheClient.trim().toLowerCase();
-  dossiers = dossiers.filter(d => {
-    const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-    return (
-      (d.nom||"").toLowerCase().includes(rc) ||
-      (d.produit_concerne||"").toLowerCase().includes(rc) ||
-      (d.reference_piece||"").toLowerCase().includes(rc) ||
-      (d.marque_produit||"").toLowerCase().includes(rc) ||
-      numero.includes(rc)
-    );
-  });
-}
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => {
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+      return (
+        (d.nom||"").toLowerCase().includes(rc) ||
+        (d.produit_concerne||"").toLowerCase().includes(rc) ||
+        (d.reference_piece||"").toLowerCase().includes(rc) ||
+        (d.marque_produit||"").toLowerCase().includes(rc) ||
+        numero.includes(rc)
+      );
+    });
+  }
 
   afficherCompteurs(dossiers);
   afficherFiltres(dossiers);
@@ -381,8 +402,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
-	  <div class="pj-documents">
-    ${
+      <div class="pj-documents">
+        ${
           fichiersDocs.length
             ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
@@ -394,15 +415,22 @@ function afficherDossiers(magasin, forceFiltres=false) {
               }).join("<br>")
             : ""
         }
-		</div>
+      </div>
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
-    </tr>
-    <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-      <td colspan="${isSuperAdmin ? 12 : 11}">
-        <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
+    html += `
+<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+  <td colspan="${isSuperAdmin ? 12 : 11}">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
+      <div class="mini-form-encadre">
+        <div class="mini-form-avert">
+          <span class="emoji">⚠️</span>
+          TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
+          <span class="emoji">⚠️</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; justify-content: center;">
           <select class="statut-select" name="statut">
             <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
             <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
@@ -412,20 +440,22 @@ function afficherDossiers(magasin, forceFiltres=false) {
           <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
           <label>
-            <b>Ajout document</b>
-            <input type="file" name="documentsAjoutes" multiple>
-          </label>
-          <label>
-            <b>Envoie avoir client</b>
+            <b>Envoie document au client</b>
             <input type="file" name="reponseFiles" multiple>
           </label>
-          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
-          <button type="submit" class="bouton">Mettre à jour</button>
-          <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
-          <span class="admin-msg"></span>
-        </form>
-      </td>
-    </tr>`;
+        </div>
+      </div>
+      <label>
+        <b>Ajout document dans dossier</b>
+        <input type="file" name="documentsAjoutes" multiple>
+      </label>
+      <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}">
+      <button type="submit" class="bouton">Mettre à jour</button>
+      <button type="button" class="bouton" style="background:#ccc;color:#234;" onclick="fermerMiniForm('${id}')">Annuler</button>
+      <span class="admin-msg"></span>
+    </form>
+  </td>
+</tr>`;
   });
   html += `</table>`;
   document.getElementById('dossier-list').innerHTML = html;
@@ -463,6 +493,59 @@ function afficherDossiers(magasin, forceFiltres=false) {
   });
 }
 
+function afficherGlobal() {
+  ongletActif = "global";
+  afficherOnglets();
+  let dossiers = allDossiers.slice();
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => (
+      (d.marque_produit||"").toLowerCase().includes(rc) ||
+      (d.produit_concerne||"").toLowerCase().includes(rc) ||
+      (d.reference_piece||"").toLowerCase().includes(rc) ||
+      (d.probleme_rencontre||"").toLowerCase().includes(rc)
+    ));
+  }
+
+  afficherFiltres(allDossiers, {statut: false});
+  document.getElementById("status-counters").innerHTML = "";
+
+  let html = `<table>
+    <tr>
+      <th>Date</th>
+      <th>Magasin</th>
+      <th>Marque du produit</th>
+      <th>Produit concerné</th>
+      <th>Référence de la pièce</th>
+      <th>Problème rencontré</th>
+    </tr>`;
+  dossiers.forEach(d=>{
+    html += `<tr>
+      <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+      <td>${d.magasin||''}</td>
+      <td>${d.marque_produit||''}</td>
+      <td>${d.produit_concerne||''}</td>
+      <td>${d.reference_piece||''}</td>
+      <td>${d.probleme_rencontre||''}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  document.getElementById('dossier-list').innerHTML = html;
+}
+
 function fermerMiniForm(id){
   document.getElementById('mini-row-'+id).style.display = "none";
 }
@@ -480,6 +563,7 @@ function supprimerDossier(id) {
     }
   });
 }
+
 function voirDossier(id) {
   let d = allDossiers.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
@@ -490,7 +574,7 @@ function voirDossier(id) {
   if (d.date) {
     let dt = new Date(d.date);
     if (!isNaN(dt)) {
-      dateStr = dt.toISOString().slice(0,10); // "YYYY-MM-DD"
+      dateStr = dt.toISOString().slice(0,10);
     }
   }
   let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
@@ -578,18 +662,8 @@ function voirDossier(id) {
           }
         </td></tr>
         <tr class="hide-print"><th>Réponse</th><td>
-          ${(d.reponse||"")}
-          ${(d.reponseFiles||[]).length
-              ? "<br>"+d.reponseFiles.map(f=>{
-                let ext = f.original.split('.').pop().toLowerCase();
-                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
-                } else {
-                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                }
-              }).join("<br>")
-              : ""}
-        </td></tr>
+  ${(d.reponse||"")}
+</td></tr>
         <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
       </table>
     </div>
