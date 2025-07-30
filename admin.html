@@ -431,12 +431,12 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <td colspan="${isSuperAdmin ? 12 : 11}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data">
       <div class="mini-form-encadre">
-        <div class="mini-form-avert">
+        <div class="mini-form-avert" style="font-size:0.49em;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; justify-content: center;">
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; align-items: flex-end;">
           <select class="statut-select" name="statut">
             <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
             <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
@@ -445,8 +445,8 @@ function afficherDossiers(magasin, forceFiltres=false) {
           </select>
           <span>${statutChip(d.statut)}</span>
           <textarea name="reponse" placeholder="Réponse (optionnel)">${d.reponse||""}</textarea>
-          <label>
-            <b>Envoie document au client</b>
+          <label style="display:flex;align-items:center;gap:6px;margin-bottom:0;">
+            <b style="font-weight:500;">Envoie document au client</b>
             <input type="file" name="reponseFiles" multiple>
           </label>
         </div>
