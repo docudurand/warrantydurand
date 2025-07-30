@@ -10,7 +10,6 @@
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
     .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-    .top-tools span { font-size:1.04em; color:#1780b0; margin-top:4px;}
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
@@ -63,8 +62,42 @@
       display: inline-block;
       max-width: 210px;
     }
-    .mini-form-row > td { width: 100vw; box-sizing: border-box; }
-    .mini-form { max-width: 100%; width: 100%; }
+    .mini-form-encadre {
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 20px 24px 18px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-width: 0;
+      max-width: 900px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .mini-form-avert {
+      width: 100%;
+      text-align: center;
+      font-size: 0.98em;
+      font-weight: 500;
+      color: #234156;
+      margin-bottom: 8px;
+      margin-top: 0;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      background: none;
+    }
+    .mini-form-avert .emoji {
+      font-size: 1.10em;
+      color: #f2a000;
+    }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -85,45 +118,6 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
-    .mini-form label { font-size: 1em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
-    .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
-    .pj-documents a { font-size: 0.93em; word-break: break-all;}
-    .mini-form-encadre {
-  border: 2px solid #111;
-  background: #e8f3fa;
-  border-radius: 4px;
-  padding: 20px 24px 18px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 0;
-  margin-right: 18px;
-  min-width: 0;
-  max-width: 900px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.mini-form-avert {
-  width: 100%;
-  text-align: center;
-  font-size: 1.04em;
-  font-weight: 600;
-  color: #234156;
-  margin-bottom: 12px;
-  margin-top: 0;
-  letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.mini-form-avert .emoji {
-  font-size: 1.16em;
-  color: #f2a000;
-}
   </style>
 </head>
 <body>
@@ -185,38 +179,6 @@ function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
 }
 
-document.getElementById("btn-export-excel").onclick = function(){
-  if(ongletActif === "global") {
-    const a = document.createElement('a');
-    a.href = "/api/admin/export-excel";
-    a.download = "dossiers-globales.xlsx";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 300);
-  } else {
-    alert("Vous devez être dans l’onglet Données globales pour exporter.");
-  }
-};
-document.getElementById("import-zip").onchange = function(){
-  let file = this.files[0];
-  if (!file) return;
-  let fd = new FormData();
-  fd.append("backupzip", file);
-  document.getElementById("importzip-msg").textContent = "Importation...";
-  fetch("/api/admin/importzip", {
-    method:"POST",
-    body:fd
-  }).then(r=>r.json()).then(json=>{
-    if(json.success){
-      document.getElementById("importzip-msg").textContent = "Importation réussie ✔";
-      if(typeof chargerDossiers==="function") chargerDossiers();
-    } else {
-      document.getElementById("importzip-msg").textContent = "Erreur : " + (json.message||"Format invalide");
-    }
-    setTimeout(()=>{document.getElementById("importzip-msg").textContent="";}, 3500);
-  });
-};
-
 function adminLogin() {
   let pw = document.getElementById('admin-pass').value;
   fetch('/api/admin/login', {
@@ -236,8 +198,7 @@ function adminLogin() {
       toggleSuperAdminUI();
       chargerDossiers();
     } else {
-      document.getElementById('login-msg').textContent = json.message
-|| "Erreur";
+      document.getElementById('login-msg').textContent = json.message || "Erreur";
     }
   });
 }
