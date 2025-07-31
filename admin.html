@@ -767,6 +767,7 @@ function voirDossier(id) {
   }
   let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
   let fichiersDocs = [].concat(
+  d.files||[],
   d.documentsAjoutes||[],
   d.reponseFiles||[]
 ).filter(f => f && f.url);
