@@ -240,10 +240,6 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-.numero-avoir-block {
-  position: relative;
-  left: 6px;
-}
   </style>
 </head>
 <body>
@@ -602,10 +598,10 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <input type="file" name="documentsAjoutes" multiple>
   <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
 </div>
-        <div class="numero-avoir-block" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:40px;margin-left:50px;">
-  <label style="font-size:1em;font-weight:600;color:#195e7c;">Numéro d'avoir</label>
-  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px;width:160px;font-size:0.96em;padding:5px 8px;">
-  <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:8px;">Compléter Dossier</button>
+        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
+  <label style="font-size:1em; font-weight:600; color:#195e7c;">Numéro d'avoir</label>
+  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;">
+  <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:6px; align-self:flex-start;">Compléter Dossier</button>
 </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
           <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
