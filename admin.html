@@ -240,6 +240,17 @@
   vertical-align: middle;
   white-space: nowrap;
 }
+.numero-avoir-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+}
+.completer-btn {
+  margin-top: 4px;
+  align-self: flex-start;
+}
   </style>
 </head>
 <body>
@@ -572,20 +583,25 @@ function afficherDossiers(magasin, forceFiltres=false) {
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-        <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
-            <select class="statut-select" name="statut">
-              <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-              <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-              <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-              <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
-          </div>
+       <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
+  <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
+    <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
+    <select class="statut-select" name="statut">
+      <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+      <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+      <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+      <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+    </select>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;">
+    <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
+    <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
+  </div>
+  <div class="mini-form-upload-block">
+    <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
+    <input type="file" name="reponseFiles" multiple>
+    <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
+  </div>
           <div class="mini-form-upload-block">
   <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
   <input type="file" name="reponseFiles" multiple>
@@ -598,11 +614,11 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <input type="file" name="documentsAjoutes" multiple>
   <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
 </div>
-        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
-  <label style="font-size:1em; font-weight:600; color:#195e7c;">Numéro d'avoir</label>
-  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;">
-  <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:6px; align-self:flex-start;">Compléter Dossier</button>
-</div>
+        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:160px;">
+    <label style="font-size:1em; font-weight:600; color:#195e7c;">Numéro d'avoir</label>
+    <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;">
+    <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:4px; align-self:flex-start;">Compléter Dossier</button>
+  </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
           <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
           <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
@@ -667,7 +683,7 @@ function initMiniFormBuffer(id) {
     let input = document.querySelector(`#form-${id} input[name='${field}']`);
     let ul = document.getElementById(`file-list-${field}-${id}`);
     if(!input || !ul) return;
-    input.value = ""; // reset file input
+    input.value = "";
     ul.innerHTML = "";
 
     input.addEventListener("change", function() {
@@ -902,16 +918,13 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
   win.document.close();
 }
 
-// Ouvre une fenêtre pour compléter un dossier en éditant toutes les informations saisies lors de la demande initiale. Aucune pièce jointe n'est modifiée et aucun mail n'est envoyé.
 function completerDossier(id) {
   let d = allDossiers.find(x => x.id === id);
   if (!d) {
     alert("Dossier introuvable !");
     return;
   }
-  // Construire les options pour la liste déroulante des magasins
   const options = MAGASINS.map(m => `<option value="${m}"${d.magasin === m ? ' selected' : ''}>${m}</option>`).join('');
-  // Construire le contenu HTML de la fenêtre d'édition
   let editHtml = `
     <html><head>
     <meta charset="UTF-8">
