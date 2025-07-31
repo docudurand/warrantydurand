@@ -66,7 +66,7 @@
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
     .mini-form-encadre {
-      overflow-x: auto;
+	overflow-x: auto;
       border: 2px solid #111;
       background: #e8f3fa;
       border-radius: 4px;
@@ -83,17 +83,17 @@
       box-sizing: border-box;
     }
     .mini-form-flex {
-      display: flex;
-      flex-direction: row;
-      gap: 28px;
-      align-items: flex-end;
-      justify-content: flex-start;
-      width: 100%;
-      flex-wrap: wrap;
-      box-sizing: border-box;
-      min-width: 0;
-      max-width: 100%;
-    }
+	display: flex;
+  flex-direction: row;
+  gap: 28px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 100%;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
     .mini-form-encadre .mini-form-flex > * {
       margin-bottom: 0;
       white-space: nowrap;
@@ -199,47 +199,47 @@
       font-size: 0.96em;
       padding: 5px 9px;
     }
-    .mini-form-upload-block {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-bottom: 20px;
-      min-width: 185px;
-      max-width: 240px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .mini-form-upload-block label {
-      margin-bottom: 2px;
-    }
-    .mini-form-upload-block input[type="file"] {
-      margin-bottom: 2px;
-      min-height: 32px;
-      box-sizing: border-box;
-    }
-    .mini-form-upload-block .file-list {
-      width: 100%;
-      max-width: 240px;
-      overflow-x: auto;
-      word-break: break-all;
-      overflow-wrap: break-word;
-      white-space: normal;
-    }
-    .mini-form-upload-block .file-list li {
-      max-width: 220px;
-      overflow-x: auto;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: block;
-    }
-    .mini-form-upload-block .file-list li span {
-      display: inline-block;
-      max-width: 150px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
+.mini-form-upload-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  min-width: 185px;
+  max-width: 240px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mini-form-upload-block label {
+  margin-bottom: 2px;
+}
+.mini-form-upload-block input[type="file"] {
+  margin-bottom: 2px;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.mini-form-upload-block .file-list {
+  width: 100%;
+  max-width: 240px;
+  overflow-x: auto;
+ word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.mini-form-upload-block .file-list li {
+ max-width: 220px;
+  overflow-x: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.mini-form-upload-block .file-list li span {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
   </style>
 </head>
 <body>
@@ -275,443 +275,633 @@
     </div>
     <div id="dossier-list"></div>
   </div>
-  <div id="completer-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:#0007;">
-    <div id="completer-modal-content" style="background:#fff;margin:40px auto;max-width:750px;padding:34px 28px;border-radius:16px;position:relative;">
-      <button onclick="fermerCompleterModal()" style="position:absolute;top:13px;right:13px;font-size:1.4em;">✖️</button>
-      <form id="form-completer-dossier">
-      </form>
-    </div>
-  </div>
   <script>
-    let isSuperAdmin = false;
-    let allDossiers = [];
-    let currentMagasin = null;
-    let rechercheClient = "";
-    let filtres = { mois: "", annee: "", statut: "" };
-    const MAGASINS = [
-      "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
-      "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
-    ];
+  function formatDateFRshort(val) {
+  if (!val) return "";
+  let d = typeof val === "string" ? new Date(val) : val;
+  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    let [y, m, d2] = val.split("-");
+    return `${d2}/${m}/${y.slice(2)}`;
+  }
+  if (!isNaN(d)) {
+    let day = ("0"+d.getDate()).slice(-2);
+    let month = ("0"+(d.getMonth()+1)).slice(-2);
+    let year = d.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  }
+  return val;
+}
+let isSuperAdmin = false;
+let isAdmin = false;
+let magasinUnique = null;
+const MAGASINS = [
+  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+];
+let allDossiers = [];
+let currentMagasin = null;
+let filtres = { mois: "", annee: "", statut: "" };
+let rechercheClient = "";
+let ongletActif = null;
 
-    document.getElementById("admin-content").style.display = "none";
-    document.getElementById("top-tools").style.display = "none";
+const fileBuffers = {};
 
-    function adminLogin() {
-      let pass = document.getElementById("admin-pass").value.trim();
-      document.getElementById("login-msg").textContent = "Connexion...";
-      fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: pass })
-      })
-        .then(r => r.json())
-        .then(j => {
-          if (j.success) {
-            document.getElementById("login").style.display = "none";
-            document.getElementById("admin-content").style.display = "";
-            document.getElementById("top-tools").style.display = "";
-            isSuperAdmin = j.isSuper;
-            chargerDossiers();
-          } else {
-            document.getElementById("login-msg").textContent = "Mot de passe incorrect";
-          }
-        })
-        .catch(() => {
-          document.getElementById("login-msg").textContent = "Erreur réseau";
-        });
+function statutChip(statut) {
+  let s = (statut||"").toLowerCase();
+  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+  return statut||"";
+}
+
+function toggleSuperAdminUI() {
+  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+}
+
+document.getElementById("btn-export-excel").onclick = function(){
+  window.open('/api/admin/export-excel', '_blank');
+};
+
+function adminLogin() {
+  let pw = document.getElementById('admin-pass').value;
+  fetch('/api/admin/login', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  })
+  .then(resp=>resp.json())
+  .then(json=>{
+    if(json.success){
+      isSuperAdmin = !!json.isSuper;
+      isAdmin = !!json.isAdmin;
+      magasinUnique = json.magasin || null;
+      currentMagasin = magasinUnique || MAGASINS[0];
+      document.getElementById('login').style.display = "none";
+      document.getElementById('admin-content').style.display = "block";
+      toggleSuperAdminUI();
+      chargerDossiers();
+    } else {
+      document.getElementById('login-msg').textContent = json.message || "Erreur";
     }
+  });
+}
+window.adminLogin = adminLogin;
 
-    async function chargerDossiers() {
-      document.getElementById("dossier-list").innerHTML = "Chargement...";
-      let r = await fetch("/api/admin/dossiers");
-      let data = await r.json();
-      allDossiers = Array.isArray(data) ? data : [];
-      afficherOnglets();
-      afficherDossiers(currentMagasin || MAGASINS[0]);
+function chargerDossiers() {
+  fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
+    allDossiers = data;
+    afficherOnglets();
+    if (!allDossiers || allDossiers.length === 0) {
+      document.getElementById("dossier-list").innerHTML =
+        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
+        ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
+        Il est probable que le serveur vient de redémarrer.<br>
+        <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
+        </div>`;
+      return;
     }
-
-    function afficherOnglets() {
-      let html = MAGASINS.map(m =>
-        `<button class="bouton" style="margin-right:8px;${currentMagasin === m ? 'background:#1780b0;color:#fff;' : ''}" onclick="afficherDossiers('${m}',true)">${m}</button>`
-      ).join("");
-      document.getElementById("tabs").innerHTML = html;
+    if (ongletActif === "global") {
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin, true);
     }
+  });
+}
 
-    function afficherCompteurs(dossiers) {
-      let total = dossiers.length;
-      let enreg = dossiers.filter(d => d.statut === "enregistré").length;
-      let accepte = dossiers.filter(d => d.statut === "accepté").length;
-      let refuse = dossiers.filter(d => d.statut === "refusé").length;
-      let attente = dossiers.filter(d => d.statut === "en attente d'info").length;
-      document.getElementById("status-counters").innerHTML = `
-        <span style="margin-right:15px;">Total : <b>${total}</b></span>
-        <span style="color:#f8a900;margin-right:15px;">Enregistré : <b>${enreg}</b></span>
-        <span style="color:#16c11c;margin-right:15px;">Accepté : <b>${accepte}</b></span>
-        <span style="color:#bb1810;margin-right:15px;">Refusé : <b>${refuse}</b></span>
-        <span style="color:#1978d2;">En attente d'info : <b>${attente}</b></span>
-      `;
+function afficherOnglets() {
+  let t = '';
+  if (isAdmin || isSuperAdmin) {
+    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
+  }
+  if (isAdmin || isSuperAdmin) {
+    MAGASINS.forEach((m, i) => {
+      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
+    });
+    document.getElementById('tabs').innerHTML = t;
+    document.getElementById('onglet-global').onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
     }
+    MAGASINS.forEach((m, i) => {
+      document.getElementById('onglet-' + i).onclick = function() {
+        ongletActif = null;
+        document.getElementById("statut-filter-label").style.display = "";
+        afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
+      }
+    });
+  } else if(magasinUnique){
+    document.getElementById('tabs').innerHTML =
+      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
+  }
+}
 
-    function afficherFiltres(dossiers) {
-      let moisSet = new Set(), anneeSet = new Set();
-      dossiers.forEach(d => {
-        let date = new Date(d.date);
-        if (!isNaN(date)) {
-          moisSet.add(("0" + (date.getMonth() + 1)).slice(-2));
-          anneeSet.add(date.getFullYear().toString());
+function afficherCompteurs(dossiers) {
+  const stats = [
+    { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
+    { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
+    { label: "En attente d'info", val: "en attente d'info", color:"green" },
+    { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
+  ];
+  let html = "";
+  stats.forEach(stat => {
+    const n = dossiers.filter(d => d.statut === stat.val).length;
+    html += `
+      <div class="counter-card">
+        <span class="counter-label ${stat.color}">${stat.label}</span>
+        <span class="counter-value ${stat.color}">${n}</span>
+      </div>
+    `;
+  });
+  document.getElementById("status-counters").innerHTML = html;
+}
+
+function afficherFiltres(dossiers, options={}) {
+  let moisSel = document.getElementById("mois-filter");
+  let anneeSel = document.getElementById("annee-filter");
+  let statutSel = document.getElementById("statut-filter");
+  let moisSet = new Set(), anneeSet = new Set();
+
+  dossiers.forEach(d => {
+    let date = new Date(d.date);
+    if (!isNaN(date)) {
+      let mois = ("0" + (date.getMonth() + 1)).slice(-2);
+      let annee = date.getFullYear().toString();
+      moisSet.add(mois);
+      anneeSet.add(annee);
+    }
+  });
+
+  const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+  moisSel.innerHTML = `<option value="">Tous</option>`;
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
+  anneeSel.innerHTML = `<option value="">Toutes</option>`;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
+
+  document.getElementById("filters-row").style.display = "flex";
+  document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
+
+  moisSel.value = filtres.mois;
+  anneeSel.value = filtres.annee;
+  statutSel.value = filtres.statut;
+
+  moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
+    filtres.mois = moisSel.value;
+    filtres.annee = anneeSel.value;
+    filtres.statut = statutSel.value;
+    if(ongletActif === "global"){
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin);
+    }
+  };
+}
+
+document.getElementById('search-client').addEventListener('input', function() {
+  rechercheClient = this.value;
+  if(ongletActif === "global"){
+    afficherGlobal();
+  } else {
+    afficherDossiers(currentMagasin);
+  }
+});
+
+function afficherDossiers(magasin, forceFiltres=false) {
+  currentMagasin = magasin;
+  ongletActif = null;
+  afficherOnglets();
+  let dossiers = allDossiers.filter(d=>d.magasin===magasin);
+
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => {
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+      return (
+        (d.nom||"").toLowerCase().includes(rc) ||
+        (d.produit_concerne||"").toLowerCase().includes(rc) ||
+        (d.reference_piece||"").toLowerCase().includes(rc) ||
+        (d.marque_produit||"").toLowerCase().includes(rc) ||
+        numero.includes(rc)
+      );
+    });
+  }
+
+  afficherCompteurs(dossiers);
+  afficherFiltres(dossiers);
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(filtres.statut) {
+    dossiers = dossiers.filter(d=>d.statut===filtres.statut);
+  }
+
+  let html = `<table>
+    <tr>
+      <th style="width: 90px;">Numéro de dossier</th>
+      <th>Date</th>
+      <th>Client</th>
+      <th>Produit</th>
+      <th>Référence de la pièce</th>
+      <th>Marque du produit</th>
+      <th>Statut</th>
+      <th>Réponse</th>
+      <th>Documents ajoutés</th>
+      <th class="action">Mettre à jour</th>
+      <th class="action">Voir</th>
+      ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
+    </tr>`;
+  dossiers.forEach(d=>{
+    let id = d.id;
+
+    let fichiersDocs = [].concat(
+	  d.files||[],
+      d.documentsAjoutes||[],
+      d.reponseFiles||[]
+    );
+    fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+      f && f.url && arr.findIndex(x => x.url === f.url) === i
+    );
+
+    html += `<tr>
+      <td>${d.numero_dossier || ''}</td>
+      <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
+      <td>${d.nom||''}</td>
+      <td>${d.produit_concerne||''}</td>
+      <td>${d.reference_piece||''}</td>
+      <td>${d.marque_produit||''}</td>
+      <td id="statut-${id}">${statutChip(d.statut)}</td>
+      <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
+      <td id="pj-${id}">
+      <div class="pj-documents">
+        ${
+          fichiersDocs.length
+            ? fichiersDocs.map(f=>{
+                let ext = f.original.split('.').pop().toLowerCase();
+                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                  return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+                } else {
+                  return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
+                }
+              }).join("<br>")
+            : ""
         }
-      });
-      const moisFr = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
-      const moisLib = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-      let moisSel = document.getElementById("mois-filter");
-      moisSel.innerHTML = `<option value="">Tous</option>`;
-      moisFr.forEach((m, i) => { if (moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-      let anneeSel = document.getElementById("annee-filter");
-      anneeSel.innerHTML = `<option value="">Toutes</option>`;
-      Array.from(anneeSet).sort().forEach(a => anneeSel.innerHTML += `<option value="${a}">${a}</option>`);
-    }
-
-    document.getElementById("search-client").oninput = function () {
-      rechercheClient = this.value;
-      afficherDossiers(currentMagasin);
-    };
-    document.getElementById("mois-filter").onchange = function () {
-      filtres.mois = this.value;
-      afficherDossiers(currentMagasin);
-    };
-    document.getElementById("annee-filter").onchange = function () {
-      filtres.annee = this.value;
-      afficherDossiers(currentMagasin);
-    };
-    document.getElementById("statut-filter").onchange = function () {
-      filtres.statut = this.value;
-      afficherDossiers(currentMagasin);
-    };
-
-    function statutChip(statut) {
-      let s = (statut || "").toLowerCase();
-      if (s === "enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
-      if (s === "accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
-      if (s === "refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
-      if (s === "en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
-      return statut || "";
-    }
-    function afficherDossiers(magasin, forceFiltres=false) {
-      currentMagasin = magasin;
-      afficherOnglets();
-      let dossiers = allDossiers.filter(d => d.magasin === magasin);
-
-      if (rechercheClient && rechercheClient.trim().length > 0) {
-        const rc = rechercheClient.trim().toLowerCase();
-        dossiers = dossiers.filter(d => {
-          const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-          return (
-            (d.nom || "").toLowerCase().includes(rc) ||
-            (d.produit_concerne || "").toLowerCase().includes(rc) ||
-            (d.reference_piece || "").toLowerCase().includes(rc) ||
-            (d.marque_produit || "").toLowerCase().includes(rc) ||
-            numero.includes(rc)
-          );
-        });
-      }
-
-      afficherCompteurs(dossiers);
-      afficherFiltres(dossiers);
-
-      if (filtres.mois) {
-        dossiers = dossiers.filter(d => {
-          let date = new Date(d.date);
-          return !isNaN(date) && ("0" + (date.getMonth() + 1)).slice(-2) === filtres.mois;
-        });
-      }
-      if (filtres.annee) {
-        dossiers = dossiers.filter(d => {
-          let date = new Date(d.date);
-          return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
-        });
-      }
-      if (filtres.statut) {
-        dossiers = dossiers.filter(d => d.statut === filtres.statut);
-      }
-
-      let html = `<table>
-        <tr>
-          <th style="width: 90px;">Numéro de dossier</th>
-          <th>Date</th>
-          <th>Client</th>
-          <th>Produit</th>
-          <th>Référence de la pièce</th>
-          <th>Marque du produit</th>
-          <th>Statut</th>
-          <th>Réponse</th>
-          <th>Documents ajoutés</th>
-          <th class="action">Mettre à jour</th>
-          <th class="action">Voir</th>
-          ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
-        </tr>`;
-      dossiers.forEach(d => {
-        let id = d.id;
-        let fichiersDocs = [].concat(
-          d.files || [],
-          d.documentsAjoutes || [],
-          d.reponseFiles || []
-        );
-        fichiersDocs = fichiersDocs.filter((f, i, arr) =>
-          f && f.url && arr.findIndex(x => x.url === f.url) === i
-        );
-        html += `<tr>
-          <td>${d.numero_dossier || ''}</td>
-          <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
-          <td>${d.nom || ''}</td>
-          <td>${d.produit_concerne || ''}</td>
-          <td>${d.reference_piece || ''}</td>
-          <td>${d.marque_produit || ''}</td>
-          <td id="statut-${id}">${statutChip(d.statut)}</td>
-          <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g, "<br>") : ''}</td>
-          <td id="pj-${id}">
-          <div class="pj-documents">
-            ${
-              fichiersDocs.length
-                ? fichiersDocs.map(f => {
-                    let ext = f.original.split('.').pop().toLowerCase();
-                    if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(ext)) {
-                      return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
-                    } else {
-                      return `<a href="/download/${f.url}" target="_blank">${f.original}</a>`;
-                    }
-                  }).join("<br>")
-                : ""
-            }
+      </div>
+      </td>
+      <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
+      <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+      ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
+    </tr>
+<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+  <td colspan="${isSuperAdmin ? 12 : 11}">
+    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
+      <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
+        <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
+          <span class="emoji">⚠️</span>
+          TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
+          <span class="emoji">⚠️</span>
+        </div>
+        <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
+            <select class="statut-select" name="statut">
+              <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+              <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+              <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+              <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+            </select>
           </div>
-          </td>
-          <td class="action">
-            <button class="maj-btn" data-id="${id}">Mettre à jour</button>
-            <button class="completer-btn" data-id="${id}">Compléter Dossier</button>
-          </td>
-          <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-          ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
-        </tr>`;
-      });
-      html += `</table>`;
-      document.getElementById('dossier-list').innerHTML = html;
-      document.querySelectorAll('.completer-btn').forEach(btn => {
-        btn.onclick = function () {
-          const id = btn.getAttribute('data-id');
-          const dossier = allDossiers.find(d => d.id === id);
-          ouvrirCompleterModal(dossier);
-        }
-      });
-    }
-
-    function ouvrirCompleterModal(dossier) {
-      let html = `
-        <label>Nom du client :</label>
-        <input type="text" name="nom" required value="${dossier.nom || ''}"/>
-        <label>Email :</label>
-        <input type="email" name="email" required value="${dossier.email || ''}"/>
-        <label>Magasin :</label>
-        <select name="magasin" required>
-          ${MAGASINS.map(m => `<option value="${m}"${dossier.magasin === m ? ' selected' : ''}>${m}</option>`).join("")}
-        </select>
-        <label>Marque du produit :</label>
-        <input type="text" name="marque_produit" required value="${dossier.marque_produit || ''}"/>
-        <label>Produit concerné :</label>
-        <input type="text" name="produit_concerne" required value="${dossier.produit_concerne || ''}"/>
-        <label>Référence de la pièce :</label>
-        <input type="text" name="reference_piece" required value="${dossier.reference_piece || ''}"/>
-        <label>Quantité posée :</label>
-        <input type="number" name="quantite_posee" required value="${dossier.quantite_posee || ''}"/>
-        <label>Immatriculation :</label>
-        <input type="text" name="immatriculation" required value="${dossier.immatriculation || ''}"/>
-        <label>Marque :</label>
-        <input type="text" name="marque_vehicule" value="${dossier.marque_vehicule || ''}"/>
-        <label>Modèle :</label>
-        <input type="text" name="modele_vehicule" value="${dossier.modele_vehicule || ''}"/>
-        <label>Numéro de série :</label>
-        <input type="text" name="num_serie" value="${dossier.num_serie || ''}"/>
-        <label>1ère immatriculation :</label>
-        <input type="date" name="premiere_immat" value="${dossier.premiere_immat || ''}"/>
-        <label>Date de pose :</label>
-        <input type="date" name="date_pose" required value="${dossier.date_pose || ''}"/>
-        <label>Date du constat :</label>
-        <input type="date" name="date_constat" required value="${dossier.date_constat || ''}"/>
-        <label>Kilométrage à la pose :</label>
-        <input type="number" name="km_pose" required value="${dossier.km_pose || ''}"/>
-        <label>Kilométrage au constat :</label>
-        <input type="number" name="km_constat" required value="${dossier.km_constat || ''}"/>
-        <label>N° BL 1ère Vente :</label>
-        <input type="text" name="bl_pose" required value="${dossier.bl_pose || ''}"/>
-        <label>N° BL 2ème Vente :</label>
-        <input type="text" name="bl_constat" value="${dossier.bl_constat || ''}"/>
-        <label>Problème rencontré :</label>
-        <textarea name="probleme_rencontre" rows="5" required>${dossier.probleme_rencontre || ''}</textarea>
-        <div style="display:flex;gap:18px;margin-top:22px;">
-          <button type="submit" class="bouton" style="width:120px;">Valider</button>
-          <button type="button" class="bouton" onclick="fermerCompleterModal()" style="background:#ccc;color:#234;">Annuler</button>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
+            <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
+            <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
+          </div>
+          <div class="mini-form-upload-block">
+  <label style="font-size:1em;font-weight:600;color:#195e7c;">Envoie document au client</label>
+  <input type="file" name="reponseFiles" multiple>
+  <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
+</div>
         </div>
-        <div id="completer-msg" style="margin-top:15px;color:#148c36;font-weight:bold;"></div>
-      `;
-      document.getElementById("form-completer-dossier").innerHTML = html;
-      document.getElementById("completer-modal").style.display = "block";
-      document.getElementById("form-completer-dossier").onsubmit = function (ev) {
-        ev.preventDefault();
-        validerCompleterDossier(dossier.id, new FormData(this));
-      }
-    }
-    function fermerCompleterModal() {
-      document.getElementById("completer-modal").style.display = "none";
-    }
-
-    async function validerCompleterDossier(id, formData) {
-      document.getElementById("completer-msg").textContent = "Mise à jour...";
-      const data = {};
-      formData.forEach((v, k) => data[k] = v);
-      let resp = await fetch(`/api/admin/completer/${id}`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      let json = await resp.json();
-      if (json.success) {
-        document.getElementById("completer-msg").textContent = "✔ Dossier modifié";
-        setTimeout(() => {
-          fermerCompleterModal();
-          chargerDossiers();
-        }, 900);
-      } else {
-        document.getElementById("completer-msg").textContent = json.message || "Erreur";
-      }
-    }
-    function voirDossier(id) {
-      const d = allDossiers.find(x => x.id === id);
-      if (!d) return alert("Dossier introuvable !");
-      let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
-      let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
-      let clientNom = (d.nom || "Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-      let dateStr = "";
-      if (d.date) {
-        let dt = new Date(d.date);
-        if (!isNaN(dt)) {
-          dateStr = dt.toISOString().slice(0, 10);
-        }
-      }
-      let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
-      let detailHtml = `
-        <html><head>
-        <meta charset="UTF-8">
-        <title>${nomFichier}</title>
-        <style>
-          body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-          .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
-          .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
-          .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
-          .fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}
-          .fiche-table { max-width:700px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
-          .fiche-table table { width:100%; border-collapse:collapse; }
-          .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
-          .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
-          .fiche-table tr { border-bottom:1px solid #f0f0f0;}
-          .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
-          .fiche-actions { text-align:right; margin-bottom:14px;}
-          .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
-          .print-btn:hover { background:#1780b0; }
-          @media print {
-            .print-btn { display:none !important; }
-            body { background: #fff; }
-            .fiche-table { box-shadow: none; border:1px solid #888;}
-            .fiche-header { padding-top:10px; }
-            .hide-print { display:none !important; }
-            .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
-          }
-          .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
-          .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
-          .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
-          .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
-          .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
-          .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
-        </style>
-        </head><body>
-        <div class="fiche-header">
-          <img src="${logoUrl}" alt="Logo DSG">
-          <span class="magasin-title">${d.magasin || ""}</span>
-          <span class="fiche-date">${dateCreation}</span>
+      </div>
+      <div class="mini-form-upload-block">
+  <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+  <input type="file" name="documentsAjoutes" multiple>
+  <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:40px;margin-left:50px;">
+          <label style="font-size:1em;font-weight:600;color:#195e7c;">Numéro d'avoir</label>
+          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px;width:160px;font-size:0.96em;padding:5px 8px;">
         </div>
-        <div class="fiche-table">
-          <table>
-            <tr><th>Nom du client</th><td>${d.nom || ""}</td></tr>
-            <tr><th>Email</th><td>${d.email || ""}</td></tr>
-            <tr><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
-            <tr><th>Marque du produit</th><td>${d.marque_produit || ""}</td></tr>
-            <tr><th>Produit concerné</th><td>${d.produit_concerne || ""}</td></tr>
-            <tr><th>Référence de la pièce</th><td>${d.reference_piece || ""}</td></tr>
-            <tr><th>Quantité posée</th><td>${d.quantite_posee || ""}</td></tr>
-            <tr><th>Immatriculation</th><td>${d.immatriculation || ""}</td></tr>
-            <tr><th>Marque véhicule</th><td>${d.marque_vehicule || ""}</td></tr>
-            <tr><th>Modèle véhicule</th><td>${d.modele_vehicule || ""}</td></tr>
-            <tr><th>Numéro de série</th><td>${d.num_serie || ""}</td></tr>
-            <tr><th>1ère immatriculation</th><td>${d.premiere_immat || ""}</td></tr>
-            <tr><th>Date de pose</th><td>${d.date_pose || ""}</td></tr>
-            <tr><th>Date du constat</th><td>${d.date_constat || ""}</td></tr>
-            <tr><th>Kilométrage à la pose</th><td>${d.km_pose || ""}</td></tr>
-            <tr><th>Kilométrage au constat</th><td>${d.km_constat || ""}</td></tr>
-            <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose || ""}</td></tr>
-            <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat || ""}</td></tr>
-            <tr><th>Problème rencontré</th><td>${(d.probleme_rencontre||"").replace(/\n/g,"<br>")}</td></tr>
-            <tr><th>Réponse</th><td>${(d.reponse||"").replace(/\n/g,"<br>")}</td></tr>
-            <tr><th>Documents</th><td>
-            ${
-              [].concat(d.files||[],d.documentsAjoutes||[],d.reponseFiles||[])
-                .filter(f=>f && f.url)
-                .map(f=>`<a href="/download/${f.url}" target="_blank">${f.original}</a>`)
-                .join("<br>")
-            }
-            </td></tr>
-          </table>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
+          <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
+          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
+          <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
         </div>
-        <div class="fiche-actions hide-print">
-          <button class="print-btn" onclick="window.print()">Imprimer</button>
-          <button class="print-btn" onclick="window.close()">Fermer</button>
-        </div>
-        </body></html>
-      `;
-      let win = window.open("", "_blank", "width=850,height=950");
-      win.document.write(detailHtml);
-      win.document.close();
-    }
+      </div>
+    </form>
+  </td>
+</tr>
+`;
+  });
+  html += `</table>`;
+  document.getElementById('dossier-list').innerHTML = html;
 
-    async function supprimerDossier(id) {
-      if (!confirm("Supprimer ce dossier ? Opération irréversible !")) return;
-      let resp = await fetch(`/api/admin/dossier/${id}`, {
-        method: "DELETE",
-        headers: { "x-superadmin": "1" }
-      });
-      let json = await resp.json();
-      if (json.success) {
-        chargerDossiers();
-      } else {
-        alert(json.message || "Erreur suppression");
+  document.querySelectorAll('.maj-btn').forEach(btn => {
+    btn.onclick = function(){
+      document.querySelectorAll('.mini-form-row').forEach(f=>f.style.display="none");
+      let id = btn.getAttribute('data-id');
+      let row = document.getElementById('mini-row-'+id);
+      if(row) {
+        row.style.display = "table-row";
+        row.scrollIntoView({behavior:"smooth",block:"center"});
+        setTimeout(()=>initMiniFormBuffer(id), 20);
       }
-    }
-
-    document.getElementById("btn-export-excel").onclick = function () {
-      window.open("/api/admin/export-excel", "_blank");
     };
-    function formatDateFRshort(val) {
-      if (!val) return "";
-      let d = typeof val === "string" ? new Date(val) : val;
-      if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-        let [y, m, d2] = val.split("-");
-        return `${d2}/${m}/${y.slice(2)}`;
+  });
+
+  document.querySelectorAll('.mini-form').forEach(form => {
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      let id = this.getAttribute('data-id');
+      let fd = new FormData(this);
+
+      ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+        if(fileBuffers[id] && fileBuffers[id][field]) {
+          fileBuffers[id][field].forEach(f=>{
+            fd.append(field, f);
+          });
+        }
+      });
+
+      this.querySelector('.admin-msg').textContent = "Envoi...";
+      let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+      let json = await resp.json();
+      if (json.success) {
+        this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
+        setTimeout(()=>{
+          document.getElementById('mini-row-'+id).style.display="none";
+          chargerDossiers();
+        }, 1100);
+      } else {
+        this.querySelector('.admin-msg').textContent = "Erreur";
       }
-      if (!isNaN(d)) {
-        let day = ("0"+d.getDate()).slice(-2);
-        let month = ("0"+(d.getMonth()+1)).slice(-2);
-        let year = d.getFullYear().toString().slice(-2);
-        return `${day}/${month}/${year}`;
-      }
-      return val;
+    };
+  });
+}
+
+function initMiniFormBuffer(id) {
+  if(!fileBuffers[id]) fileBuffers[id] = {};
+  ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+    if(!fileBuffers[id][field]) fileBuffers[id][field] = [];
+    let input = document.querySelector(`#form-${id} input[name='${field}']`);
+    let ul = document.getElementById(`file-list-${field}-${id}`);
+    if(!input || !ul) return;
+    input.value = ""; // reset file input
+    ul.innerHTML = "";
+
+    input.addEventListener("change", function() {
+      Array.from(input.files).forEach(f=>fileBuffers[id][field].push(f));
+      renderFileListBuffer(id, field);
+      input.value = "";
+    });
+
+    renderFileListBuffer(id, field);
+  });
+}
+function renderFileListBuffer(id, field) {
+  let ul = document.getElementById(`file-list-${field}-${id}`);
+  if(!ul) return;
+  let arr = fileBuffers[id] && fileBuffers[id][field] ? fileBuffers[id][field] : [];
+  ul.innerHTML = "";
+  arr.forEach((file, i)=>{
+    let li = document.createElement("li");
+    li.innerHTML = `<span>${file.name}</span>
+      <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer('${id}','${field}',${i})">✕</button>`;
+    ul.appendChild(li);
+  });
+}
+window.removeFileBuffer = function(id, field, idx) {
+  if(fileBuffers[id] && fileBuffers[id][field]) {
+    fileBuffers[id][field].splice(idx,1);
+    renderFileListBuffer(id, field);
+  }
+}
+
+function afficherGlobal() {
+  ongletActif = "global";
+  afficherOnglets();
+  let dossiers = allDossiers.slice();
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => (
+      (d.marque_produit||"").toLowerCase().includes(rc) ||
+      (d.produit_concerne||"").toLowerCase().includes(rc) ||
+      (d.reference_piece||"").toLowerCase().includes(rc) ||
+      (d.probleme_rencontre||"").toLowerCase().includes(rc)
+    ));
+  }
+
+  afficherFiltres(allDossiers, {statut: false});
+  document.getElementById("status-counters").innerHTML = "";
+
+  let html = `<table>
+    <tr>
+      <th>Date</th>
+      <th>Magasin</th>
+      <th>Marque du produit</th>
+      <th>Produit concerné</th>
+      <th>Référence de la pièce</th>
+      <th>Problème rencontré</th>
+    </tr>`;
+  dossiers.forEach(d=>{
+    html += `<tr>
+      <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+      <td>${d.magasin||''}</td>
+      <td>${d.marque_produit||''}</td>
+      <td>${d.produit_concerne||''}</td>
+      <td>${d.reference_piece||''}</td>
+      <td>${d.probleme_rencontre||''}</td>
+    </tr>`;
+  });
+  html += `</table>`;
+  document.getElementById('dossier-list').innerHTML = html;
+}
+
+function fermerMiniForm(id){
+  document.getElementById('mini-row-'+id).style.display = "none";
+}
+
+function supprimerDossier(id) {
+  if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+  fetch(`/api/admin/dossier/${id}`, {
+    method: "DELETE",
+    headers: {'x-superadmin': '1'}
+  }).then(r=>r.json()).then(json=>{
+    if(json.success){
+      chargerDossiers();
+    } else {
+      alert(json.message || "Erreur lors de la suppression");
     }
+  });
+}
+
+function voirDossier(id) {
+  let d = allDossiers.find(x=>x.id===id);
+  if (!d) return alert("Dossier introuvable !");
+  let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+  let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+  let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+  let dateStr = "";
+  if (d.date) {
+    let dt = new Date(d.date);
+    if (!isNaN(dt)) {
+      dateStr = dt.toISOString().slice(0,10);
+    }
+  }
+  let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
+  let fichiersDocs = [].concat(
+  d.files||[],
+  d.documentsAjoutes||[],
+  d.reponseFiles||[]
+).filter(f => f && f.url);
+fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+  arr.findIndex(x => x.url === f.url) === i
+);
+
+  let detailHtml = `
+    <html><head>
+    <meta charset="UTF-8">
+    <title>${nomFichier}</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+      .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
+      .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
+      .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
+      .fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}
+      .fiche-table { max-width:760px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
+      .fiche-table table { width:100%; border-collapse:collapse; }
+      .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
+      .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
+      .fiche-table tr { border-bottom:1px solid #f0f0f0;}
+      .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
+      .fiche-actions { text-align:right; margin-bottom:14px;}
+      .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
+      .print-btn:hover { background:#1780b0; }
+      @media print {
+        .print-btn { display:none !important; }
+        body { background: #fff; }
+        .fiche-table { box-shadow: none; border:1px solid #888;}
+        .fiche-header { padding-top:10px; }
+        .hide-print { display:none !important; }
+        .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
+      }
+      .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+      .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+      .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+      .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+      .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+      .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+      .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
+    </style>
+    </head><body>
+    <div class="fiche-header">
+      <img src="${logoUrl}" alt="Logo DSG">
+      <span class="magasin-title">${d.magasin||""}</span>
+      <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}<br>Numéro de dossier : ${d.numero_dossier || ''}</span>
+    </div>
+    <div class="fiche-table">
+      <div class="fiche-actions">
+        <button class="print-btn" onclick="renameAndPrint('${nomFichier}')">🖨️ Imprimer</button>
+      </div>
+      <table>
+        <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
+        <tr><th>Email</th><td>${d.email||""}</td></tr>
+        <tr><th>Magasin</th><td>${d.magasin||""}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Produit</td></tr>
+        <tr><th>Marque du produit</th><td>${d.marque_produit||""}</td></tr>
+        <tr><th>Produit concerné</th><td>${d.produit_concerne||""}</td></tr>
+        <tr><th>Référence de la pièce</th><td>${d.reference_piece||""}</td></tr>
+        <tr><th>Quantité posée</th><td>${d.quantite_posee||""}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Véhicule</td></tr>
+        <tr><th>Immatriculation</th><td>${d.immatriculation||""}</td></tr>
+        <tr><th>Marque</th><td>${d.marque_vehicule||""}</td></tr>
+        <tr><th>Modèle</th><td>${d.modele_vehicule||""}</td></tr>
+        <tr><th>Numéro de série</th><td>${d.num_serie||""}</td></tr>
+        <tr><th>1ère immatriculation</th><td>${formatDateFRshort(d.premiere_immat)}</td></tr>
+        <tr><td colspan="2" class="fiche-title">Problème</td></tr>
+        <tr><th>Date de pose</th><td>${formatDateFRshort(d.date_pose)}</td></tr>
+        <tr><th>Date du constat</th><td>${formatDateFRshort(d.date_constat)}</td></tr>
+        <tr><th>Kilométrage à la pose</th><td>${d.km_pose||""}</td></tr>
+        <tr><th>Kilométrage au constat</th><td>${d.km_constat||""}</td></tr>
+        <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose||""}</td></tr>
+        <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
+        <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
+        <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
+        <tr class="hide-print"><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
+        <tr class="hide-print"><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
+        <tr><th>Documents ajoutés</th>
+          <td>${
+            fichiersDocs.length ? fichiersDocs.map(f=>{
+              let ext = (f.original||"").split('.').pop().toLowerCase();
+              if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                return `<a href="/download/${f.url}" target="_blank"><img src="/download/${f.url}" class="pj-img"></a>`;
+              } else {
+                return `<a href="/download/${f.url}" target="_blank">${f.original||""}</a>`;
+              }
+            }).join("<br>") : ""
+          }</td>
+        </tr>
+      </table>
+    </div>
+    <script>
+      function renameAndPrint(filename) {
+        var oldTitle = document.title;
+        document.title = filename;
+        window.print();
+        setTimeout(function() {
+          document.title = oldTitle;
+        }, 1500);
+      }
+      window.onbeforeprint = function() {
+        document.title = "${nomFichier}";
+      };
+      window.onafterprint = function() {
+        setTimeout(function(){
+          document.title = "${nomFichier}";
+        }, 500);
+      };
+    <\/script>
+    </body></html>
+  `;
+  let win = window.open("", "_blank", "width=820,height=900");
+  win.document.write(detailHtml);
+  win.document.close();
+}
+
+
   </script>
 </body>
 </html>
-

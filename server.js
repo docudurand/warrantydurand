@@ -62,6 +62,7 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
+// FTP utils...
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
@@ -350,27 +351,6 @@ L'équipe Durand Services Garantie.
   } catch (err) {
     res.json({ success: false, message: err.message });
   }
-});
-app.post("/api/admin/completer/:id", async (req, res) => {
-  let { id } = req.params;
-  let data = await readDataFTP();
-  if (!Array.isArray(data)) data = [];
-  let dossier = data.find(x => x.id === id);
-  if (!dossier) return res.json({success:false, message:"Dossier introuvable"});
-
-  const champs = [
-    "nom","email","magasin","marque_produit","produit_concerne","reference_piece",
-    "quantite_posee","immatriculation","marque_vehicule","modele_vehicule","num_serie",
-    "premiere_immat","date_pose","date_constat","km_pose","km_constat",
-    "bl_pose","bl_constat","probleme_rencontre"
-  ];
-  for (let c of champs) {
-    if (req.body[c] !== undefined) dossier[c] = req.body[c];
-  }
-
-  await writeDataFTP(data);
-  await saveBackupFTP();
-  res.json({success:true});
 });
 
 app.post("/api/admin/dossier/:id", upload.fields([
