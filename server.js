@@ -428,6 +428,43 @@ app.post("/api/admin/dossier/:id", upload.fields([
   res.json({success:true});
 });
 
+// Nouvelle route pour compléter un dossier existant depuis l’interface admin.
+// Cette route permet de modifier toutes les informations saisies à la création
+// d'une demande (nom, email, magasin, produit, véhicule, dates, etc.) sans
+// toucher aux pièces jointes ni envoyer de mail au client.  Les modifications
+// sont persistées sur le fichier FTP et apparaîtront immédiatement sur la
+// page de suivi côté client.  Le corps de la requête doit être en JSON.
+app.post("/api/admin/completer-dossier/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+    let dossier = data.find(x => x.id === id);
+    if (!dossier) {
+      return res.json({ success: false, message: "Dossier introuvable" });
+    }
+    // Liste des champs autorisés à être modifiés lors du complément de dossier.
+    const editableFields = [
+      "nom", "email", "magasin", "marque_produit", "produit_concerne",
+      "reference_piece", "quantite_posee", "immatriculation",
+      "marque_vehicule", "modele_vehicule", "num_serie",
+      "premiere_immat", "date_pose", "date_constat", "km_pose",
+      "km_constat", "bl_pose", "bl_constat", "probleme_rencontre"
+    ];
+    // Parcourt les champs du corps de la requête et met à jour le dossier si nécessaire.
+    editableFields.forEach(field => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        dossier[field] = req.body[field];
+      }
+    });
+    await writeDataFTP(data);
+    await saveBackupFTP();
+    return res.json({ success: true });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
+  }
+});
+
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
