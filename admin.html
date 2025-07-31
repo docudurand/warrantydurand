@@ -276,6 +276,21 @@
     <div id="dossier-list"></div>
   </div>
   <script>
+  function formatDateFRshort(val) {
+  if (!val) return "";
+  let d = typeof val === "string" ? new Date(val) : val;
+  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    let [y, m, d2] = val.split("-");
+    return `${d2}/${m}/${y.slice(2)}`;
+  }
+  if (!isNaN(d)) {
+    let day = ("0"+d.getDate()).slice(-2);
+    let month = ("0"+(d.getMonth()+1)).slice(-2);
+    let year = d.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
+  }
+  return val;
+}
 let isSuperAdmin = false;
 let isAdmin = false;
 let magasinUnique = null;
@@ -835,10 +850,10 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
         <tr><th>Marque</th><td>${d.marque_vehicule||""}</td></tr>
         <tr><th>Modèle</th><td>${d.modele_vehicule||""}</td></tr>
         <tr><th>Numéro de série</th><td>${d.num_serie||""}</td></tr>
-        <tr><th>1ère immatriculation</th><td>${d.premiere_immat||""}</td></tr>
+        <tr><th>1ère immatriculation</th><td>${formatDateFRshort(d.premiere_immat)}</td></tr>
         <tr><td colspan="2" class="fiche-title">Problème</td></tr>
-        <tr><th>Date de pose</th><td>${d.date_pose||""}</td></tr>
-        <tr><th>Date du constat</th><td>${d.date_constat||""}</td></tr>
+        <tr><th>Date de pose</th><td>${formatDateFRshort(d.date_pose)}</td></tr>
+        <tr><th>Date du constat</th><td>${formatDateFRshort(d.date_constat)}</td></tr>
         <tr><th>Kilométrage à la pose</th><td>${d.km_pose||""}</td></tr>
         <tr><th>Kilométrage au constat</th><td>${d.km_constat||""}</td></tr>
         <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose||""}</td></tr>
