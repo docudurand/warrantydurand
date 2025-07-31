@@ -841,18 +841,18 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
         <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
         <tr><th>Email</th><td>${d.email||""}</td></tr>
         <tr><th>Magasin</th><td>${d.magasin||""}</td></tr>
-        <tr><td colspan="2" class="fiche-title">Produit</td></tr>
+        <tr class="hide-print"><td colspan="2" class="fiche-title">Produit</td></tr>
         <tr><th>Marque du produit</th><td>${d.marque_produit||""}</td></tr>
         <tr><th>Produit concerné</th><td>${d.produit_concerne||""}</td></tr>
         <tr><th>Référence de la pièce</th><td>${d.reference_piece||""}</td></tr>
         <tr><th>Quantité posée</th><td>${d.quantite_posee||""}</td></tr>
-        <tr><td colspan="2" class="fiche-title">Véhicule</td></tr>
+        <tr class="hide-print"><td colspan="2" class="fiche-title">Véhicule</td></tr>
         <tr><th>Immatriculation</th><td>${d.immatriculation||""}</td></tr>
         <tr><th>Marque</th><td>${d.marque_vehicule||""}</td></tr>
         <tr><th>Modèle</th><td>${d.modele_vehicule||""}</td></tr>
         <tr><th>Numéro de série</th><td>${d.num_serie||""}</td></tr>
         <tr><th>1ère immatriculation</th><td>${formatDateFRshort(d.premiere_immat)}</td></tr>
-        <tr><td colspan="2" class="fiche-title">Problème</td></tr>
+        <tr class="hide-print"><td colspan="2" class="fiche-title">Problème</td></tr>
         <tr><th>Date de pose</th><td>${formatDateFRshort(d.date_pose)}</td></tr>
         <tr><th>Date du constat</th><td>${formatDateFRshort(d.date_constat)}</td></tr>
         <tr><th>Kilométrage à la pose</th><td>${d.km_pose||""}</td></tr>
@@ -861,7 +861,7 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
         <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
         <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
         <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
-        <tr class="hide-print"><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
+        <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
         <tr><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
         <tr class="hide-print"><th>Documents ajoutés</th>
           <td>${
