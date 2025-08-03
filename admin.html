@@ -576,7 +576,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-      ${isSuperAdmin ? `<td class="action"><button class="fournisseur-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>` : ''}
+      ${isSuperAdmin ? `<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>` : ''}
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
