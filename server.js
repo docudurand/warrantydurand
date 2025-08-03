@@ -15,8 +15,6 @@ import { execSync } from "child_process";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
-// Ajout : route pour envoyer un dossier au fournisseur
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,118 +40,75 @@ const MAGASIN_MAILS = {
   "Pavi": "adv@plateformepavi.fr"
 };
 
-// Mapping des fournisseurs vers les adresses email à utiliser pour l'envoi des dossiers.
-// Actuellement un seul fournisseur est défini : FEBI. Pour en ajouter d'autres, il
-// suffit d'ajouter une entrée dans cet objet, par exemple :
-// "ACME": "contact@acme.fr"
 const FOURNISSEUR_MAILS = {
-  "FEBI": "magvl4gleize@durandservices.fr"
+  "FEBI": "d.pichard2007@gmail.com"
   ,
-  // Adresse par défaut pour METELLI (peut être modifiée)
-  "METELLI": "magvl4gleize@durandservices.fr"
+  "METELLI": "d.pichard2007@gmail.com"
 };
 
-// Mapping des fournisseurs vers leurs formulaires PDF associés. Chaque fournisseur
-// possède un formulaire vierge que l'administrateur peut compléter manuellement.
 const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
   METELLI: path.join(__dirname, "formulaire_garantie_metelli.pdf")
 };
 
-// Chemin vers le PDF interactif de demande fournisseur. Ce fichier est inclus dans
-// le dépôt et sera envoyé en pièce jointe afin que le fournisseur puisse
-// éventuellement compléter la partie qui ne serait pas préremplie.
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
 
-/**
- * Génère une version pré-remplie du formulaire fournisseur.  La fonction
- * utilise `pdftoppm` pour convertir la première page du PDF d'origine
- * en image PNG, puis dessine cette image en fond sur un nouveau PDF
- * (via pdfkit) et superpose les informations extraites du dossier
- * (produit, référence, marque, etc.). Les coordonnées sont approximées
- * mais permettent de remplir lisiblement les champs principaux du
- * formulaire. Un buffer est retourné et peut être utilisé en pièce
- * jointe d'un email.
- *
- * @param {Object} dossier Dossier contenant les informations de garantie
- * @returns {Promise<Buffer>} Buffer du PDF généré
- */
 async function createFournisseurPDF(dossier) {
   return new Promise((resolve, reject) => {
-    // Fichier temporaire pour l'image PNG générée à partir du PDF original
     const baseName = `fourn_${Date.now()}`;
     const pngPath = path.join(__dirname, `${baseName}.png`);
     try {
-      // Convertit la première page du PDF fournisseur en PNG via pdftoppm.
-      // L'option -singlefile force la sortie dans un fichier unique.
       execSync(`pdftoppm -png -singlefile -f 1 -l 1 "${PDF_FOURNISSEUR_PATH}" "${pngPath.slice(0, -4)}"`);
     } catch (e) {
       return reject(e);
     }
-    // Crée un nouveau PDF avec la même taille que A4 (pdfkit gère le format)
     const doc = new PDFDocument({ autoFirstPage: false });
     const chunks = [];
     doc.on('data', (chunk) => chunks.push(chunk));
     doc.on('end', () => {
-      // Nettoie l'image temporaire
       try { if (fs.existsSync(pngPath)) fs.unlinkSync(pngPath); } catch {}
       resolve(Buffer.concat(chunks));
     });
     doc.addPage({ size: 'A4' });
-    // Dessine l'image en arrière-plan sur toute la page
     doc.image(pngPath, 0, 0, { width: doc.page.width, height: doc.page.height });
-    // Police et couleur pour le texte superposé
     doc.fontSize(8).fillColor('#000000');
-    // Coordonnées approximatives (en points) pour chaque champ à remplir
-    // Ces valeurs ont été obtenues en estimant la position des champs sur
-    // l'image A4 (595 x 842 pts) à partir d'un rendu à 300 DPI.
-    const x = 200; // x de départ pour les valeurs dans la colonne de droite
+    const x = 200;
     let y = 135;
-    // Produit concerné -> champ Désignation
     if (dossier.produit_concerne) {
       doc.text(dossier.produit_concerne, x, y, { width: 330, continued: false });
     }
-    // Référence de la pièce -> champ Référence et quantité
     y += 25;
     let ref = dossier.reference_piece || '';
     if (dossier.quantite_posee) ref += ` (x${dossier.quantite_posee})`;
     if (ref) {
       doc.text(ref, x, y, { width: 330 });
     }
-    // Marque du produit
     y += 45;
     if (dossier.marque_produit) {
       doc.text(dossier.marque_produit, x, y, { width: 330 });
     }
-    // Modèle véhicule
     y += 25;
     if (dossier.modele_vehicule) {
       doc.text(dossier.modele_vehicule, x, y, { width: 330 });
     }
-    // Numéro de série (châssis)
     y += 25;
     if (dossier.num_serie) {
       doc.text(dossier.num_serie, x, y, { width: 330 });
     }
-    // Année de fabrication (extrait de première immatriculation)
     y += 25;
     if (dossier.premiere_immat) {
       const year = new Date(dossier.premiere_immat).getFullYear();
       if (!isNaN(year)) doc.text(String(year), x, y, { width: 330 });
     }
-    // Date de pose (montage)
     y += 25;
     if (dossier.date_pose) {
       const date = new Date(dossier.date_pose).toLocaleDateString('fr-FR');
       doc.text(date, x, y, { width: 330 });
     }
-    // KMS au montage
     y += 25;
     if (dossier.km_pose) {
       doc.text(String(dossier.km_pose), x, y, { width: 330 });
     }
-    // Exposé du défaut (problème rencontré)
-    // Place ce texte plus bas dans la page
     const defectY = 435;
     if (dossier.probleme_rencontre) {
       doc.text(dossier.probleme_rencontre, 120, defectY, { width: 430 });
@@ -539,18 +494,6 @@ app.post("/api/admin/dossier/:id", upload.fields([
   res.json({success:true});
 });
 
-/*
- * Route pour envoyer un dossier de garantie à un fournisseur.
- * Cette route prend en charge l'envoi d'un e-mail contenant :
- *  - un PDF récapitulatif généré à partir du dossier existant (en utilisant
- *    la même fonction que pour les clients),
- *  - le PDF interactif du fournisseur (FICHE_GARANTIE_FEBI.pdf),
- *  - les pièces jointes déjà associées au dossier (photos, documents),
- *  - les nouvelles pièces jointes ajoutées depuis le formulaire fournisseur.
- * Le corps de la requête doit inclure un champ 'fournisseur' correspondant à
- * une clé du tableau FOURNISSEUR_MAILS. Les fichiers supplémentaires sont
- * envoyés sous le champ 'fichiers'.
- */
 app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers', maxCount: 20 }, { name: 'formulaire', maxCount: 1 }]), async (req, res) => {
   try {
     const { id } = req.params;
@@ -565,7 +508,6 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     if (!dossier) {
       return res.json({ success: false, message: "Dossier introuvable" });
     }
-    // Génère un PDF récapitulatif du dossier à partir de la fonction existante
     let clientNom = (dossier.nom || "Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
     let dateStr = "";
     if (dossier.date) {
@@ -574,29 +516,22 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     }
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
     const pdfBuffer = await creerPDFDemande(dossier, nomFichier);
-    // Préparation des pièces jointes
     const attachments = [];
-    // PDF récapitulatif du dossier
     attachments.push({ filename: nomFichier + ".pdf", content: pdfBuffer, contentType: "application/pdf" });
-    // Fichiers déjà associés au dossier (photos, documents)
     const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || []) ]);
     for (const f of docs) {
       attachments.push({ filename: f.filename, path: f.path });
     }
-    // Nouvelles pièces jointes envoyées via le formulaire fournisseur (fichiers divers)
     if (req.files && req.files.fichiers) {
       for (const f of req.files.fichiers) {
         attachments.push({ filename: f.originalname, path: f.path });
       }
     }
-    // Ajoute le formulaire PDF modifié si présent
     if (req.files && req.files.formulaire && req.files.formulaire[0]) {
       const f = req.files.formulaire[0];
       attachments.push({ filename: f.originalname, path: f.path });
     }
-    // Message personnalisé
     const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
-    // Construction du corps de l'e-mail
     const html = `<div style="font-family:sans-serif;">
       <p>Bonjour,</p>
       <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
@@ -610,7 +545,6 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       </ul>
       <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
     </div>`;
-    // Envoi de l'e-mail
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: emailDest,
@@ -618,9 +552,7 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       html,
       attachments
     });
-    // Nettoyage des fichiers téléchargés depuis le FTP
     cleanupFiles(docs);
-    // Suppression des fichiers uploadés temporairement (pièces jointes et formulaire)
     if (req.files) {
       const all = Object.values(req.files).reduce((acc, arr) => acc.concat(arr), []);
       for (const f of all) {
@@ -663,7 +595,17 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 });
-
+app.get("/templates/:name", (req, res) => {
+  const allowed = {
+    "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
+    "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire_garantie_metelli.pdf")
+  };
+  const filePath = allowed[req.params.name];
+  if (!filePath) {
+    return res.status(404).send("Formulaire non trouvé");
+  }
+  res.sendFile(filePath);
+});
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
