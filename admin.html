@@ -1162,32 +1162,33 @@ if (formBtn) {
       </style>
       </head><body>
         <h3>Formulaire ${supVal}</h3>
-        <div class="pdf-container">
-          <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
-        </div>
-        <div>
-          <label>Importer le formulaire rempli (PDF)</label><br>
-          <input type="file" id="form-upload" accept="application/pdf">
-        </div>
-        <div class="buttons">
-          <button type="button" class="cancel">Fermer</button>
-          <button type="button" class="validate">Valider</button>
-        </div>
-        <script>
-          const cancelBtn2 = document.querySelector('.cancel');
-          cancelBtn2.addEventListener('click', () => { window.close(); });
-          const validateBtn2 = document.querySelector('.validate');
-          validateBtn2.addEventListener('click', () => {
-            const fileInput = document.getElementById('form-upload');
-            const file = fileInput && fileInput.files && fileInput.files[0];
-            if (file) {
-              try {
-                window.opener.addSupplierFormFile('${id}', file);
-              } catch (e) {}
-            }
-            window.close();
-          });
-        <\/script>
+       <div class="pdf-container">
+  <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
+</div>
+<div class="buttons">
+  <button type="button" class="cancel">Fermer</button>
+  <button type="button" class="validate">Valider</button>
+</div>
+<script>
+  const cancelBtn2 = document.querySelector('.cancel');
+  cancelBtn2.addEventListener('click', () => { window.close(); });
+  const validateBtn2 = document.querySelector('.validate');
+  validateBtn2.addEventListener('click', () => {
+    fetch('${pdfUrl}')
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], '${pdfFile}', { type: 'application/pdf' });
+        try {
+          window.opener.addSupplierFormFile('${id}', file);
+        } catch (e) {}
+        window.close();
+      })
+      .catch(() => {
+        window.close();
+      });
+  });
+</script>
+
       </body></html>
     `;
     formWin.document.open();
@@ -1199,10 +1200,25 @@ if (formBtn) {
     sendBtn.addEventListener('click', async () => {
       const form = win.document.getElementById('fournisseurForm');
       const fd = new FormData(form);
-      // Si un formulaire fournisseur a été sélectionné pour ce dossier, l'ajoute à la requête
-      if (supplierFormFiles[id]) {
-        fd.append('formulaire', supplierFormFiles[id]);
-      }
+let formulaireFile = null;
+try {
+  if (window.opener && window.opener.supplierFormFiles && window.opener.supplierFormFiles[id]) {
+    formulaireFile = window.opener.supplierFormFiles[id];
+  } else if (typeof supplierFormFiles !== 'undefined' && supplierFormFiles[id]) {
+    formulaireFile = supplierFormFiles[id];
+  }
+} catch (e) {
+}
+if (formulaireFile) {
+  fd.append('formulaire', formulaireFile);
+  const displayContainer = win.document.getElementById('supplier-file-' + id);
+  if (displayContainer) {
+    displayContainer.innerHTML = '';
+    const span = win.document.createElement('span');
+    span.textContent = formulaireFile.name;
+    displayContainer.appendChild(span);
+}
+}
       if (statusEl) statusEl.textContent = 'Envoi en cours...';
       try {
         const resp = await fetch('/api/admin/envoyer-fournisseur/' + id, {
