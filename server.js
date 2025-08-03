@@ -14,6 +14,8 @@ import PDFDocument from "pdfkit";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
+// Ajout : route pour envoyer un dossier au fournisseur
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +40,19 @@ const MAGASIN_MAILS = {
   "Seynod": "respmagseynod@durandservices.fr",
   "Pavi": "adv@plateformepavi.fr"
 };
+
+// Mapping des fournisseurs vers les adresses email à utiliser pour l'envoi des dossiers.
+// Actuellement un seul fournisseur est défini : FEBI. Pour en ajouter d'autres, il
+// suffit d'ajouter une entrée dans cet objet, par exemple :
+// "ACME": "contact@acme.fr"
+const FOURNISSEUR_MAILS = {
+  "FEBI": "magvl4gleize@durandservices.fr"
+};
+
+// Chemin vers le PDF interactif de demande fournisseur. Ce fichier est inclus dans
+// le dépôt et sera envoyé en pièce jointe afin que le fournisseur puisse
+// éventuellement compléter la partie qui ne serait pas préremplie.
+const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
 
 const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = process.env.FTP_PORT;
@@ -414,6 +429,103 @@ app.post("/api/admin/dossier/:id", upload.fields([
     cleanupFiles(attachments);
   }
   res.json({success:true});
+});
+
+/*
+ * Route pour envoyer un dossier de garantie à un fournisseur.
+ * Cette route prend en charge l'envoi d'un e-mail contenant :
+ *  - un PDF récapitulatif généré à partir du dossier existant (en utilisant
+ *    la même fonction que pour les clients),
+ *  - le PDF interactif du fournisseur (FICHE_GARANTIE_FEBI.pdf),
+ *  - les pièces jointes déjà associées au dossier (photos, documents),
+ *  - les nouvelles pièces jointes ajoutées depuis le formulaire fournisseur.
+ * Le corps de la requête doit inclure un champ 'fournisseur' correspondant à
+ * une clé du tableau FOURNISSEUR_MAILS. Les fichiers supplémentaires sont
+ * envoyés sous le champ 'fichiers'.
+ */
+app.post("/api/admin/envoyer-fournisseur/:id", upload.array("fichiers", 20), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fournisseur = (req.body && req.body.fournisseur) ? String(req.body.fournisseur) : "";
+    const emailDest = FOURNISSEUR_MAILS[fournisseur] || "";
+    if (!emailDest) {
+      return res.json({ success: false, message: "Fournisseur inconnu" });
+    }
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+    const dossier = data.find(x => x.id === id);
+    if (!dossier) {
+      return res.json({ success: false, message: "Dossier introuvable" });
+    }
+    // Génère un PDF récapitulatif du dossier à partir de la fonction existante
+    let clientNom = (dossier.nom || "Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+    let dateStr = "";
+    if (dossier.date) {
+      const dt = new Date(dossier.date);
+      if (!isNaN(dt)) dateStr = dt.toISOString().slice(0, 10);
+    }
+    const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
+    const pdfBuffer = await creerPDFDemande(dossier, nomFichier);
+    // Préparation des pièces jointes
+    const attachments = [];
+    // PDF récapitulatif
+    attachments.push({ filename: nomFichier + ".pdf", content: pdfBuffer, contentType: "application/pdf" });
+    // PDF interactif du fournisseur (si présent)
+    try {
+      if (fs.existsSync(PDF_FOURNISSEUR_PATH)) {
+        const supplierPdf = fs.readFileSync(PDF_FOURNISSEUR_PATH);
+        attachments.push({ filename: path.basename(PDF_FOURNISSEUR_PATH), content: supplierPdf, contentType: "application/pdf" });
+      }
+    } catch (e) {
+      // Ne bloque pas l'envoi si le PDF n'est pas trouvé
+    }
+    // Fichiers déjà associés au dossier (photos, documents) :
+    const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || []) ]);
+    for (const f of docs) {
+      attachments.push({ filename: f.filename, path: f.path });
+    }
+    // Nouvelles pièces jointes envoyées via le formulaire fournisseur
+    if (req.files && Array.isArray(req.files)) {
+      for (const f of req.files) {
+        // Utilise le fichier directement via son chemin temporaire pour l'envoi
+        attachments.push({ filename: f.originalname, path: f.path });
+      }
+    }
+    // Construction du corps de l'e-mail
+    const html = `<div style="font-family:sans-serif;">
+      <p>Bonjour,</p>
+      <p>Vous trouverez ci-joint le dossier de garantie pour le produit : <strong>${dossier.produit_concerne || ''}</strong>.</p>
+      <p>Les documents suivants sont inclus :</p>
+      <ul>
+        <li>Le formulaire fournisseur à compléter (${path.basename(PDF_FOURNISSEUR_PATH)})</li>
+        <li>Le récapitulatif du dossier (${nomFichier}.pdf)</li>
+        ${docs.length ? '<li>Les documents et photos fournis par le client et l\'administration</li>' : ''}
+        ${req.files && req.files.length ? '<li>Documents supplémentaires ajoutés par l\'administrateur</li>' : ''}
+      </ul>
+      <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
+    </div>`;
+    // Envoi de l'e-mail
+    await mailer.sendMail({
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      to: emailDest,
+      subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
+      html,
+      attachments
+    });
+    // Nettoyage des fichiers téléchargés depuis le FTP
+    cleanupFiles(docs);
+    // Suppression des fichiers uploadés temporairement
+    if (req.files && Array.isArray(req.files)) {
+      for (const f of req.files) {
+        if (f && f.path && fs.existsSync(f.path)) {
+          fs.unlinkSync(f.path);
+        }
+      }
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
+  }
 });
 
 app.post("/api/admin/completer-dossier/:id", async (req, res) => {
