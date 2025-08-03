@@ -1225,7 +1225,6 @@ if (formBtn) {
     sendBtn.addEventListener('click', async () => {
       const form = win.document.getElementById('fournisseurForm');
       const fd = new FormData(form);
-      // Si un formulaire fournisseur a été sélectionné pour ce dossier, l'ajoute à la requête
       if (supplierFormFiles[id]) {
         fd.append('formulaire', supplierFormFiles[id]);
       }
