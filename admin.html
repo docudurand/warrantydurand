@@ -240,52 +240,6 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-.fournisseur-btn {
-      background: #006e90;
-      color: #fff;
-      border: none;
-      padding: 7px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1em;
-      box-shadow: 0 1px 4px #0002;
-      transition: background 0.15s;
-    }
-    .fournisseur-btn:hover {
-      background: #1780b0;
-    }
-
-    .modal-formulaire-body, .pdf-form-container {
-      height: 100vh;
-      min-height: 100vh;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .pdf-form-container embed {
-      flex: 1 1 auto;
-      width: 100%;
-      min-height: 0;
-      height: 100%;
-      border: none;
-      display: block;
-    }
-    .pdf-form-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 22px;
-      padding: 22px 0 12px 0;
-      background: #f9fafb;
-      flex-shrink: 0;
-    }
-    @media (max-width: 900px) {
-      .modal-formulaire-body, .pdf-form-container {
-        height: 100vh;
-        min-height: 100vh;
-		  }
-}
   </style>
 </head>
 <body>
@@ -874,12 +828,12 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
       .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
       .print-btn:hover { background:#1780b0; }
       @media print {
-        .print-btn { display:none; }
+        .print-btn { display:none !important; }
         body { background: #fff; }
         .fiche-table { box-shadow: none; border:1px solid #888;}
         .fiche-header { padding-top:10px; }
-        .hide-print { display:none; }
-        .fiche-date { display:block; position:absolute; top:24px; right:40px; font-size:1.09em;}
+        .hide-print { display:none !important; }
+        .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
       }
       .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
       .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
@@ -1116,32 +1070,31 @@ function completerDossier(id) {
   win.document.write(editHtml);
   win.document.close();
 }
+
 function ouvrirFournisseur(id) {
   const d = allDossiers.find(x => x.id === id);
   if (!d) {
     alert("Dossier introuvable !");
     return;
   }
-  const win = window.open('', '_blank', 'width=800,height=750');
+  const win = window.open('', '_blank', 'width=700,height=600');
   const titre = 'Envoyer dossier au fournisseur';
-  win.document.write(`
+  const html = `
     <html><head>
       <meta charset="UTF-8">
       <title>${titre}</title>
       <style>
-        body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:24px; }
-        h2 { color:#006e90; font-size:1.6em; margin-bottom:22px; }
+        body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
+        h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
         form { display:flex; flex-direction:column; gap:14px; }
         label { font-weight:600; color:#195e7c; margin-bottom:3px; }
         select, input[type="file"] { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; }
         .info { font-size:1em; color:#234156; margin-bottom:8px; }
-        .buttons { display:flex; gap:20px; margin-top:26px; justify-content:center; }
-        .buttons button { padding:10px 20px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
+        .buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }
+        .buttons button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
         .buttons .send { background:#006e90; color:#fff; }
         .buttons .cancel { background:#ccc; color:#333; }
-        .status-msg { text-align:center; font-size:1em; margin-top:14px; color:#195e7c; min-height:20px; }
-        .send-form { background:#1780b0;color:#fff;border:none;padding:9px 22px;border-radius:6px;font-size:1em;cursor:pointer; }
-        .send-form:hover { background: #006e90; }
+        .status-msg { text-align:center; font-size:0.98em; margin-top:10px; color:#195e7c; min-height:20px; }
       </style>
     </head><body>
       <h2>${titre}</h2>
@@ -1156,84 +1109,124 @@ function ouvrirFournisseur(id) {
           <option value="FEBI">FEBI</option>
           <option value="METELLI">METELLI</option>
         </select>
-        <div style="margin-top:8px; display:flex; align-items:center; gap:14px;">
-          <button type="button" class="send-form" id="btn-formulaire">Formulaire</button>
-        </div>
-        <label for="message-input" style="margin-top:14px;">Message (optionnel)</label>
-        <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical; padding:7px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px;"></textarea>
-        <label for="file-input" style="margin-top:14px;">Ajouter des fichiers (optionnel)</label>
+        <label for="message-input">Message (optionnel)</label>
+        <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical; padding:6px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px;"></textarea>
+        <label for="file-input">Ajouter des fichiers (optionnel)</label>
         <input type="file" id="file-input" name="fichiers" multiple>
+        <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
+          <button type="button" class="send-form" style="background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer;">Formulaire</button>
+          <div id="supplier-file-${id}" style="font-size:0.94em;color:#234156;"></div>
+        </div>
         <div class="buttons">
-          <button type="button" class="cancel" id="btn-cancel">Annuler</button>
-          <button type="button" class="send" id="btn-send">Envoyer</button>
+          <button type="button" class="cancel">Annuler</button>
+          <button type="button" class="send">Envoyer</button>
         </div>
         <div class="status-msg" id="status-msg"></div>
       </form>
-      <script>
-        document.getElementById('btn-formulaire').onclick = function() {
-  const fournisseur = document.getElementById('fournisseur-select').value;
-  const pdf = fournisseur === 'METELLI' ? 'formulaire_garantie_metelli.pdf' : 'FICHE_GARANTIE_FEBI.pdf';
-  const pdfUrl = '/templates/' + pdf;
-  const pdfWin = window.open('', '_blank', 'width=1100,height=900');
-  pdfWin.document.write(`
-    <html><head>
-      <meta charset="UTF-8">
-      <title>Formulaire PDF ${fournisseur}</title>
-      <style>
-        html, body { height: 100%; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; height: 100vh; min-height: 100vh; margin:0; display: flex; flex-direction: column;}
-        .pdf-form-container { display: flex; flex-direction: column; height: 100vh; min-height: 100vh; }
-        embed { flex: 1 1 auto; width: 100%; min-height: 0; height: 100%; border: none; display: block;}
-        .pdf-form-buttons { display: flex; justify-content: center; gap: 22px; padding: 22px 0 12px 0; background: #f9fafb; flex-shrink: 0; }
-        button { padding: 12px 42px; font-size:1.15em; border:none; border-radius:8px; background:#006e90; color:#fff; cursor:pointer;}
-        button:hover { background:#1780b0;}
-      </style>
-    </head>
-    <body>
-      <div class="pdf-form-container">
-        <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
-        <div class="pdf-form-buttons">
-          <button type="button" id="btn-close">Fermer</button>
-        </div>
-      </div>
-      <script>
-        document.getElementById('btn-close').onclick = function() { window.close(); }
-      <\/script>
-    </body>
-    </html>
-  `);
-  pdfWin.document.close();
-};
-        document.getElementById('btn-cancel').onclick = function() {
-          window.close();
-        };
-        document.getElementById('btn-send').onclick = async function() {
-          const form = document.getElementById('fournisseurForm');
-          const fd = new FormData(form);
-          document.getElementById('status-msg').textContent = 'Envoi en cours...';
-          try {
-            const resp = await fetch('/api/admin/envoyer-fournisseur/' + '${id}', {
-              method: 'POST',
-              body: fd
-            });
-            const json = await resp.json();
-            if (json.success) {
-              document.getElementById('status-msg').textContent = 'Dossier envoyé au fournisseur ✔';
-              setTimeout(() => { window.close(); }, 1500);
-            } else {
-              document.getElementById('status-msg').textContent = (json.message || 'Erreur lors de l\\'envoi');
-            }
-          } catch (e) {
-            document.getElementById('status-msg').textContent = 'Erreur lors de l\\'envoi';
-          }
-        };
-      <\/script>
     </body></html>
-  `);
+  `;
+  win.document.open();
+  win.document.write(html);
   win.document.close();
+  const cancelBtn = win.document.querySelector('.cancel');
+  const sendBtn = win.document.querySelector('.send');
+  const formBtn = win.document.querySelector('.send-form');
+  const statusEl = win.document.getElementById('status-msg');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      win.close();
+    });
+  }
+if (formBtn) {
+  formBtn.addEventListener('click', () => {
+    const supplierSelect = win.document.getElementById('fournisseur-select');
+    const supVal = supplierSelect ? supplierSelect.value : '';
+    const pdfFile = supVal === 'METELLI'
+      ? 'formulaire_garantie_metelli.pdf'
+      : 'FICHE_GARANTIE_FEBI.pdf';
+    const pdfUrl = `/templates/${pdfFile}`;
+
+    const formWin = window.open('', '_blank', 'width=800,height=750');
+    const formHtml = `
+      <html><head>
+      <meta charset="UTF-8">
+      <title>Formulaire ${supVal}</title>
+      <style>
+        body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
+        h3 { color:#006e90; font-size:1.4em; margin-bottom:16px; }
+        .pdf-container { border:1px solid #ccc; height:500px; overflow:auto; margin-bottom:12px; }
+        .buttons { display:flex; gap:14px; justify-content:center; margin-top:12px; }
+        .buttons button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
+        .validate { background:#006e90; color:#fff; }
+        .cancel { background:#ccc; color:#333; }
+      </style>
+      </head><body>
+        <h3>Formulaire ${supVal}</h3>
+        <div class="pdf-container">
+          <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
+        </div>
+        <div>
+          <label>Importer le formulaire rempli (PDF)</label><br>
+          <input type="file" id="form-upload" accept="application/pdf">
+        </div>
+        <div class="buttons">
+          <button type="button" class="cancel">Fermer</button>
+          <button type="button" class="validate">Valider</button>
+        </div>
+        <script>
+          const cancelBtn2 = document.querySelector('.cancel');
+          cancelBtn2.addEventListener('click', () => { window.close(); });
+          const validateBtn2 = document.querySelector('.validate');
+          validateBtn2.addEventListener('click', () => {
+            const fileInput = document.getElementById('form-upload');
+            const file = fileInput && fileInput.files && fileInput.files[0];
+            if (file) {
+              try {
+                window.opener.addSupplierFormFile('${id}', file);
+              } catch (e) {}
+            }
+            window.close();
+          });
+        <\/script>
+      </body></html>
+    `;
+    formWin.document.open();
+    formWin.document.write(formHtml);
+    formWin.document.close();
+  });
+}
+  if (sendBtn) {
+    sendBtn.addEventListener('click', async () => {
+      const form = win.document.getElementById('fournisseurForm');
+      const fd = new FormData(form);
+      // Si un formulaire fournisseur a été sélectionné pour ce dossier, l'ajoute à la requête
+      if (supplierFormFiles[id]) {
+        fd.append('formulaire', supplierFormFiles[id]);
+      }
+      if (statusEl) statusEl.textContent = 'Envoi en cours...';
+      try {
+        const resp = await fetch('/api/admin/envoyer-fournisseur/' + id, {
+          method: 'POST',
+          body: fd
+        });
+        const json = await resp.json();
+        if (json.success) {
+          if (statusEl) statusEl.textContent = 'Dossier envoyé au fournisseur ✔';
+          setTimeout(() => {
+            win.close();
+          }, 1500);
+        } else {
+          if (statusEl) statusEl.textContent = (json.message || 'Erreur lors de l\'envoi');
+        }
+      } catch (e) {
+        if (statusEl) statusEl.textContent = 'Erreur lors de l\'envoi';
+      }
+    });
+  }
 }
 window.ouvrirFournisseur = ouvrirFournisseur;
 
-</script>
+
+  </script>
 </body>
 </html>
