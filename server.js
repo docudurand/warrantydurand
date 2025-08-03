@@ -533,24 +533,23 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     }
 	const magasin = dossier.magasin;
 const magasinEmail = MAGASIN_MAILS[magasin] || "";
-const outlookTransport = getOutlookTransport(magasin);
-    const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
-    const html = `<div style="font-family:sans-serif;">
-      <p>Bonjour,</p>
-      <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
-      ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
-	  <p style="margin-top:24px;font-weight:bold;">
+const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
+const html = `<div style="font-family:sans-serif;">
+  <p>Bonjour,</p>
+  <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
+  ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
+  <p style="margin-top:24px;font-weight:bold;">
     Merci de répondre à l'adresse mail : <a href="mailto:${magasinEmail}" style="color:#004080;text-decoration:underline;">${magasinEmail}</a>
   </p>
-      <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
-    </div>`;
-    await mailer.sendMail({
-      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
-      to: emailDest,
-      subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
-      html,
-      attachments
-    });
+  <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
+</div>`;
+await mailer.sendMail({
+  from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+  to: emailDest,
+  subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
+  html,
+  attachments
+});
     cleanupFiles(docs);
     if (req.files) {
       const all = Object.values(req.files).reduce((acc, arr) => acc.concat(arr), []);
