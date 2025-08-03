@@ -520,7 +520,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th>Documents ajoutés</th>
       <th class="action">Mettre à jour</th>
       <th class="action">Voir</th>
-      <th class="action">Fournisseur</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
     </tr>`;
   dossiers.forEach(d=>{
@@ -562,11 +561,10 @@ function afficherDossiers(magasin, forceFiltres=false) {
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-      <td class="action"><span>${d.fournisseur || ''}</span> <button class="dossier-btn" data-id="${id}">Dossier</button></td>
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-  <td colspan="${isSuperAdmin ? 13 : 12}">
+  <td colspan="${isSuperAdmin ? 12 : 11}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
       <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
         <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
@@ -660,14 +658,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
       }
     };
   });
-
-  // Ajout des gestionnaires pour le bouton dossier (envoi fournisseur)
-  document.querySelectorAll('.dossier-btn').forEach(btn => {
-    btn.onclick = function() {
-      const id = btn.getAttribute('data-id');
-      ouvrirDossierFournisseur(id);
-    };
-  });
 }
 
 function initMiniFormBuffer(id) {
@@ -689,48 +679,6 @@ function initMiniFormBuffer(id) {
     renderFileListBuffer(id, field);
   });
 }
-
-// Ouvre une fenêtre permettant d'envoyer le dossier au fournisseur
-function ouvrirDossierFournisseur(id) {
-  const d = allDossiers.find(x => x.id === id);
-  if (!d) {
-    alert('Dossier introuvable !');
-    return;
-  }
-  let html = `<html><head><meta charset="UTF-8"><title>Demande au fournisseur</title>` +
-             `<style>body{font-family:'Segoe UI', Arial, sans-serif;padding:20px;}h2{color:#006e90;} .form-field{margin-bottom:12px;} label{display:block;margin-bottom:4px;font-weight:600;color:#195e7c;} input, textarea, select{width:100%;padding:6px;border:1px solid #b4c8d8;border-radius:4px;font-size:0.96em;} button{margin-top:14px;padding:8px 16px;background:#006e90;color:#fff;border:none;border-radius:4px;cursor:pointer;} button:hover{background:#1780b0;} #msg{margin-top:15px;font-size:0.95em;}</style>` +
-             `</head><body>`;
-  html += `<h2>Envoi du dossier au fournisseur</h2>`;
-  html += `<form id="form-fournisseur" enctype="multipart/form-data">`;
-  // Sélection du fournisseur
-  html += `<div class="form-field"><label>Fournisseur</label><select name="fournisseur">`;
-  html += `<option value="FEBI"${d.fournisseur === 'FEBI' ? ' selected' : ''}>FEBI</option>`;
-  html += `</select></div>`;
-  // Préaffichage (lecture seule) des informations du dossier
-  html += `<div class="form-field"><label>Désignation (Produit concerné)</label><input type="text" name="designation" value="${(d.produit_concerne||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Référence de la pièce</label><input type="text" name="reference" value="${(d.reference_piece||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Quantité posée</label><input type="text" name="quantite" value="${(d.quantite_posee||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Immatriculation</label><input type="text" name="immatriculation" value="${(d.immatriculation||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Marque véhicule / produit</label><input type="text" name="marque" value="${((d.marque_vehicule || d.marque_produit)||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Modèle véhicule</label><input type="text" name="modele" value="${(d.modele_vehicule||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Date de montage</label><input type="text" name="date_pose" value="${(d.date_pose||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Date du constat</label><input type="text" name="date_constat" value="${(d.date_constat||'').replace(/"/g,'&quot;')}" readonly></div>`;
-  html += `<div class="form-field"><label>Problème rencontré</label><textarea name="probleme" readonly>${(d.probleme_rencontre||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></div>`;
-  // Upload de nouveaux documents
-  html += `<div class="form-field"><label>Ajouter des documents pour le fournisseur</label><input type="file" name="documents" multiple></div>`;
-  html += `<button type="submit">Envoyer au fournisseur</button>`;
-  html += `</form>`;
-  html += `<div id="msg" style="color:#166534;"></div>`;
-  html += `<script>\n`;
-  html += `const form = document.getElementById('form-fournisseur');\n`;
-  html += `form.onsubmit = async function(e){\n  e.preventDefault();\n  const msg = document.getElementById('msg');\n  const fd = new FormData();\n  const fournisseur = form.elements['fournisseur'].value;\n  fd.append('fournisseur', fournisseur);\n  const files = form.elements['documents'].files;\n  for(let i=0; i<files.length; i++){ fd.append('documents', files[i]); }\n  msg.textContent = 'Envoi en cours...';\n  try {\n    const resp = await fetch('/api/admin/envoyer-fournisseur/' + encodeURIComponent('${id}'), { method:'POST', body: fd });\n    const json = await resp.json();\n    if(json.success){ msg.textContent = 'Demande envoyée ✔'; setTimeout(()=>window.close(), 1700); }\n    else { msg.textContent = 'Erreur : ' + (json.message || 'Envoi impossible'); }\n  } catch(err){ msg.textContent = 'Erreur réseau'; }\n};\n`;
-  html += `</script>`;
-  html += `</body></html>`;
-  const w = window.open('', '_blank', 'width=650,height=800');
-  w.document.write(html);
-}
-// exposer la fonction globalement
-window.ouvrirDossierFournisseur = ouvrirDossierFournisseur;
 function renderFileListBuffer(id, field) {
   let ul = document.getElementById(`file-list-${field}-${id}`);
   if(!ul) return;
