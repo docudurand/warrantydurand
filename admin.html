@@ -1165,10 +1165,6 @@ if (formBtn) {
         <div class="pdf-container">
           <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
         </div>
-        <div>
-          <label>Importer le formulaire rempli (PDF)</label><br>
-          <input type="file" id="form-upload" accept="application/pdf">
-        </div>
         <div class="buttons">
           <button type="button" class="cancel">Fermer</button>
           <button type="button" class="validate">Valider</button>
@@ -1178,13 +1174,6 @@ if (formBtn) {
           cancelBtn2.addEventListener('click', () => { window.close(); });
           const validateBtn2 = document.querySelector('.validate');
           validateBtn2.addEventListener('click', () => {
-            const fileInput = document.getElementById('form-upload');
-            const file = fileInput && fileInput.files && fileInput.files[0];
-            if (file) {
-              try {
-                window.opener.addSupplierFormFile('${id}', file);
-              } catch (e) {}
-            }
             window.close();
           });
         <\/script>
