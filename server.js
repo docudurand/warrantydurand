@@ -11,6 +11,7 @@ import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
+import { execSync } from "child_process";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
@@ -38,6 +39,83 @@ const MAGASIN_MAILS = {
   "Seynod": "respmagseynod@durandservices.fr",
   "Pavi": "adv@plateformepavi.fr"
 };
+
+const FOURNISSEUR_MAILS = {
+  "FEBI": "d.pichard2007@gmail.com"
+  ,
+  "METELLI": "d.pichard2007@gmail.com"
+};
+
+const FOURNISSEUR_PDFS = {
+  FEBI: path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
+  METELLI: path.join(__dirname, "formulaire_garantie_metelli.pdf")
+};
+
+const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
+
+async function createFournisseurPDF(dossier) {
+  return new Promise((resolve, reject) => {
+    const baseName = `fourn_${Date.now()}`;
+    const pngPath = path.join(__dirname, `${baseName}.png`);
+    try {
+      execSync(`pdftoppm -png -singlefile -f 1 -l 1 "${PDF_FOURNISSEUR_PATH}" "${pngPath.slice(0, -4)}"`);
+    } catch (e) {
+      return reject(e);
+    }
+    const doc = new PDFDocument({ autoFirstPage: false });
+    const chunks = [];
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => {
+      try { if (fs.existsSync(pngPath)) fs.unlinkSync(pngPath); } catch {}
+      resolve(Buffer.concat(chunks));
+    });
+    doc.addPage({ size: 'A4' });
+    doc.image(pngPath, 0, 0, { width: doc.page.width, height: doc.page.height });
+    doc.fontSize(8).fillColor('#000000');
+    const x = 200;
+    let y = 135;
+    if (dossier.produit_concerne) {
+      doc.text(dossier.produit_concerne, x, y, { width: 330, continued: false });
+    }
+    y += 25;
+    let ref = dossier.reference_piece || '';
+    if (dossier.quantite_posee) ref += ` (x${dossier.quantite_posee})`;
+    if (ref) {
+      doc.text(ref, x, y, { width: 330 });
+    }
+    y += 45;
+    if (dossier.marque_produit) {
+      doc.text(dossier.marque_produit, x, y, { width: 330 });
+    }
+    y += 25;
+    if (dossier.modele_vehicule) {
+      doc.text(dossier.modele_vehicule, x, y, { width: 330 });
+    }
+    y += 25;
+    if (dossier.num_serie) {
+      doc.text(dossier.num_serie, x, y, { width: 330 });
+    }
+    y += 25;
+    if (dossier.premiere_immat) {
+      const year = new Date(dossier.premiere_immat).getFullYear();
+      if (!isNaN(year)) doc.text(String(year), x, y, { width: 330 });
+    }
+    y += 25;
+    if (dossier.date_pose) {
+      const date = new Date(dossier.date_pose).toLocaleDateString('fr-FR');
+      doc.text(date, x, y, { width: 330 });
+    }
+    y += 25;
+    if (dossier.km_pose) {
+      doc.text(String(dossier.km_pose), x, y, { width: 330 });
+    }
+    const defectY = 435;
+    if (dossier.probleme_rencontre) {
+      doc.text(dossier.probleme_rencontre, 120, defectY, { width: 430 });
+    }
+    doc.end();
+  });
+}
 
 const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = process.env.FTP_PORT;
@@ -416,6 +494,75 @@ app.post("/api/admin/dossier/:id", upload.fields([
   res.json({success:true});
 });
 
+app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers', maxCount: 20 }, { name: 'formulaire', maxCount: 1 }]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const fournisseur = (req.body && req.body.fournisseur) ? String(req.body.fournisseur) : "";
+    const emailDest = FOURNISSEUR_MAILS[fournisseur] || "";
+    if (!emailDest) {
+      return res.json({ success: false, message: "Fournisseur inconnu" });
+    }
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+    const dossier = data.find(x => x.id === id);
+    if (!dossier) {
+      return res.json({ success: false, message: "Dossier introuvable" });
+    }
+    let clientNom = (dossier.nom || "Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+    let dateStr = "";
+    if (dossier.date) {
+      const dt = new Date(dossier.date);
+      if (!isNaN(dt)) dateStr = dt.toISOString().slice(0, 10);
+    }
+    const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
+    const pdfBuffer = await creerPDFDemande(dossier, nomFichier);
+    const attachments = [];
+    attachments.push({ filename: nomFichier + ".pdf", content: pdfBuffer, contentType: "application/pdf" });
+    const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || []) ]);
+    for (const f of docs) {
+      attachments.push({ filename: f.filename, path: f.path });
+    }
+    if (req.files && req.files.fichiers) {
+      for (const f of req.files.fichiers) {
+        attachments.push({ filename: f.originalname, path: f.path });
+      }
+    }
+    if (req.files && req.files.formulaire && req.files.formulaire[0]) {
+      const f = req.files.formulaire[0];
+      attachments.push({ filename: f.originalname, path: f.path });
+    }
+    const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
+    const html = `<div style="font-family:sans-serif;">
+      <p>Bonjour,</p>
+      <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
+      ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
+      <p style="margin-top:24px;font-weight:bold;">
+    Merci de répondre à l'adresse mail : <a href="mailto:${magasinEmail}" style="color:#004080;text-decoration:underline;">${magasinEmail}</a>
+  </p>
+      <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
+    </div>`;
+    await mailer.sendMail({
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      to: emailDest,
+      subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
+      html,
+      attachments
+    });
+    cleanupFiles(docs);
+    if (req.files) {
+      const all = Object.values(req.files).reduce((acc, arr) => acc.concat(arr), []);
+      for (const f of all) {
+        if (f && f.path && fs.existsSync(f.path)) {
+          try { fs.unlinkSync(f.path); } catch {}
+        }
+      }
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
+  }
+});
+
 app.post("/api/admin/completer-dossier/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -444,7 +591,17 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 });
-
+app.get("/templates/:name", (req, res) => {
+  const allowed = {
+    "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
+    "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire_garantie_metelli.pdf")
+  };
+  const filePath = allowed[req.params.name];
+  if (!filePath) {
+    return res.status(404).send("Formulaire non trouvé");
+  }
+  res.sendFile(filePath);
+});
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
