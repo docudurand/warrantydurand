@@ -14,15 +14,33 @@ import PDFDocument from "pdfkit";
 import { execSync } from "child_process";
 import axios from "axios";
 import ExcelJS from "exceljs";
+import dotenv from "dotenv";
+dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const MAGASINS = [
-  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
-  "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+  "Annemasse", "Bourgoin-Jallieu", "Chasse-sur-Rhone", "Chassieu", "Gleize", "La Motte-Servolex",
+  "Les Echets", "Pavi", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
 ];
+
+const ENV_MAIL_KEYS = {
+  "Gleize": { user: "OUTLOOK_GLEIZE_USER", pass: "OUTLOOK_GLEIZE_PASS" },
+  "Annemasse": { user: "OUTLOOK_ANNEMASSE_USER", pass: "OUTLOOK_ANNEMASSE_PASS" },
+  "Bourgoin-Jallieu": { user: "OUTLOOK_BOURGOIN_USER", pass: "OUTLOOK_BOURGOIN_PASS" },
+  "Chasse-sur-Rhone": { user: "OUTLOOK_CHASSE_USER", pass: "OUTLOOK_CHASSE_PASS" },
+  "Chassieu": { user: "OUTLOOK_CHASSIEU_USER", pass: "OUTLOOK_CHASSIEU_PASS" },
+  "La Motte-Servolex": { user: "OUTLOOK_LMS_USER", pass: "OUTLOOK_LMS_PASS" },
+  "Les Echets": { user: "OUTLOOK_LES_ECHETS_USER", pass: "OUTLOOK_LES_ECHETS_PASS" },
+  "Rives": { user: "OUTLOOK_RIVES_USER", pass: "OUTLOOK_RIVES_PASS" },
+  "Saint-Egreve": { user: "OUTLOOK_STEGREVE_USER", pass: "OUTLOOK_STEGREVE_PASS" },
+  "Saint-Jean-Bonnefonds": { user: "OUTLOOK_SJB_USER", pass: "OUTLOOK_SJB_PASS" },
+  "Saint-martin-d'heres": { user: "OUTLOOK_SMDH_USER", pass: "OUTLOOK_SMDH_PASS" },
+  "Seynod": { user: "OUTLOOK_SEYNOD_USER", pass: "OUTLOOK_SEYNOD_PASS" },
+  "Pavi": { user: "OUTLOOK_PAVI_USER", pass: "OUTLOOK_PAVI_PASS" }
+};
 
 const MAGASIN_MAILS = {
   "Annemasse": "respmagannemasse@durandservices.fr",
@@ -41,10 +59,10 @@ const MAGASIN_MAILS = {
 };
 
 const FOURNISSEUR_MAILS = {
-  "FEBI": "d.pichard2007@gmail.com"
-  ,
+  "FEBI": "d.pichard2007@gmail.com",
   "METELLI": "d.pichard2007@gmail.com"
 };
+
 
 const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
@@ -125,7 +143,7 @@ const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegarde
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
 const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
 
-const mailer = nodemailer.createTransport({
+const mailerGmail = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
@@ -134,6 +152,20 @@ const mailer = nodemailer.createTransport({
     pass: process.env.GMAIL_PASS
   }
 });
+
+function getOutlookTransport(magasin) {
+  const envKey = ENV_MAIL_KEYS[magasin];
+  if (!envKey) return null;
+  const user = process.env[envKey.user];
+  const pass = process.env[envKey.pass];
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    host: "smtp.office365.com",
+    port: 587,
+    secure: false,
+    auth: { user, pass }
+  });
+}
 
 app.use(cors());
 app.use(cookieParser());
@@ -499,14 +531,14 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     const { id } = req.params;
     const fournisseur = (req.body && req.body.fournisseur) ? String(req.body.fournisseur) : "";
     const emailDest = FOURNISSEUR_MAILS[fournisseur] || "";
-    if (!emailDest) {
-      return res.json({ success: false, message: "Fournisseur inconnu" });
-    }
     let data = await readDataFTP();
     if (!Array.isArray(data)) data = [];
     const dossier = data.find(x => x.id === id);
-    if (!dossier) {
-      return res.json({ success: false, message: "Dossier introuvable" });
+    if (!dossier) return res.json({ success: false, message: "Dossier introuvable" });
+    const magasin = dossier.magasin;
+    const outlookTransport = getOutlookTransport(magasin);
+    if (!outlookTransport) {
+      return res.json({ success: false, message: `Aucun compte Outlook configuré pour le magasin ${magasin}` });
     }
     let clientNom = (dossier.nom || "Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
     let dateStr = "";
@@ -536,17 +568,10 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       <p>Bonjour,</p>
       <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
       ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
-      <p>Les documents suivants sont inclus&nbsp;:</p>
-      <ul>
-        <li>Le récapitulatif du dossier (${nomFichier}.pdf)</li>
-        ${docs.length ? '<li>Les documents et photos fournis par le client et l\'administration</li>' : ''}
-        ${req.files && req.files.fichiers ? '<li>Documents supplémentaires ajoutés par l\'administrateur</li>' : ''}
-        ${req.files && req.files.formulaire && req.files.formulaire[0] ? '<li>Le formulaire fournisseur rempli par l\'administrateur</li>' : ''}
-      </ul>
       <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
     </div>`;
-    await mailer.sendMail({
-      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+    await outlookTransport.sendMail({
+      from: `"${magasin}" <${process.env[ENV_MAIL_KEYS[magasin].user]}>`,
       to: emailDest,
       subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
       html,
