@@ -17,6 +17,13 @@ import ExcelJS from "exceljs";
 import dotenv from "dotenv";
 dotenv.config();
 
+process.on('uncaughtException', err => {
+  console.error('[UncaughtException]', err);
+});
+process.on('unhandledRejection', err => {
+  console.error('[UnhandledRejection]', err);
+});
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -174,93 +181,132 @@ const upload = multer({ dest: "temp_uploads/" });
 
 async function getFTPClient() {
   const client = new ftp.Client();
-  await client.access({
-    host: FTP_HOST,
-    port: FTP_PORT,
-    user: FTP_USER,
-    password: FTP_PASS,
-    secure: true,
-    secureOptions: { rejectUnauthorized: false }
-  });
-  return client;
+  try {
+    await client.access({
+      host: FTP_HOST,
+      port: FTP_PORT,
+      user: FTP_USER,
+      password: FTP_PASS,
+      secure: true,
+      secureOptions: { rejectUnauthorized: false }
+    });
+    return client;
+  } catch (e) {
+    client.close();
+    throw e;
+  }
 }
+
 async function readDataFTP() {
-  const client = await getFTPClient();
+  let client;
   let json = [];
   try {
+    client = await getFTPClient();
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
     json = JSON.parse(fs.readFileSync(tmp, "utf8"));
     fs.unlinkSync(tmp);
   } catch (e) {
+    console.error("[readDataFTP]", e);
     json = [];
+  } finally {
+    if (client) client.close();
   }
-  client.close();
   return json;
 }
+
 async function writeDataFTP(data) {
-  const client = await getFTPClient();
-  const tmp = path.join(__dirname, "temp_demandes.json");
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  await client.ensureDir(FTP_BACKUP_FOLDER);
-  await client.uploadFrom(tmp, JSON_FILE_FTP);
-  fs.unlinkSync(tmp);
-  client.close();
-}
-async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
-  const client = await getFTPClient();
-  const remoteName = remoteFileName || path.basename(localPath);
-  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder, remoteName);
-  await client.uploadFrom(localPath, remotePath);
-  client.close();
-}
-async function deleteFileFromFTP(remoteFileName) {
-  const client = await getFTPClient();
-  const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-  await client.remove(remotePath).catch(()=>{});
-  client.close();
-}
-async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
-  const client = await getFTPClient();
-  let tempPath = path.join(__dirname, "tempdl_"+fileName);
-  await client.downloadTo(tempPath, remotePath).catch(()=>{});
-  client.close();
-  if (fs.existsSync(tempPath)) {
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-    if (mimeType) res.setHeader("Content-Type", mimeType);
-    const s = fs.createReadStream(tempPath);
-    s.pipe(res);
-    s.on("end", ()=>fs.unlinkSync(tempPath));
-  } else {
-    res.status(404).send("Not found");
+  let client;
+  try {
+    client = await getFTPClient();
+    const tmp = path.join(__dirname, "temp_demandes.json");
+    fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+    await client.ensureDir(FTP_BACKUP_FOLDER);
+    await client.uploadFrom(tmp, JSON_FILE_FTP);
+    fs.unlinkSync(tmp);
+  } catch (e) {
+    console.error("[writeDataFTP]", e);
+    throw e;
+  } finally {
+    if (client) client.close();
   }
 }
-function nowSuffix() {
-  const d = new Date();
-  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
+
+async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
+  let client;
+  try {
+    client = await getFTPClient();
+    const remoteName = remoteFileName || path.basename(localPath);
+    const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder, remoteName);
+    await client.uploadFrom(localPath, remotePath);
+  } catch (e) {
+    console.error("[uploadFileToFTP]", e);
+    throw e;
+  } finally {
+    if (client) client.close();
+  }
 }
+
+async function deleteFileFromFTP(remoteFileName) {
+  let client;
+  try {
+    client = await getFTPClient();
+    const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
+    await client.remove(remotePath).catch(()=>{});
+  } catch (e) {
+    console.error("[deleteFileFromFTP]", e);
+  } finally {
+    if (client) client.close();
+  }
+}
+
+async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
+  let client;
+  let tempPath = path.join(__dirname, "tempdl_" + fileName);
+  try {
+    client = await getFTPClient();
+    await client.downloadTo(tempPath, remotePath).catch(()=>{});
+    if (fs.existsSync(tempPath)) {
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      if (mimeType) res.setHeader("Content-Type", mimeType);
+      const s = fs.createReadStream(tempPath);
+      s.pipe(res);
+      s.on("end", ()=>fs.unlinkSync(tempPath));
+    } else {
+      res.status(404).send("Not found");
+    }
+  } catch (e) {
+    console.error("[streamFTPFileToRes]", e);
+    res.status(500).send("Erreur téléchargement fichier.");
+  } finally {
+    if (client) client.close();
+  }
+}
+
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
-  const client = await getFTPClient();
+  let client;
   let files = [];
-  for (let f of fileObjs) {
-    let remote = path.posix.join(UPLOADS_FTP, f.url);
-    let tempPath = path.join(__dirname, "att_"+f.url.replace(/[^\w.]/g,""));
-    await client.downloadTo(tempPath, remote).catch(()=>{});
-    files.push({ filename: f.original, path: tempPath });
+  try {
+    client = await getFTPClient();
+    for (let f of fileObjs) {
+      let remote = path.posix.join(UPLOADS_FTP, f.url);
+      let tempPath = path.join(__dirname, "att_" + f.url.replace(/[^\w.]/g,""));
+      await client.downloadTo(tempPath, remote).catch(()=>{});
+      files.push({ filename: f.original, path: tempPath });
+    }
+  } catch (e) {
+    console.error("[fetchFilesFromFTP]", e);
+  } finally {
+    if (client) client.close();
   }
-  client.close();
   return files;
 }
-function cleanupFiles(arr) {
-  if (!arr || !arr.length) return;
-  for (let f of arr) {
-    if (f && f.path && fs.existsSync(f.path)) fs.unlinkSync(f.path);
-  }
-}
+
 async function saveBackupFTP() {
-  const client = await getFTPClient();
+  let client;
   try {
+    client = await getFTPClient();
     const d = new Date();
     const pad = n => String(n).padStart(2, "0");
     const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
@@ -282,8 +328,10 @@ async function saveBackupFTP() {
       await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
       backups.shift();
     }
+  } catch (e) {
+    console.error("[saveBackupFTP]", e);
   } finally {
-    client.close();
+    if (client) client.close();
   }
 }
 async function getLogoBuffer() {
@@ -676,8 +724,9 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   res.json({success:true});
 });
 app.get("/api/admin/exportzip", async (req, res) => {
+  let client;
   try {
-    const client = await getFTPClient();
+    client = await getFTPClient();
     const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/zip');
@@ -700,9 +749,10 @@ app.get("/api/admin/exportzip", async (req, res) => {
     output.on("close", ()=>{
       if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
       if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
-      client.close();
+      if (client) client.close(); // Toujours fermer ici
     });
   } catch (e) {
+    if (client) client.close();
     res.status(500).send({error: e.message});
   }
 });
