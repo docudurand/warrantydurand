@@ -48,6 +48,16 @@ const MAGASIN_MAILS = {
 // "ACME": "contact@acme.fr"
 const FOURNISSEUR_MAILS = {
   "FEBI": "magvl4gleize@durandservices.fr"
+  ,
+  // Adresse par défaut pour METELLI (peut être modifiée)
+  "METELLI": "magvl4gleize@durandservices.fr"
+};
+
+// Mapping des fournisseurs vers leurs formulaires PDF associés. Chaque fournisseur
+// possède un formulaire vierge que l'administrateur peut compléter manuellement.
+const FOURNISSEUR_PDFS = {
+  FEBI: path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
+  METELLI: path.join(__dirname, "formulaire_garantie_metelli.pdf")
 };
 
 // Chemin vers le PDF interactif de demande fournisseur. Ce fichier est inclus dans
@@ -541,7 +551,7 @@ app.post("/api/admin/dossier/:id", upload.fields([
  * une clé du tableau FOURNISSEUR_MAILS. Les fichiers supplémentaires sont
  * envoyés sous le champ 'fichiers'.
  */
-app.post("/api/admin/envoyer-fournisseur/:id", upload.array("fichiers", 20), async (req, res) => {
+app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers', maxCount: 20 }, { name: 'formulaire', maxCount: 1 }]), async (req, res) => {
   try {
     const { id } = req.params;
     const fournisseur = (req.body && req.body.fournisseur) ? String(req.body.fournisseur) : "";
@@ -568,43 +578,35 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.array("fichiers", 20), asy
     const attachments = [];
     // PDF récapitulatif du dossier
     attachments.push({ filename: nomFichier + ".pdf", content: pdfBuffer, contentType: "application/pdf" });
-    // Génère un PDF fournisseur pré-rempli à partir du modèle et du dossier
-    try {
-      const filledPdf = await createFournisseurPDF(dossier);
-      attachments.push({ filename: path.parse(PDF_FOURNISSEUR_PATH).name + "_rempli.pdf", content: filledPdf, contentType: "application/pdf" });
-    } catch (e) {
-      // En cas d'erreur, ajoute quand même le PDF vierge
-      try {
-        if (fs.existsSync(PDF_FOURNISSEUR_PATH)) {
-          const supplierPdfBuf = fs.readFileSync(PDF_FOURNISSEUR_PATH);
-          attachments.push({ filename: path.basename(PDF_FOURNISSEUR_PATH), content: supplierPdfBuf, contentType: "application/pdf" });
-        }
-      } catch (e2) {}
-    }
-    // Fichiers déjà associés au dossier (photos, documents) :
+    // Fichiers déjà associés au dossier (photos, documents)
     const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || []) ]);
     for (const f of docs) {
       attachments.push({ filename: f.filename, path: f.path });
     }
-    // Nouvelles pièces jointes envoyées via le formulaire fournisseur
-    if (req.files && Array.isArray(req.files)) {
-      for (const f of req.files) {
+    // Nouvelles pièces jointes envoyées via le formulaire fournisseur (fichiers divers)
+    if (req.files && req.files.fichiers) {
+      for (const f of req.files.fichiers) {
         attachments.push({ filename: f.originalname, path: f.path });
       }
     }
-    // Récupère le message personnalisé de l'admin depuis le corps de la requête
+    // Ajoute le formulaire PDF modifié si présent
+    if (req.files && req.files.formulaire && req.files.formulaire[0]) {
+      const f = req.files.formulaire[0];
+      attachments.push({ filename: f.originalname, path: f.path });
+    }
+    // Message personnalisé
     const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
     // Construction du corps de l'e-mail
     const html = `<div style="font-family:sans-serif;">
       <p>Bonjour,</p>
-      <p>Vous trouverez ci-joint le dossier de garantie pour le produit : <strong>${dossier.produit_concerne || ''}</strong>.</p>
+      <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
       ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
       <p>Les documents suivants sont inclus&nbsp;:</p>
       <ul>
-        <li>Le formulaire fournisseur pré-rempli (${path.parse(PDF_FOURNISSEUR_PATH).name}_rempli.pdf)</li>
         <li>Le récapitulatif du dossier (${nomFichier}.pdf)</li>
         ${docs.length ? '<li>Les documents et photos fournis par le client et l\'administration</li>' : ''}
-        ${req.files && req.files.length ? '<li>Documents supplémentaires ajoutés par l\'administrateur</li>' : ''}
+        ${req.files && req.files.fichiers ? '<li>Documents supplémentaires ajoutés par l\'administrateur</li>' : ''}
+        ${req.files && req.files.formulaire && req.files.formulaire[0] ? '<li>Le formulaire fournisseur rempli par l\'administrateur</li>' : ''}
       </ul>
       <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
     </div>`;
@@ -618,11 +620,12 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.array("fichiers", 20), asy
     });
     // Nettoyage des fichiers téléchargés depuis le FTP
     cleanupFiles(docs);
-    // Suppression des fichiers uploadés temporairement
-    if (req.files && Array.isArray(req.files)) {
-      for (const f of req.files) {
+    // Suppression des fichiers uploadés temporairement (pièces jointes et formulaire)
+    if (req.files) {
+      const all = Object.values(req.files).reduce((acc, arr) => acc.concat(arr), []);
+      for (const f of all) {
         if (f && f.path && fs.existsSync(f.path)) {
-          fs.unlinkSync(f.path);
+          try { fs.unlinkSync(f.path); } catch {}
         }
       }
     }
