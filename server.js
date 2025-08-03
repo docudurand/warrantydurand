@@ -536,7 +536,9 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       <p>Bonjour,</p>
       <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
       ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
-      </ul>
+	  <p style="margin-top:24px;font-weight:bold;">
+    Merci de répondre à l'adresse mail : <a href="mailto:${magasinEmail}" style="color:#004080;text-decoration:underline;">${magasinEmail}</a>
+  </p>
       <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
     </div>`;
     await mailer.sendMail({
