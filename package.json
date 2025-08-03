@@ -1,4 +1,5 @@
-"name": "garantie-durand",
+{
+  "name": "garantie-durand",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
