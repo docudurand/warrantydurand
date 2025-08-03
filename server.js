@@ -531,6 +531,9 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       const f = req.files.formulaire[0];
       attachments.push({ filename: f.originalname, path: f.path });
     }
+	const magasin = dossier.magasin;
+const magasinEmail = MAGASIN_MAILS[magasin] || "";
+const outlookTransport = getOutlookTransport(magasin);
     const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
     const html = `<div style="font-family:sans-serif;">
       <p>Bonjour,</p>
