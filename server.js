@@ -13,6 +13,7 @@ import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import axios from "axios";
 import ExcelJS from "exceljs";
+import { PDFDocument as PDFLibDocument } from "pdf-lib";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -37,6 +38,10 @@ const MAGASIN_MAILS = {
   "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
   "Seynod": "respmagseynod@durandservices.fr",
   "Pavi": "adv@plateformepavi.fr"
+};
+
+const FOURNISSEUR_MAILS = {
+  "FEBI": "magvl4gleize@durandservices.fr"
 };
 
 const FTP_HOST = process.env.FTP_HOST;
@@ -278,6 +283,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     d.numero_dossier = nextNum;
 
     d.statut = "enregistré";
+    d.fournisseur = "";
     d.files = [];
     for (const f of req.files || []) {
       const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
@@ -547,6 +553,101 @@ app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) =>
     res.json({success:true});
   } catch (e) {
     res.json({success:false, message:e.message});
+  }
+});
+
+app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([
+  { name: "documents", maxCount: 10 }
+]), async (req, res) => {
+  try {
+    const { id } = req.params;
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+    let dossier = data.find(x => x.id === id);
+    if (!dossier) {
+      return res.json({ success: false, message: "Dossier introuvable" });
+    }
+    const fournisseur = (req.body && req.body.fournisseur) ? req.body.fournisseur : "";
+    dossier.fournisseur = fournisseur;
+    dossier.documentsAjoutes = dossier.documentsAjoutes || [];
+    const newFiles = [];
+    if (req.files && req.files.documents) {
+      for (const f of req.files.documents) {
+        const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+        await uploadFileToFTP(f.path, "uploads", remoteName);
+        const obj = { url: remoteName, original: f.originalname };
+        dossier.documentsAjoutes.push(obj);
+        newFiles.push(obj);
+        fs.unlinkSync(f.path);
+      }
+    }
+    let pdfBuffer = null;
+    try {
+      const templateBytes = fs.readFileSync(path.join(__dirname, "fiche_febi.pdf"));
+      const pdfDoc = await PDFLibDocument.load(templateBytes);
+      const form = pdfDoc.getForm();
+      const setField = (name, value) => {
+        try {
+          const field = form.getTextField(name);
+          if (field) field.setText(String(value || ""));
+        } catch (e) {
+        }
+      };
+      setField("CLIENT", dossier.nom);
+      setField("DATE", dossier.date ? new Date(dossier.date).toLocaleDateString('fr-FR') : "");
+      setField("DESIGNATION", dossier.produit_concerne);
+      setField("REFERENCE", dossier.reference_piece);
+      setField("QUANTITE", dossier.quantite_posee);
+      setField("REFERENCE ET QUANTITE", `${dossier.reference_piece || ''} ${dossier.quantite_posee || ''}`.trim());
+      setField("IMMATRICULATION", dossier.immatriculation);
+      setField("MARQUE", dossier.marque_produit || dossier.marque_vehicule);
+      setField("MODELE", dossier.modele_vehicule);
+      setField("TYPE MOTEUR", "");
+      setField("CHASSIS", "");
+      setField("ANNEE DE FABRICATION", "");
+      setField("DATE DE MONTAGE", dossier.date_pose);
+      setField("KMS AU MONTAGE", dossier.km_pose);
+      setField("DATE DE DEMONTAGE", dossier.date_constat);
+      setField("KMS AU DEMONTAGE", dossier.km_constat);
+      setField("EXPOSE DU DEFAUT", dossier.probleme_rencontre);
+      try { form.flatten(); } catch (e) {}
+      const pdfBytes = await pdfDoc.save();
+      pdfBuffer = Buffer.from(pdfBytes);
+    } catch (e) {
+      pdfBuffer = null;
+    }
+    await writeDataFTP(data);
+    await saveBackupFTP();
+    const attachments = [];
+    if (pdfBuffer) {
+      const pdfName = `dossier_${dossier.numero_dossier || id}_febi.pdf`;
+      attachments.push({ filename: pdfName, content: pdfBuffer, contentType: 'application/pdf' });
+    }
+    const existingFiles = await fetchFilesFromFTP([
+      ...(dossier.files || []),
+      ...(dossier.documentsAjoutes || []),
+      ...(dossier.reponseFiles || [])
+    ]);
+    for (const f of existingFiles) {
+      attachments.push({ filename: f.filename, path: f.path });
+    }
+    const dest = FOURNISSEUR_MAILS[fournisseur] || null;
+    if (dest) {
+      await mailer.sendMail({
+        from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+        to: dest,
+        subject: `Dossier de garantie n°${dossier.numero_dossier || id}`,
+        html: `<p>Veuillez trouver ci&#x2011;joint le dossier de garantie pour le client <strong>${dossier.nom || ''}</strong> concernant le produit <strong>${dossier.produit_concerne || ''}</strong>.</p>` +
+              `<p>Numéro de dossier : ${dossier.numero_dossier || id}</p>` +
+              `<p>Magasin : ${dossier.magasin || ''}</p>` +
+              `<p>Date de création : ${(dossier.date ? new Date(dossier.date).toLocaleDateString('fr-FR') : '')}</p>`,
+        attachments
+      });
+      cleanupFiles(existingFiles);
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
   }
 });
 app.get("/api/admin/export-excel", async (req, res) => {
