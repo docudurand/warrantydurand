@@ -410,7 +410,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
     if (d.email) {
-      await mailer.sendMail({
+      await mailerGmail.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
         to: d.email,
         subject: "Demande de Garantie Envoyée",
@@ -433,7 +433,7 @@ L'équipe Durand Services Garantie.
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       const attachments = await fetchFilesFromFTP(d.files);
-      await mailer.sendMail({
+      await mailerGmail.sendMail({
         from: "Garantie <" + process.env.GMAIL_USER + ">",
         to: respMail,
         subject: `Nouvelle demande de garantie`,
@@ -514,7 +514,7 @@ app.post("/api/admin/dossier/:id", upload.fields([
       </ul>
       <br><br>L'équipe Garantie Durand<br><br>
     </div>`;
-    await mailer.sendMail({
+    await mailerGmail.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: dossier.email,
       subject: `Mise à jour dossier garantie Durand Services`,
