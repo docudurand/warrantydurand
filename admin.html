@@ -1080,7 +1080,7 @@ function ouvrirFournisseur(id) {
   // Crée une nouvelle fenêtre pour le formulaire fournisseur
   const win = window.open('', '_blank', 'width=700,height=600');
   const titre = 'Envoyer dossier au fournisseur';
-  // Construction du contenu HTML avec styles intégrés
+  // Construction du contenu HTML avec styles intégrés. Aucun tag <script> n'est inclus
   const html = `
     <html><head>
       <meta charset="UTF-8">
@@ -1118,39 +1118,44 @@ function ouvrirFournisseur(id) {
         </div>
         <div class="status-msg" id="status-msg"></div>
       </form>
-      <script>
-        const cancelBtn = document.querySelector('.cancel');
-        const sendBtn = document.querySelector('.send');
-        const statusEl = document.getElementById('status-msg');
-        cancelBtn.addEventListener('click', () => { window.close(); });
-        sendBtn.addEventListener('click', async () => {
-          const form = document.getElementById('fournisseurForm');
-          const fd = new FormData(form);
-          statusEl.textContent = 'Envoi en cours...';
-          try {
-            const resp = await fetch('/api/admin/envoyer-fournisseur/${id}', {
-              method: 'POST',
-              body: fd
-            });
-            const json = await resp.json();
-            if (json.success) {
-              statusEl.textContent = 'Dossier envoyé au fournisseur ✔';
-              setTimeout(() => {
-                window.close();
-              }, 1500);
-            } else {
-              statusEl.textContent = json.message || 'Erreur lors de l\'envoi';
-            }
-          } catch (e) {
-            statusEl.textContent = 'Erreur lors de l\'envoi';
-          }
-        });
-      </script>
     </body></html>
   `;
   win.document.open();
   win.document.write(html);
   win.document.close();
+  // Attache les gestionnaires d'événement dans la nouvelle fenêtre
+  const cancelBtn = win.document.querySelector('.cancel');
+  const sendBtn = win.document.querySelector('.send');
+  const statusEl = win.document.getElementById('status-msg');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      win.close();
+    });
+  }
+  if (sendBtn) {
+    sendBtn.addEventListener('click', async () => {
+      const form = win.document.getElementById('fournisseurForm');
+      const fd = new FormData(form);
+      if (statusEl) statusEl.textContent = 'Envoi en cours...';
+      try {
+        const resp = await fetch('/api/admin/envoyer-fournisseur/' + id, {
+          method: 'POST',
+          body: fd
+        });
+        const json = await resp.json();
+        if (json.success) {
+          if (statusEl) statusEl.textContent = 'Dossier envoyé au fournisseur ✔';
+          setTimeout(() => {
+            win.close();
+          }, 1500);
+        } else {
+          if (statusEl) statusEl.textContent = (json.message || 'Erreur lors de l\'envoi');
+        }
+      } catch (e) {
+        if (statusEl) statusEl.textContent = 'Erreur lors de l\'envoi';
+      }
+    });
+  }
 }
 window.ouvrirFournisseur = ouvrirFournisseur;
 
