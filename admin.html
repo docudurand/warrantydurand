@@ -243,7 +243,7 @@
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
+   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
   <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
@@ -276,97 +276,98 @@
     <div id="dossier-list"></div>
   </div>
 <script>
-// utilitaires
-function formatDateFRshort(val) {
-  if (!val) return "";
-  let d = typeof val === "string" ? new Date(val) : val;
-  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    let [y, m, d2] = val.split("-");
-    return `${d2}/${m}/${y.slice(2)}`;
-  }
-  if (!isNaN(d)) {
-    let day = ("0"+d.getDate()).slice(-2);
-    let month = ("0"+(d.getMonth()+1)).slice(-2);
-    let year = d.getFullYear().toString().slice(-2);
-    return `${day}/${month}/${year}`;
-  }
-  return val;
-}
-
-let isSuperAdmin = false;
-let isAdmin = false;
-let magasinUnique = null;
-const MAGASINS = [
-  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
-  "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
-];
-let allDossiers = [];
-let currentMagasin = null;
-let filtres = { mois: "", annee: "", statut: "" };
-let rechercheClient = "";
-let ongletActif = null;
-
-const fileBuffers = {};
-const supplierFormFiles = {};
-window.supplierFormFiles = supplierFormFiles;
-
-window.addSupplierFormFile = function(id, file) {
-  if (!id || !file) return;
-  supplierFormFiles[id] = file;
-  const container = document.getElementById('supplier-file-' + id);
-  if (container) {
-    container.innerHTML = '';
-    const span = document.createElement('span');
-    span.textContent = file.name;
-    container.appendChild(span);
-  }
-};
-
-function statutChip(statut) {
-  let s = (statut||"").toLowerCase();
-  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
-  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
-  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
-  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
-  return statut||"";
-}
-
-function toggleSuperAdminUI() {
-  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
-}
-
-document.getElementById("btn-export-excel").onclick = function(){
-  window.open('/api/admin/export-excel', '_blank');
-};
-
-function adminLogin() {
-  const pw = document.getElementById('admin-pass').value;
-  fetch('/api/admin/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({password: pw})
-  })
-  .then(resp => resp.json())
-  .then(json => {
-    if (json.success) {
-      isSuperAdmin = !!json.isSuper;
-      isAdmin = !!json.isAdmin;
-      magasinUnique = json.magasin || null;
-      currentMagasin = magasinUnique || MAGASINS[0];
-      document.getElementById('login').style.display = "none";
-      document.getElementById('admin-content').style.display = "block";
-      toggleSuperAdminUI();
-      chargerDossiers();
-    } else {
-      document.getElementById('login-msg').textContent = json.message || "Erreur";
+document.addEventListener('DOMContentLoaded', function() {
+    // utilitaires
+    function formatDateFRshort(val) {
+      if (!val) return "";
+      let d = typeof val === "string" ? new Date(val) : val;
+      if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+        let [y, m, d2] = val.split("-");
+        return `${d2}/${m}/${y.slice(2)}`;
+      }
+      if (!isNaN(d)) {
+        let day = ("0"+d.getDate()).slice(-2);
+        let month = ("0"+(d.getMonth()+1)).slice(-2);
+        let year = d.getFullYear().toString().slice(-2);
+        return `${day}/${month}/${year}`;
+      }
+      return val;
     }
-  })
-  .catch(() => {
-    document.getElementById('login-msg').textContent = "Erreur réseau";
-  });
-}
-window.adminLogin = adminLogin;
-document.getElementById('btn-login').addEventListener('click', adminLogin);
+
+    let isSuperAdmin = false;
+    let isAdmin = false;
+    let magasinUnique = null;
+    const MAGASINS = [
+      "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
+      "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+    ];
+    let allDossiers = [];
+    let currentMagasin = null;
+    let filtres = { mois: "", annee: "", statut: "" };
+    let rechercheClient = "";
+    let ongletActif = null;
+
+    const fileBuffers = {};
+    const supplierFormFiles = {};
+    window.supplierFormFiles = supplierFormFiles;
+
+    window.addSupplierFormFile = function(id, file) {
+      if (!id || !file) return;
+      supplierFormFiles[id] = file;
+      const container = document.getElementById('supplier-file-' + id);
+      if (container) {
+        container.innerHTML = '';
+        const span = document.createElement('span');
+        span.textContent = file.name;
+        container.appendChild(span);
+      }
+    };
+
+    function statutChip(statut) {
+      let s = (statut||"").toLowerCase();
+      if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+      if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+      if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+      if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+      return statut||"";
+    }
+
+    function toggleSuperAdminUI() {
+      document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+    }
+
+    document.getElementById("btn-export-excel").onclick = function(){
+      window.open('/api/admin/export-excel', '_blank');
+    };
+
+    function adminLogin() {
+      const pw = document.getElementById('admin-pass').value;
+      fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({password: pw})
+      })
+      .then(resp => resp.json())
+      .then(json => {
+        if (json.success) {
+          isSuperAdmin = !!json.isSuper;
+          isAdmin = !!json.isAdmin;
+          magasinUnique = json.magasin || null;
+          currentMagasin = magasinUnique || MAGASINS[0];
+          document.getElementById('login').style.display = "none";
+          document.getElementById('admin-content').style.display = "block";
+          toggleSuperAdminUI();
+          chargerDossiers();
+        } else {
+          document.getElementById('login-msg').textContent = json.message || "Erreur";
+        }
+      })
+      .catch(() => {
+        document.getElementById('login-msg').textContent = "Erreur réseau";
+      });
+    }
+    window.adminLogin = adminLogin;
+    document.getElementById('btn-login').addEventListener('click', adminLogin);
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers')
