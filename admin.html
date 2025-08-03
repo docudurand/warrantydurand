@@ -250,7 +250,7 @@
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
-    <button class="bouton" onclick="adminLogin()">Connexion</button>
+    <button class="bouton" id="btn-login">Connexion</button>
     <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
   </div>
   <div id="admin-content">
@@ -360,6 +360,7 @@ function adminLogin() {
   });
 }
 window.adminLogin = adminLogin;
+document.getElementById('btn-login').addEventListener('click', adminLogin);
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
