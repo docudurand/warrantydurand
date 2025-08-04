@@ -42,7 +42,7 @@ const MAGASIN_MAILS = {
 
 const FOURNISSEUR_MAILS = {
   "FEBI": "d.pichard2007@gmail.com",
-  "METELLI": "d.pichard2007@gmail.com",
+  "METELLI": "magvl4gleize@durandservices.fr",
   "INTFRADIS": "d.pichard2007@gmail.com",
   "BOSCH MACHINE TOURNANTE": "d.pichard2007@gmail.com",
   "EFI": "d.pichard2007@gmail.com",
