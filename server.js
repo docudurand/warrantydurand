@@ -219,7 +219,12 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   await client.downloadTo(tempPath, remotePath).catch(()=>{});
   client.close();
   if (fs.existsSync(tempPath)) {
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    const ext = (fileName||"").split('.').pop().toLowerCase();
+if(["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+  res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
+} else {
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+}
     if (mimeType) res.setHeader("Content-Type", mimeType);
     const s = fs.createReadStream(tempPath);
     s.pipe(res);
