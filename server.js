@@ -51,7 +51,7 @@ const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
   METELLI: path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
   INTFRADIS: path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf"),
-  BOSCH MACHINE TOURNANTE: path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf")
+  "BOSCH MACHINE TOURNANTE": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
