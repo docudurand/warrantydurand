@@ -42,38 +42,30 @@ const MAGASIN_MAILS = {
 
 const FOURNISSEUR_MAILS = {
   "FEBI": "d.pichard2007@gmail.com",
-  "METELLI": "magvl4gleize@durandservices.fr",
-  "INTFRADIS": "d.pichard2007@gmail.com",
-  "BOSCH MACHINE TOURNANTE": "d.pichard2007@gmail.com",
-  "EFI": "d.pichard2007@gmail.com",
-  "MAGNETI": "d.pichard2007@gmail.com",
-  "QH": "d.pichard2007@gmail.com",
-  "RIAL": "d.pichard2007@gmail.com",
-  "SEIM": "d.pichard2007@gmail.com",
-  "AUTOGAMMA": "d.pichard2007@gmail.com",
-  "DELPHI": "d.pichard2007@gmail.com",
-  "MS MOTORS": "d.pichard2007@gmail.com",
-  "NGK": "d.pichard2007@gmail.com",
-  "NRF": "d.pichard2007@gmail.com",
-  "SPILU": "d.pichard2007@gmail.com",
+  "METELLI": "chiaraagazzi@metellispa.it",
+  "EFI": "sophie.pierret@efiautomotive.com",
+  "MAGNETI": "adv.france@marelli.com",
+  "QH": "commandes@quintonhazell.fr ",
+  "RIAL": "celine.loridant@pap-sud.fr",
+  "AUTOGAMMA": "retours@autogamma.com",
+  "DELPHI": "uklea.warranty@delphi.com",
+  "MS MOTORS": "Lionel.Doutre@fr.rheinmetall.com",
+  "NGK": "ngk-service-technique@ngkntk.fr",
+  "NRF": "litiges@nrf.eu",
 };
 
 const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
   METELLI: path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-  INTFRADIS: path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf"),
-  "BOSCH MACHINE TOURNANTE": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf"),
   EFI: path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
   MAGNETI: path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
   QH: path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
   RIAL: path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-  SEIM: path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
   AUTOGAMMA: path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
   DELPHI: path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
   "MS MOTORS": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
   NGK: path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
   NRF: path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
-  SPILU: path.join(__dirname, "formulaire", "formulaire_spilu.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
@@ -627,19 +619,15 @@ app.get("/templates/:name", (req, res) => {
   const allowed = {
      "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
     "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-    "formulaire_garantie_intfradis.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf"),
-	"FORMULAIRE_MT.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf"),
 	"Formulaire_EFI.pdf": path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
 	"FORMULAIRE_MAGNETI.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
 	"FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
 	"DEMANDE_RIAL.pdf": path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-	"Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
 	"Formulaire_ AUTOGAMMA.pdf": path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
 	"Formulaire_delphi.pdf": path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
 	"FORMULAIRE_ms.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
 	"Formulaire_ngk.pdf": path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
 	"Formulaire_nrf.pdf": path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
-	"formulaire_spilu.pdf": path.join(__dirname, "formulaire", "formulaire_spilu.pdf")
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
