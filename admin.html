@@ -1106,6 +1106,7 @@ function ouvrirFournisseur(id) {
       <form id="fournisseurForm" enctype="multipart/form-data">
         <label for="fournisseur-select">Fournisseur</label>
         <select id="fournisseur-select" name="fournisseur">
+		  <option value="BOSCH MACHINE TOURNANTE">BOSCH MACHINE TOURNANTE</option>
           <option value="FEBI">FEBI</option>
 		  <option value="INTFRADIS">INTFRADIS</option>
           <option value="METELLI">METELLI</option>
@@ -1145,6 +1146,7 @@ if (formBtn) {
     let pdfFile = 'FICHE_GARANTIE_FEBI.pdf';
 if (supVal === 'METELLI') pdfFile = 'formulaire_garantie_metelli.pdf';
 if (supVal === 'INTFRADIS') pdfFile = 'formulaire_garantie_intfradis.pdf';
+if (supVal === 'BOSCH MACHINE TOURNANTE') pdfFile = 'FORMULAIRE_MT.pdf';
 const pdfUrl = `/templates/${pdfFile}`;
 
     const formWin = window.open('', '_blank', 'width=800,height=750');

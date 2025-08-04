@@ -41,17 +41,17 @@ const MAGASIN_MAILS = {
 };
 
 const FOURNISSEUR_MAILS = {
-  "FEBI": "d.pichard2007@gmail.com"
-  ,
-  "METELLI": "d.pichard2007@gmail.com"
-  ,
-  "INTFRADIS": "d.pichard2007@gmail.com"
+  "FEBI": "d.pichard2007@gmail.com",
+  "METELLI": "d.pichard2007@gmail.com",
+  "INTFRADIS": "d.pichard2007@gmail.com",
+  "BOSCH MACHINE TOURNANTE": "d.pichard2007@gmail.com",
 };
 
 const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
   METELLI: path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-  INTFRADIS: path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf")
+  INTFRADIS: path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf"),
+  BOSCH MACHINE TOURNANTE: path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
@@ -600,7 +600,8 @@ app.get("/templates/:name", (req, res) => {
   const allowed = {
      "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
     "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-    "formulaire_garantie_intfradis.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf")
+    "formulaire_garantie_intfradis.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_intfradis.pdf"),
+	"FORMULAIRE_MT.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf")
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
