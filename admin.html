@@ -555,7 +555,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
-      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>&nbsp;')}</td>
       <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
       <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
@@ -760,7 +760,7 @@ function afficherGlobal() {
       <td>${d.magasin||''}</td>
       <td>${d.marque_produit||''}</td>
       <td>${d.produit_concerne||''}</td>
-      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>&nbsp;')}</td>
       <td>${d.probleme_rencontre||''}</td>
     </tr>`;
   });
