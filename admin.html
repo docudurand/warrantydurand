@@ -1107,6 +1107,7 @@ function ouvrirFournisseur(id) {
         <label for="fournisseur-select">Fournisseur</label>
         <select id="fournisseur-select" name="fournisseur">
           <option value="FEBI">FEBI</option>
+		  <option value="INTFRADIS">INTFRADIS</option>
           <option value="METELLI">METELLI</option>
         </select>
         <label for="message-input">Message (optionnel)</label>
@@ -1141,9 +1142,10 @@ if (formBtn) {
   formBtn.addEventListener('click', () => {
     const supplierSelect = win.document.getElementById('fournisseur-select');
     const supVal = supplierSelect ? supplierSelect.value : '';
-    const pdfFile = supVal === 'METELLI'
-      ? 'formulaire_garantie_metelli.pdf'
-      : 'FICHE_GARANTIE_FEBI.pdf';
+    let pdfFile = 'FICHE_GARANTIE_FEBI.pdf';
+if (supVal === 'METELLI') pdfFile = 'formulaire_garantie_metelli.pdf';
+if (supVal === 'INTFRADIS') pdfFile = 'formulaire_garantie_intfradis.pdf';
+const pdfUrl = `/templates/${pdfFile}`;
     const pdfUrl = `/templates/${pdfFile}`;
 
     const formWin = window.open('', '_blank', 'width=800,height=750');
