@@ -1113,6 +1113,8 @@ function ouvrirFournisseur(id) {
 		  <option value="MAGNETI">MAGNETI</option>
           <option value="METELLI">METELLI</option>
 		  <option value="QH">QH</option>
+		  <option value="RIAL">RIAL</option>
+		  <option value="SEIM">SEIM</option>
         </select>
         <label for="message-input">Message (optionnel)</label>
         <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical; padding:6px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px;"></textarea>
@@ -1153,6 +1155,8 @@ if (supVal === 'BOSCH MACHINE TOURNANTE') pdfFile = 'FORMULAIRE_MT.pdf';
 if (supVal === 'EFI') pdfFile = 'Formulaire_EFI.pdf';
 if (supVal === 'MAGNETI') pdfFile = 'FORMULAIRE_MAGNETI.pdf';
 if (supVal === 'QH') pdfFile = 'FORMULAIRE_QH.pdf';
+if (supVal === 'RIAL') pdfFile = 'DEMANDE_RIAL.pdf';
+if (supVal === 'SEIM') pdfFile = 'Formulaire_SEIM.pdf';
 const pdfUrl = `/templates/${pdfFile}`;
 
     const formWin = window.open('', '_blank', 'width=800,height=750');

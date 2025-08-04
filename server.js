@@ -48,6 +48,8 @@ const FOURNISSEUR_MAILS = {
   "EFI": "d.pichard2007@gmail.com",
   "MAGNETI": "d.pichard2007@gmail.com",
   "QH": "d.pichard2007@gmail.com",
+  "RIAL": "d.pichard2007@gmail.com",
+  "SEIM": "d.pichard2007@gmail.com",
 };
 
 const FOURNISSEUR_PDFS = {
@@ -57,7 +59,9 @@ const FOURNISSEUR_PDFS = {
   "BOSCH MACHINE TOURNANTE": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf"),
   EFI: path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
   MAGNETI: path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
-  QH: path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf")
+  QH: path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
+  RIAL: path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
+  SEIM: path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
@@ -610,7 +614,9 @@ app.get("/templates/:name", (req, res) => {
 	"FORMULAIRE_MT.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MT.pdf"),
 	"Formulaire_EFI.pdf": path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
 	"FORMULAIRE_MAGNETI.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
-	"FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf")
+	"FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
+	"DEMANDE_RIAL.pdf": path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
+	"Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf")
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
