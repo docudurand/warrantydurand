@@ -565,10 +565,10 @@ function afficherDossiers(magasin, forceFiltres=false) {
                   ? fichiersDocs.map(f=>{
                       let ext = f.original.split('.').pop().toLowerCase();
                       if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                        return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
-                      } else {
-                        return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
-                      }
+  return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+} else {
+  return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
+}
                     }).join("<br>")
                   : ""
               }
@@ -884,10 +884,10 @@ function supprimerDossier(id) {
             fichiersDocs.length ? fichiersDocs.map(f=>{
               let ext = (f.original||"").split('.').pop().toLowerCase();
               if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-   return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
-              } else {
-                return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original||""}</a>`;
-              }
+  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+} else {
+  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original||""}</a>`;
+}
             }).join("<br>") : ""
           }</td>
         </tr>
@@ -1306,6 +1306,37 @@ const pdfUrl = `/templates/${pdfFile}`;
   }
 }
 window.ouvrirFournisseur = ouvrirFournisseur;
+
+function ouvrirDocumentDansPopup(url, nomFichier) {
+  const ext = (nomFichier||'').split('.').pop().toLowerCase();
+  let content = '';
+  if (["pdf"].includes(ext)) {
+    content = `<embed src="${url}" type="application/pdf" style="width:100%;height:95vh;border:none;">`;
+  } else if (["jpg","jpeg","png","gif","webp","bmp"].includes(ext)) {
+    content = `<img src="${url}" style="max-width:100%;max-height:95vh;display:block;margin:auto;">`;
+  } else {
+    content = `<iframe src="${url}" style="width:100%;height:95vh;border:none;"></iframe>`;
+  }
+  const win = window.open("", "_blank", "width=900,height=900");
+  win.document.write(`
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${nomFichier}</title>
+      <style>
+        body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; }
+        .close-btn { position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10; }
+        .close-btn:hover { background:#d32121; }
+      </style>
+    </head>
+    <body>
+      <button class="close-btn" onclick="window.close()">Fermer</button>
+      <div>${content}</div>
+    </body>
+    </html>
+  `);
+  win.document.close();
+}
 
 
   </script>
