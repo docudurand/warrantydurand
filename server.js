@@ -44,11 +44,14 @@ const FOURNISSEUR_MAILS = {
   "FEBI": "d.pichard2007@gmail.com"
   ,
   "METELLI": "d.pichard2007@gmail.com"
+  ,
+  "INTFRADIS": "d.pichard2007@gmail.com"
 };
 
 const FOURNISSEUR_PDFS = {
   FEBI: path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
-  METELLI: path.join(__dirname, "formulaire_garantie_metelli.pdf")
+  METELLI: path.join(__dirname, "formulaire_garantie_metelli.pdf"),
+  INTFRADIS: path.join(__dirname, "formulaire_garantie_intfradis.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
@@ -596,7 +599,8 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
 app.get("/templates/:name", (req, res) => {
   const allowed = {
     "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf"),
-    "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire_garantie_metelli.pdf")
+    "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire_garantie_metelli.pdf"),
+	"formulaire_garantie_intfradis.pdf": path.join(__dirname, "formulaire_garantie_intfradis.pdf")
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
