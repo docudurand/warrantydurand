@@ -1105,11 +1105,14 @@ function ouvrirFournisseur(id) {
       </div>
       <form id="fournisseurForm" enctype="multipart/form-data">
         <label for="fournisseur-select">Fournisseur</label>
-        <select id="fournisseur-select" name="fournisseur">
+       <select id="fournisseur-select" name="fournisseur">
 		  <option value="BOSCH MACHINE TOURNANTE">BOSCH MACHINE TOURNANTE</option>
+		  <option value="EFI">EFI</option>
           <option value="FEBI">FEBI</option>
 		  <option value="INTFRADIS">INTFRADIS</option>
+		  <option value="MAGNETI">MAGNETI</option>
           <option value="METELLI">METELLI</option>
+		  <option value="QH">QH</option>
         </select>
         <label for="message-input">Message (optionnel)</label>
         <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical; padding:6px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px;"></textarea>
@@ -1147,6 +1150,9 @@ if (formBtn) {
 if (supVal === 'METELLI') pdfFile = 'formulaire_garantie_metelli.pdf';
 if (supVal === 'INTFRADIS') pdfFile = 'formulaire_garantie_intfradis.pdf';
 if (supVal === 'BOSCH MACHINE TOURNANTE') pdfFile = 'FORMULAIRE_MT.pdf';
+if (supVal === 'EFI') pdfFile = 'Formulaire_EFI.pdf';
+if (supVal === 'MAGNETI') pdfFile = 'FORMULAIRE_MAGNETI.pdf';
+if (supVal === 'QH') pdfFile = 'FORMULAIRE_QH.pdf';
 const pdfUrl = `/templates/${pdfFile}`;
 
     const formWin = window.open('', '_blank', 'width=800,height=750');
