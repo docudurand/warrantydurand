@@ -1106,15 +1106,21 @@ function ouvrirFournisseur(id) {
       <form id="fournisseurForm" enctype="multipart/form-data">
         <label for="fournisseur-select">Fournisseur</label>
        <select id="fournisseur-select" name="fournisseur">
+		  <option value="AUTOGAMMA">AUTOGAMMA</option>
 		  <option value="BOSCH MACHINE TOURNANTE">BOSCH MACHINE TOURNANTE</option>
+		  <option value="DELPHI">DELPHI</option>
 		  <option value="EFI">EFI</option>
           <option value="FEBI">FEBI</option>
 		  <option value="INTFRADIS">INTFRADIS</option>
 		  <option value="MAGNETI">MAGNETI</option>
           <option value="METELLI">METELLI</option>
+		  <option value="MS MOTORS">MS MOTORS</option>
+		  <option value="NGK">NGK</option>
+		  <option value="NRF">NRF</option>
 		  <option value="QH">QH</option>
 		  <option value="RIAL">RIAL</option>
 		  <option value="SEIM">SEIM</option>
+		  <option value="SPILU">SPILU</option>
         </select>
         <label for="message-input">Message (optionnel)</label>
         <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical; padding:6px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px;"></textarea>
@@ -1157,6 +1163,12 @@ if (supVal === 'MAGNETI') pdfFile = 'FORMULAIRE_MAGNETI.pdf';
 if (supVal === 'QH') pdfFile = 'FORMULAIRE_QH.pdf';
 if (supVal === 'RIAL') pdfFile = 'DEMANDE_RIAL.pdf';
 if (supVal === 'SEIM') pdfFile = 'Formulaire_SEIM.pdf';
+if (supVal === 'AUTOGAMMA') pdfFile = 'Formulaire_ AUTOGAMMA.pdf';
+if (supVal === 'DELPHI') pdfFile = 'Formulaire_delphi.pdf';
+if (supVal === 'MS MOTORS') pdfFile = 'FORMULAIRE_ms.pdf';
+if (supVal === 'NGK') pdfFile = 'Formulaire_ngk.pdf';
+if (supVal === 'NRF') pdfFile = 'Formulaire_nrf.pdf';
+if (supVal === 'SPILU') pdfFile = 'formulaire_spilu.pdf';
 const pdfUrl = `/templates/${pdfFile}`;
 
     const formWin = window.open('', '_blank', 'width=800,height=750');

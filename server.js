@@ -50,6 +50,12 @@ const FOURNISSEUR_MAILS = {
   "QH": "d.pichard2007@gmail.com",
   "RIAL": "d.pichard2007@gmail.com",
   "SEIM": "d.pichard2007@gmail.com",
+  "AUTOGAMMA": "d.pichard2007@gmail.com",
+  "DELPHI": "d.pichard2007@gmail.com",
+  "MS MOTORS": "d.pichard2007@gmail.com",
+  "NGK": "d.pichard2007@gmail.com",
+  "NRF": "d.pichard2007@gmail.com",
+  "SPILU": "d.pichard2007@gmail.com",
 };
 
 const FOURNISSEUR_PDFS = {
@@ -61,7 +67,13 @@ const FOURNISSEUR_PDFS = {
   MAGNETI: path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
   QH: path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
   RIAL: path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-  SEIM: path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf")
+  SEIM: path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
+  AUTOGAMMA: path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
+  DELPHI: path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
+  "MS MOTORS": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
+  NGK: path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
+  NRF: path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
+  SPILU: path.join(__dirname, "formulaire", "formulaire_spilu.pdf")
 };
 
 const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
@@ -616,7 +628,13 @@ app.get("/templates/:name", (req, res) => {
 	"FORMULAIRE_MAGNETI.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
 	"FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
 	"DEMANDE_RIAL.pdf": path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-	"Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf")
+	"Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
+	"Formulaire_ AUTOGAMMA.pdf": path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
+	"Formulaire_delphi.pdf": path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
+	"FORMULAIRE_ms.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
+	"Formulaire_ngk.pdf": path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
+	"Formulaire_nrf.pdf": path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
+	"formulaire_spilu.pdf": path.join(__dirname, "formulaire", "formulaire_spilu.pdf")
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
