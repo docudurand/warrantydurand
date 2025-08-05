@@ -27,10 +27,12 @@
     .counter-card .counter-label.orange { color: #f8a900; }
     .counter-card .counter-label.green { color: #168b3e; }
     .counter-card .counter-label.red { color: #bb1810; }
+	.counter-card .counter-label.blue { color: #1978d2; }
     .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
+	.counter-card .counter-value.blue { color: #1978d2; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
 	td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
@@ -416,7 +418,7 @@ function afficherCompteurs(dossiers) {
   const stats = [
     { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
     { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
-    { label: "En attente d'info", val: "en attente d'info", color:"green" },
+    { label: "En attente d'info", val: "en attente d'info", color:"blue" },
     { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
   ];
   let html = "";
