@@ -581,7 +581,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-  <td colspan="${isSuperAdmin ? 13 : 11}">
+  <td colspan="${isSuperAdmin ? 13 : 12}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
       <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
         <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
