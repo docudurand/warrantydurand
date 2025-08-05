@@ -25,7 +25,7 @@ const MAGASINS = [
 ];
 
 const MAGASIN_MAILS = {
-  "Annemasse": "respmagannemasse@durandservices.fr",
+  "Annemasse": "respmagannemasse@durandservices.fr,magvl5annemasse@durandservices.fr",
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
   "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
   "Chassieu": "respmagchassieu@durandservices.fr",
