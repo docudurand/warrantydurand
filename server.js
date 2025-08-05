@@ -29,7 +29,7 @@ const MAGASIN_MAILS = {
   "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
   "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
   "Chassieu": "respmagchassieu@durandservices.fr",
-  "Gleize": "magvl4gleize@durandservices.fr",
+  "Gleize": "magvl4gleize@durandservices.fr;d.pichard2007@gmail.com",
   "La Motte-Servolex": "respmaglms@durandservices.fr",
   "Les Echets": "magvlmiribel@durandservices.fr",
   "Rives": "magvl3rives@durandservices.fr",
