@@ -250,32 +250,55 @@ function cleanupFiles(arr) {
 }
 async function saveBackupFTP() {
   const client = await getFTPClient();
+  const BACKUP_EXT = ".json";
+  let createdName = "";
   try {
     const d = new Date();
     const pad = n => String(n).padStart(2, "0");
-    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    const name = `sauvegarde-garantie-${dateStr}.json`;
-    const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
+    const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+    createdName = `sauvegarde-garantie-${stamp}${BACKUP_EXT}`;
+    const remoteBackupPath = path.posix.join(FTP_BACKUP_FOLDER, createdName);
 
-    await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
-    if (fs.existsSync("tmpb.json")) {
-      await client.uploadFrom("tmpb.json", remotePath);
-      fs.unlinkSync("tmpb.json");
+    const tmpJson = path.join(__dirname, "tmpb_demandes.json");
+    await client.downloadTo(tmpJson, JSON_FILE_FTP).catch(() => {});
+    if (fs.existsSync(tmpJson)) {
+      await client.uploadFrom(tmpJson, remoteBackupPath);
+      try { fs.unlinkSync(tmpJson); } catch {}
+      console.log(`[BACKUP] Créée: ${createdName}`);
+    } else {
+      console.warn("[BACKUP] Rien créé: demandes.json introuvable sur le FTP.");
     }
 
     const files = await client.list(FTP_BACKUP_FOLDER);
+
     const backups = files
-      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
+      .filter(f =>
+        f.isFile &&
+        f.name.startsWith("sauvegarde-garantie-") &&
+        f.name.endsWith(BACKUP_EXT)
+      )
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    while (backups.length > 5) {
-      await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
-      backups.shift();
+    console.log(`[BACKUP] Total détecté: ${backups.length} (extension ${BACKUP_EXT}).`);
+
+    const toDelete = backups.slice(0, Math.max(0, backups.length - 5));
+    for (const f of toDelete) {
+      const p = path.posix.join(FTP_BACKUP_FOLDER, f.name);
+      try {
+        await client.remove(p);
+        console.log(`[BACKUP] Supprimée (ancienne): ${f.name}`);
+      } catch (err) {
+        console.error(`[BACKUP] Échec suppression ${f.name}:`, err?.message || err);
+      }
     }
+
+  } catch (err) {
+    console.error("[BACKUP] Erreur globale:", err?.message || err);
   } finally {
     client.close();
   }
 }
+
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
