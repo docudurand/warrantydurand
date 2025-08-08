@@ -251,47 +251,43 @@ function cleanupFiles(arr) {
 async function saveBackupFTP() {
   const client = await getFTPClient();
   const BACKUP_EXT = ".json";
-  let createdName = "";
   try {
+    await client.ensureDir(FTP_BACKUP_FOLDER);
+    await client.cd(FTP_BACKUP_FOLDER);
+
     const d = new Date();
     const pad = n => String(n).padStart(2, "0");
     const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    createdName = `sauvegarde-garantie-${stamp}${BACKUP_EXT}`;
-    const remoteBackupPath = path.posix.join(FTP_BACKUP_FOLDER, createdName);
+    const createdName = `sauvegarde-garantie-${stamp}${BACKUP_EXT}`;
 
     const tmpJson = path.join(__dirname, "tmpb_demandes.json");
-    await client.downloadTo(tmpJson, JSON_FILE_FTP).catch(() => {});
+    await client.downloadTo(tmpJson, path.posix.join(FTP_BACKUP_FOLDER, "demandes.json")).catch(() => {});
     if (fs.existsSync(tmpJson)) {
-      await client.uploadFrom(tmpJson, remoteBackupPath);
+      await client.uploadFrom(tmpJson, createdName);
       try { fs.unlinkSync(tmpJson); } catch {}
       console.log(`[BACKUP] Créée: ${createdName}`);
     } else {
       console.warn("[BACKUP] Rien créé: demandes.json introuvable sur le FTP.");
     }
 
-    const files = await client.list(FTP_BACKUP_FOLDER);
-
+    const files = await client.list();
     const backups = files
-      .filter(f =>
-        f.isFile &&
-        f.name.startsWith("sauvegarde-garantie-") &&
-        f.name.endsWith(BACKUP_EXT)
-      )
+      .filter(f => typeof f.name === "string"
+        && f.name.startsWith("sauvegarde-garantie-")
+        && f.name.endsWith(BACKUP_EXT))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     console.log(`[BACKUP] Total détecté: ${backups.length} (extension ${BACKUP_EXT}).`);
 
     const toDelete = backups.slice(0, Math.max(0, backups.length - 5));
     for (const f of toDelete) {
-      const p = path.posix.join(FTP_BACKUP_FOLDER, f.name);
       try {
-        await client.remove(p);
+        await client.remove(f.name);
         console.log(`[BACKUP] Supprimée (ancienne): ${f.name}`);
       } catch (err) {
         console.error(`[BACKUP] Échec suppression ${f.name}:`, err?.message || err);
       }
     }
-
   } catch (err) {
     console.error("[BACKUP] Erreur globale:", err?.message || err);
   } finally {
