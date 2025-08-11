@@ -9,7 +9,6 @@ import mime from "mime-types";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
-import { execSync } from "child_process";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
@@ -53,84 +52,18 @@ const FOURNISSEUR_MAILS = {
 };
 
 const FOURNISSEUR_PDFS = {
-  FEBI: path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
-  METELLI: path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-  EFI: path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
-  MAGNETI: path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
-  QH: path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
-  RIAL: path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-  AUTOGAMMA: path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
-  DELPHI: path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
-  "MS MOTORS": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
-  NGK: path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
-  NRF: path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
+  "FEBI": "FICHE_GARANTIE_FEBI.pdf",
+  "METELLI": "formulaire_garantie_metelli.pdf",
+  "EFI": "Formulaire_EFI.pdf",
+  "MAGNETI": "FORMULAIRE_MAGNETI.pdf",
+  "QH": "FORMULAIRE_QH.pdf",
+  "RIAL": "DEMANDE_RIAL.pdf",
+  "AUTOGAMMA": "Formulaire_ AUTOGAMMA.pdf",
+  "DELPHI": "Formulaire_delphi.pdf",
+  "MS MOTORS": "FORMULAIRE_ms.pdf",
+  "NGK": "Formulaire_ngk.pdf",
+  "NRF": "Formulaire_nrf.pdf"
 };
-
-const PDF_FOURNISSEUR_PATH = path.join(__dirname, "FICHE_GARANTIE_FEBI.pdf");
-
-async function createFournisseurPDF(dossier) {
-  return new Promise((resolve, reject) => {
-    const baseName = `fourn_${Date.now()}`;
-    const pngPath = path.join(__dirname, `${baseName}.png`);
-    try {
-      execSync(`pdftoppm -png -singlefile -f 1 -l 1 "${PDF_FOURNISSEUR_PATH}" "${pngPath.slice(0, -4)}"`);
-    } catch (e) {
-      return reject(e);
-    }
-    const doc = new PDFDocument({ autoFirstPage: false });
-    const chunks = [];
-    doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => {
-      try { if (fs.existsSync(pngPath)) fs.unlinkSync(pngPath); } catch {}
-      resolve(Buffer.concat(chunks));
-    });
-    doc.addPage({ size: 'A4' });
-    doc.image(pngPath, 0, 0, { width: doc.page.width, height: doc.page.height });
-    doc.fontSize(8).fillColor('#000000');
-    const x = 200;
-    let y = 135;
-    if (dossier.produit_concerne) {
-      doc.text(dossier.produit_concerne, x, y, { width: 330, continued: false });
-    }
-    y += 25;
-    let ref = dossier.reference_piece || '';
-    if (dossier.quantite_posee) ref += ` (x${dossier.quantite_posee})`;
-    if (ref) {
-      doc.text(ref, x, y, { width: 330 });
-    }
-    y += 45;
-    if (dossier.marque_produit) {
-      doc.text(dossier.marque_produit, x, y, { width: 330 });
-    }
-    y += 25;
-    if (dossier.modele_vehicule) {
-      doc.text(dossier.modele_vehicule, x, y, { width: 330 });
-    }
-    y += 25;
-    if (dossier.num_serie) {
-      doc.text(dossier.num_serie, x, y, { width: 330 });
-    }
-    y += 25;
-    if (dossier.premiere_immat) {
-      const year = new Date(dossier.premiere_immat).getFullYear();
-      if (!isNaN(year)) doc.text(String(year), x, y, { width: 330 });
-    }
-    y += 25;
-    if (dossier.date_pose) {
-      const date = new Date(dossier.date_pose).toLocaleDateString('fr-FR');
-      doc.text(date, x, y, { width: 330 });
-    }
-    y += 25;
-    if (dossier.km_pose) {
-      doc.text(String(dossier.km_pose), x, y, { width: 330 });
-    }
-    const defectY = 435;
-    if (dossier.probleme_rencontre) {
-      doc.text(dossier.probleme_rencontre, 120, defectY, { width: 430 });
-    }
-    doc.end();
-  });
-}
 
 const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = process.env.FTP_PORT;
@@ -167,6 +100,7 @@ async function getFTPClient() {
   });
   return client;
 }
+
 async function readDataFTP() {
   const client = await getFTPClient();
   let json = [];
@@ -181,6 +115,7 @@ async function readDataFTP() {
   client.close();
   return json;
 }
+
 async function writeDataFTP(data) {
   const client = await getFTPClient();
   const tmp = path.join(__dirname, "temp_demandes.json");
@@ -191,6 +126,7 @@ async function writeDataFTP(data) {
   client.close();
   console.log(`[SAVE] Fichier demandes.json mis à jour sur FTP (${data.length} dossiers)`);
 }
+
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   const client = await getFTPClient();
   const remoteName = remoteFileName || path.basename(localPath);
@@ -198,12 +134,14 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   await client.uploadFrom(localPath, remotePath);
   client.close();
 }
+
 async function deleteFileFromFTP(remoteFileName) {
   const client = await getFTPClient();
   const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
   await client.remove(remotePath).catch(()=>{});
   client.close();
 }
+
 async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   const client = await getFTPClient();
   let tempPath = path.join(__dirname, "tempdl_"+fileName);
@@ -211,11 +149,11 @@ async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
   client.close();
   if (fs.existsSync(tempPath)) {
     const ext = (fileName||"").split('.').pop().toLowerCase();
-if(["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-  res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
-} else {
-  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-}
+    if(["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+      res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
+    } else {
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    }
     if (mimeType) res.setHeader("Content-Type", mimeType);
     const s = fs.createReadStream(tempPath);
     s.pipe(res);
@@ -224,6 +162,7 @@ if(["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
     res.status(404).send("Not found");
   }
 }
+
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -237,6 +176,7 @@ async function fetchFilesFromFTP(fileObjs) {
   client.close();
   return files;
 }
+
 function cleanupFiles(arr) {
   if (!arr || !arr.length) return;
   for (let f of arr) {
@@ -249,6 +189,7 @@ async function getLogoBuffer() {
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data, "binary");
 }
+
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -371,8 +312,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         from: "Garantie <" + process.env.GMAIL_USER + ">",
         to: d.email,
         subject: "Demande de Garantie Envoyée",
-        text:
-`Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.
+        text: `Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.
 
 Cordialement
 L'équipe Durand Services Garantie.
@@ -519,10 +459,10 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
       const f = req.files.formulaire[0];
       attachments.push({ filename: f.originalname, path: f.path });
     }
-	const magasin = dossier.magasin;
-const magasinEmail = MAGASIN_MAILS[magasin] || "";
-const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
-const html = `<div style="font-family:sans-serif;">
+    const magasin = dossier.magasin;
+    const magasinEmail = MAGASIN_MAILS[magasin] || "";
+    const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
+    const html = `<div style="font-family:sans-serif;">
   <p>Bonjour,</p>
   <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
   ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
@@ -531,13 +471,13 @@ const html = `<div style="font-family:sans-serif;">
   </p>
   <p>Cordialement,<br>L'équipe Garantie Durand Services</p>
 </div>`;
-await mailer.sendMail({
-  from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
-  to: emailDest,
-  subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
-  html,
-  attachments
-});
+    await mailer.sendMail({
+      from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
+      to: emailDest,
+      subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
+      html,
+      attachments
+    });
     cleanupFiles(docs);
     if (req.files) {
       const all = Object.values(req.files).reduce((acc, arr) => acc.concat(arr), []);
@@ -580,19 +520,20 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     return res.json({ success: false, message: err.message });
   }
 });
+
 app.get("/templates/:name", (req, res) => {
   const allowed = {
-     "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
+    "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
     "formulaire_garantie_metelli.pdf": path.join(__dirname, "formulaire", "formulaire_garantie_metelli.pdf"),
-	"Formulaire_EFI.pdf": path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
-	"FORMULAIRE_MAGNETI.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
-	"FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
-	"DEMANDE_RIAL.pdf": path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
-	"Formulaire_ AUTOGAMMA.pdf": path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
-	"Formulaire_delphi.pdf": path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
-	"FORMULAIRE_ms.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
-	"Formulaire_ngk.pdf": path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
-	"Formulaire_nrf.pdf": path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
+    "Formulaire_EFI.pdf": path.join(__dirname, "formulaire", "Formulaire_EFI.pdf"),
+    "FORMULAIRE_MAGNETI.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_MAGNETI.pdf"),
+    "FORMULAIRE_QH.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_QH.pdf"),
+    "DEMANDE_RIAL.pdf": path.join(__dirname, "formulaire", "DEMANDE_RIAL.pdf"),
+    "Formulaire_ AUTOGAMMA.pdf": path.join(__dirname, "formulaire", "Formulaire_ AUTOGAMMA.pdf"),
+    "Formulaire_delphi.pdf": path.join(__dirname, "formulaire", "Formulaire_delphi.pdf"),
+    "FORMULAIRE_ms.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
+    "Formulaire_ngk.pdf": path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
+    "Formulaire_nrf.pdf": path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
@@ -600,22 +541,26 @@ app.get("/templates/:name", (req, res) => {
   }
   res.sendFile(filePath);
 });
+
 app.get("/api/admin/dossiers", async (req, res) => {
   let data = await readDataFTP();
   res.json(data);
 });
+
 app.get("/api/mes-dossiers", async (req, res) => {
   let email = (req.query.email||"").toLowerCase();
   let data = await readDataFTP();
   let dossiers = data.filter(d=>d.email && d.email.toLowerCase()===email);
   res.json(dossiers);
 });
+
 app.get("/download/:file", async (req, res) => {
   const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
   const remotePath = path.posix.join(UPLOADS_FTP, file);
   const mimeType = mime.lookup(file) || undefined;
   await streamFTPFileToRes(res, remotePath, file, mimeType);
 });
+
 app.post("/api/admin/login", (req, res) => {
   let pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) return res.json({success:true, isSuper:true, isAdmin:true});
@@ -628,6 +573,7 @@ app.post("/api/admin/login", (req, res) => {
   }
   res.json({success:false, message:"Mot de passe incorrect"});
 });
+
 app.delete("/api/admin/dossier/:id", async (req, res) => {
   if (!req.headers['x-superadmin']) return res.json({success:false, message:"Non autorisé"});
   let { id } = req.params;
@@ -643,6 +589,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   await writeDataFTP(data);
   res.json({success:true});
 });
+
 app.get("/api/admin/export-excel", async (req, res) => {
   let data = await readDataFTP();
   const columns = [
@@ -676,6 +623,8 @@ app.get("/api/admin/export-excel", async (req, res) => {
   await wb.xlsx.write(res);
   res.end();
 });
+
 app.get("/admin", (req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "suivi.html")));
+
 app.listen(PORT, ()=>console.log("Serveur OK "+PORT));
