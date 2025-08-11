@@ -189,6 +189,7 @@ async function writeDataFTP(data) {
   await client.uploadFrom(tmp, JSON_FILE_FTP);
   fs.unlinkSync(tmp);
   client.close();
+  console.log(`[SAVE] Fichier demandes.json mis à jour sur FTP (${data.length} dossiers)`);
 }
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   const client = await getFTPClient();
