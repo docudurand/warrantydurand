@@ -308,20 +308,6 @@ let ongletActif = null;
 
 const fileBuffers = {};
 
-const supplierFormFiles = {};
-
-window.addSupplierFormFile = function(id, file) {
-  if (!id || !file) return;
-  supplierFormFiles[id] = file;
-  const container = document.getElementById('supplier-file-' + id);
-  if (container) {
-    container.innerHTML = '';
-    const span = document.createElement('span');
-    span.textContent = file.name;
-    container.appendChild(span);
-  }
-};
-
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
   if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
@@ -1127,7 +1113,7 @@ function ouvrirFournisseur(id) {
         <input type="file" id="file-input" name="fichiers" multiple>
         <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
           <button type="button" class="send-form" style="background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer;">Formulaire</button>
-          <div id="supplier-file-${id}" style="font-size:0.94em;color:#234156;"></div>
+
         </div>
         <div class="buttons">
           <button type="button" class="cancel">Annuler</button>
@@ -1245,9 +1231,7 @@ const pdfUrl = `/templates/${pdfFile}`;
     sendBtn.addEventListener('click', async () => {
       const form = win.document.getElementById('fournisseurForm');
       const fd = new FormData(form);
-      if (supplierFormFiles[id]) {
-        fd.append('formulaire', supplierFormFiles[id]);
-      }
+     
       if (statusEl) statusEl.textContent = 'Envoi en cours...';
       try {
         const resp = await fetch('/api/admin/envoyer-fournisseur/' + id, {

@@ -42,7 +42,7 @@ const FOURNISSEUR_MAILS = {
   "METELLI": "chiaraagazzi@metellispa.it",
   "EFI": "sophie.pierret@efiautomotive.com",
   "MAGNETI": "adv.france@marelli.com",
-  "QH": "commandes@quintonhazell.fr ",
+  "QH": "commandes@quintonhazell.fr",
   "RIAL": "celine.loridant@pap-sud.fr",
   "AUTOGAMMA": "retours@autogamma.com",
   "DELPHI": "uklea.warranty@delphi.com",
