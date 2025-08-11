@@ -39,7 +39,7 @@ const MAGASIN_MAILS = {
 
 const FOURNISSEUR_MAILS = {
   "FEBI": "documentsdurand@gmail.com",
-  "METELLI": "chiaraagazzi@metellispa.it",
+  "METELLI": "magvl4gleize@durandservices.fr",
   "EFI": "sophie.pierret@efiautomotive.com",
   "MAGNETI": "adv.france@marelli.com",
   "QH": "commandes@quintonhazell.fr",
