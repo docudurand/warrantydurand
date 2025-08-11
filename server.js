@@ -6,8 +6,6 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import nodemailer from "nodemailer";
 import mime from "mime-types";
-import archiver from "archiver";
-import unzipper from "unzipper";
 import ftp from "basic-ftp";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
@@ -225,10 +223,6 @@ if(["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
     res.status(404).send("Not found");
   }
 }
-function nowSuffix() {
-  const d = new Date();
-  return d.toISOString().slice(0,19).replace(/[-:T]/g,"");
-}
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   const client = await getFTPClient();
@@ -248,34 +242,7 @@ function cleanupFiles(arr) {
     if (f && f.path && fs.existsSync(f.path)) fs.unlinkSync(f.path);
   }
 }
-async function saveBackupFTP() {
-  const client = await getFTPClient();
-  try {
-    const d = new Date();
-    const pad = n => String(n).padStart(2, "0");
-    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
-    const name = `sauvegarde-garantie-${dateStr}.json`;
-    const remotePath = path.posix.join(FTP_BACKUP_FOLDER, name);
 
-    await client.downloadTo("tmpb.json", JSON_FILE_FTP).catch(()=>{});
-    if (fs.existsSync("tmpb.json")) {
-      await client.uploadFrom("tmpb.json", remotePath);
-      fs.unlinkSync("tmpb.json");
-    }
-
-    const files = await client.list(FTP_BACKUP_FOLDER);
-    const backups = files
-      .filter(f => f.name.startsWith("sauvegarde-garantie-") && f.name.endsWith(".json"))
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    while (backups.length > 5) {
-      await client.remove(path.posix.join(FTP_BACKUP_FOLDER, backups[0].name));
-      backups.shift();
-    }
-  } finally {
-    client.close();
-  }
-}
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
@@ -390,7 +357,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     d.documentsAjoutes = [];
     data.push(d);
     await writeDataFTP(data);
-    await saveBackupFTP();
     let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
     let dateStr = "";
     if (d.date) {
@@ -481,7 +447,6 @@ app.post("/api/admin/dossier/:id", upload.fields([
   }
 
   await writeDataFTP(data);
-  await saveBackupFTP();
 
   let mailDoitEtreEnvoye = false;
   let changes = [];
@@ -609,7 +574,6 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
       }
     });
     await writeDataFTP(data);
-    await saveBackupFTP();
     return res.json({ success: true });
   } catch (err) {
     return res.json({ success: false, message: err.message });
@@ -676,68 +640,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   if(dossier.documentsAjoutes){ for(const f of dossier.documentsAjoutes){ await deleteFileFromFTP(f.url); } }
   data.splice(idx,1);
   await writeDataFTP(data);
-  await saveBackupFTP();
   res.json({success:true});
-});
-app.get("/api/admin/exportzip", async (req, res) => {
-  try {
-    const client = await getFTPClient();
-    const fileName = "sauvegarde-garantie-" + nowSuffix() + ".zip";
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    res.setHeader('Content-Type', 'application/zip');
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', err => res.status(500).send({error: err.message}));
-    const tmp = path.join(__dirname, "temp_demandes.json");
-    await client.downloadTo(tmp, JSON_FILE_FTP);
-    archive.file(tmp, { name: "demandes.json" });
-    const uploadFiles = await client.list(UPLOADS_FTP);
-    for(const f of uploadFiles){
-      const tmpFile = path.join(__dirname, "temp_upload_"+f.name);
-      await client.downloadTo(tmpFile, path.posix.join(UPLOADS_FTP, f.name));
-      archive.file(tmpFile, { name: path.posix.join("uploads", f.name) });
-      archive.on('end', ()=>{ if(fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile); });
-    }
-    const output = fs.createWriteStream(path.join(__dirname, "backup_tmp.zip"));
-    archive.pipe(res);
-    archive.pipe(output);
-    archive.finalize();
-    output.on("close", ()=>{
-      if(fs.existsSync(tmp)) fs.unlinkSync(tmp);
-      if(fs.existsSync(path.join(__dirname, "backup_tmp.zip"))) fs.unlinkSync(path.join(__dirname, "backup_tmp.zip"));
-      client.close();
-    });
-  } catch (e) {
-    res.status(500).send({error: e.message});
-  }
-});
-app.post("/api/admin/importzip", upload.single("backupzip"), async (req, res) => {
-  if (!req.file) return res.json({success:false, message:"Aucun fichier reçu"});
-  try {
-    const zipPath = req.file.path;
-    await fs.createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: path.join(__dirname, "tmp_restore") }))
-      .promise();
-    const jsonSrc = path.join(__dirname, "tmp_restore", "demandes.json");
-    if (fs.existsSync(jsonSrc)) {
-      const data = JSON.parse(fs.readFileSync(jsonSrc,"utf8"));
-      await writeDataFTP(data);
-    } else {
-      throw new Error("Le fichier demandes.json est manquant dans l'archive");
-    }
-    const newUploads = path.join(__dirname, "tmp_restore", "uploads");
-    if (fs.existsSync(newUploads)) {
-      const files = fs.readdirSync(newUploads);
-      for(const f of files){
-        await uploadFileToFTP(path.join(newUploads, f), "uploads", f);
-      }
-    }
-    fs.rmSync(path.join(__dirname, "tmp_restore"), { recursive: true, force: true });
-    if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-    await saveBackupFTP();
-    res.json({success:true});
-  } catch (e) {
-    res.json({success:false, message:e.message});
-  }
 });
 app.get("/api/admin/export-excel", async (req, res) => {
   let data = await readDataFTP();
