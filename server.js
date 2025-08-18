@@ -49,6 +49,7 @@ const FOURNISSEUR_MAILS = {
   "MS MOTORS": "Lionel.Doutre@fr.rheinmetall.com",
   "NGK": "ngk-service-technique@ngkntk.fr",
   "NRF": "litiges@nrf.eu",
+  "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
 };
 
 const FOURNISSEUR_PDFS = {

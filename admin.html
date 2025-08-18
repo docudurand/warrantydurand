@@ -1096,6 +1096,7 @@ function ouvrirFournisseur(id) {
         <label for="fournisseur-select">Fournisseur</label>
        <select id="fournisseur-select" name="fournisseur">
 		  <option value="AUTOGAMMA">AUTOGAMMA</option>
+		  <option value="BOSCH FREINAGE">BOSCH FREINAGE</option>
 		  <option value="DELPHI">DELPHI</option>
 		  <option value="EFI">EFI</option>
           <option value="FEBI">FEBI</option>
@@ -1130,6 +1131,18 @@ function ouvrirFournisseur(id) {
   const sendBtn = win.document.querySelector('.send');
   const formBtn = win.document.querySelector('.send-form');
   const statusEl = win.document.getElementById('status-msg');
+  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE"]);
+
+function updateFormButtonVisibility() {
+  if (!formBtn) return;
+  const supVal = supplierSelect ? supplierSelect.value : "";
+  formBtn.style.display = HIDE_FORM_FOR.has(supVal) ? "none" : "inline-block";
+}
+
+if (supplierSelect) {
+  updateFormButtonVisibility();
+  supplierSelect.addEventListener("change", updateFormButtonVisibility);
+}
   if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
       win.close();
@@ -1139,21 +1152,27 @@ if (formBtn) {
   formBtn.addEventListener('click', () => {
     const supplierSelect = win.document.getElementById('fournisseur-select');
     const supVal = supplierSelect ? supplierSelect.value : '';
-    let pdfFile = 'FICHE_GARANTIE_FEBI.pdf';
-if (supVal === 'METELLI') pdfFile = 'formulaire_garantie_metelli.pdf';
-if (supVal === 'EFI') pdfFile = 'Formulaire_EFI.pdf';
-if (supVal === 'MAGNETI') pdfFile = 'FORMULAIRE_MAGNETI.pdf';
-if (supVal === 'QH') pdfFile = 'FORMULAIRE_QH.pdf';
-if (supVal === 'RIAL') pdfFile = 'DEMANDE_RIAL.pdf';
-if (supVal === 'AUTOGAMMA') pdfFile = 'Formulaire_ AUTOGAMMA.pdf';
-if (supVal === 'DELPHI') pdfFile = 'Formulaire_delphi.pdf';
-if (supVal === 'MS MOTORS') pdfFile = 'FORMULAIRE_ms.pdf';
-if (supVal === 'NGK') pdfFile = 'Formulaire_ngk.pdf';
-if (supVal === 'NRF') pdfFile = 'Formulaire_nrf.pdf';
-const pdfUrl = `/templates/${pdfFile}`;
 
+    const pdfMap = {
+      "FEBI": "FICHE_GARANTIE_FEBI.pdf",
+      "METELLI": "formulaire_garantie_metelli.pdf",
+      "EFI": "Formulaire_EFI.pdf",
+      "MAGNETI": "FORMULAIRE_MAGNETI.pdf",
+      "QH": "FORMULAIRE_QH.pdf",
+      "RIAL": "DEMANDE_RIAL.pdf",
+      "AUTOGAMMA": "Formulaire_ AUTOGAMMA.pdf",
+      "DELPHI": "Formulaire_delphi.pdf",
+      "MS MOTORS": "FORMULAIRE_ms.pdf",
+      "NGK": "Formulaire_ngk.pdf",
+      "NRF": "Formulaire_nrf.pdf"
+    };
+    const pdfFile = pdfMap[supVal];
+    if (!pdfFile) {
+      return;
+    }
+
+    const pdfUrl = `/templates/${pdfFile}`;
     const formWin = window.open('', '_blank', 'width=800,height=750');
-    const formHtml = `
 <html>
 <head>
   <meta charset="UTF-8">
