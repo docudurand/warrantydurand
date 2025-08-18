@@ -50,6 +50,7 @@ const FOURNISSEUR_MAILS = {
   "NGK": "ngk-service-technique@ngkntk.fr",
   "NRF": "litiges@nrf.eu",
   "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
+  "CORTECO": "frederic.jannet@corteco.fr",
 };
 
 const FOURNISSEUR_PDFS = {
