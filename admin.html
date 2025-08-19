@@ -1104,6 +1104,7 @@ function ouvrirFournisseur(id) {
           <option value="DELPHI">DELPHI</option>
           <option value="EFI">EFI</option>
           <option value="FEBI">FEBI</option>
+		  <option value="KYB">KYB</option>
           <option value="MAGNETI">MAGNETI</option>
           <option value="METELLI">METELLI</option>
           <option value="MS MOTORS">MS MOTORS</option>
@@ -1111,6 +1112,9 @@ function ouvrirFournisseur(id) {
           <option value="NRF">NRF</option>
           <option value="QH">QH</option>
           <option value="RIAL">RIAL</option>
+		  <option value="SCHAEFFLER">SCHAEFFLER</option>
+		  <option value="SEIM">SEIM</option>
+		  <option value="VERNET">VERNET-CALORSTAT</option>
         </select>
 
         <label for="message-input">Message (optionnel)</label>
@@ -1141,7 +1145,7 @@ function ouvrirFournisseur(id) {
   const statusEl    = win.document.getElementById('status-msg');
   const supplierSelect = win.document.getElementById('fournisseur-select');
 
-  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO"]);
+  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET-CALORSTAT"]);
   function updateFormButtonVisibility() {
     if (!formBtn) return;
     const supVal = supplierSelect ? supplierSelect.value : "";
@@ -1156,73 +1160,49 @@ function ouvrirFournisseur(id) {
     cancelBtn.addEventListener('click', () => win.close());
   }
 
-  if (formBtn) {
-    formBtn.addEventListener('click', () => {
-      const supVal = supplierSelect ? supplierSelect.value : '';
+if (formBtn) {
+  formBtn.addEventListener('click', () => {
+    const supVal = supplierSelect ? supplierSelect.value : '';
 
-      const pdfMap = {
-        "FEBI": "FICHE_GARANTIE_FEBI.pdf",
-        "METELLI": "formulaire_garantie_metelli.pdf",
-        "EFI": "Formulaire_EFI.pdf",
-        "MAGNETI": "FORMULAIRE_MAGNETI.pdf",
-        "QH": "FORMULAIRE_QH.pdf",
-        "RIAL": "DEMANDE_RIAL.pdf",
-        "AUTOGAMMA": "Formulaire_ AUTOGAMMA.pdf",
-        "DELPHI": "Formulaire_delphi.pdf",
-        "MS MOTORS": "FORMULAIRE_ms.pdf",
-        "NGK": "Formulaire_ngk.pdf",
-        "NRF": "Formulaire_nrf.pdf"
-      };
+    const resourceMap = {
+      "FEBI":       { type: "pdf", file: "FICHE_GARANTIE_FEBI.pdf" },
+      "METELLI":    { type: "pdf", file: "formulaire_garantie_metelli.pdf" },
+      "EFI":        { type: "pdf", file: "Formulaire_EFI.pdf" },
+      "MAGNETI":    { type: "pdf", file: "FORMULAIRE_MAGNETI.pdf" },
+      "QH":         { type: "pdf", file: "FORMULAIRE_QH.pdf" },
+      "RIAL":       { type: "pdf", file: "DEMANDE_RIAL.pdf" },
+      "AUTOGAMMA":  { type: "pdf", file: "Formulaire_ AUTOGAMMA.pdf" },
+      "DELPHI":     { type: "pdf", file: "Formulaire_delphi.pdf" },
+      "MS MOTORS":  { type: "pdf", file: "FORMULAIRE_ms.pdf" },
+      "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
+      "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
+      "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
 
-      const pdfFile = pdfMap[supVal];
-      if (!pdfFile) return; // rien à ouvrir s'il n'y a pas de PDF
+      "SCHAEFFLER": { 
+        type: "url",
+        link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081"
+      }
+    };
 
-      const pdfUrl = `/templates/${pdfFile}`;
+    const res = resourceMap[supVal];
+    if (!res) return;
 
-      const formHtml = `
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Formulaire ${supVal}</title>
-          <style>
-            html, body { height: 100%; margin: 0; padding: 0; }
-            body {
-              font-family: 'Segoe UI', Arial, sans-serif;
-              background: #f9fafb;
-              height: 100vh;
-              display: flex;
-              flex-direction: column;
-            }
-            h3 { color: #006e90; font-size: 1.4em; margin: 20px 0 0; text-align: center;}
-            .pdf-form-container { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-            .pdf-fullheight { flex: 1 1 0; width: 100%; height: 100%; border: none; display: block; }
-            .buttons { display: flex; gap: 14px; justify-content: center; margin: 0 0 22px; }
-            .buttons button { padding: 10px 36px; font-size: 1.05em; border: none; border-radius: 8px; cursor: pointer; background: #bb1810; color: #fff; }
-            .buttons button:hover { background: #d32121; }
-          </style>
-        </head>
-        <body>
-          <h3>Formulaire ${supVal}</h3>
-          <div class="pdf-form-container">
-            <embed src="${pdfUrl}" type="application/pdf" class="pdf-fullheight">
-          </div>
-          <div class="buttons">
-            <button type="button" class="cancel">Fermer</button>
-          </div>
-          <script>
-            const cancelBtn2 = document.querySelector('.cancel');
-            cancelBtn2.addEventListener('click', () => { window.close(); });
-          <\/script>
-        </body>
-        </html>
-      `;
-
+    if (res.type === "pdf") {
+      const pdfUrl = `/templates/${res.file}`;
       const formWin = window.open('', '_blank', 'width=800,height=750');
       formWin.document.open();
-      formWin.document.write(formHtml);
+      formWin.document.write(`
+        <html><head><meta charset="UTF-8"><title>Formulaire ${supVal}</title></head>
+        <body style="margin:0;padding:0;">
+          <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
+        </body></html>
+      `);
       formWin.document.close();
-    });
-  }
+    } else if (res.type === "url") {
+      window.open(res.link, '_blank');
+    }
+  });
+}
 
   if (sendBtn) {
     sendBtn.addEventListener('click', async () => {

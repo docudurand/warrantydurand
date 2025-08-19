@@ -51,6 +51,10 @@ const FOURNISSEUR_MAILS = {
   "NRF": "litiges@nrf.eu",
   "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
   "CORTECO": "frederic.jannet@corteco.fr",
+  "KYB": "s.mainetti@kyb-europe.com",
+  "VERNET": "coste@vernet.fr",
+  "SEIM": "distribution@akwel-automotive.com",
+  "SCHAEFFLER": "magvl4gleize@durandservices.fr",
 };
 
 const FOURNISSEUR_PDFS = {
@@ -64,7 +68,8 @@ const FOURNISSEUR_PDFS = {
   "DELPHI": "Formulaire_delphi.pdf",
   "MS MOTORS": "FORMULAIRE_ms.pdf",
   "NGK": "Formulaire_ngk.pdf",
-  "NRF": "Formulaire_nrf.pdf"
+  "NRF": "Formulaire_nrf.pdf",
+  "SEIM": "Formulaire_SEIM.pdf"
 };
 
 const FTP_HOST = process.env.FTP_HOST;
