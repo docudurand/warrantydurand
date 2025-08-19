@@ -481,6 +481,7 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: emailDest,
+	  replyTo: magasinEmail,
       subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
       html,
       attachments
