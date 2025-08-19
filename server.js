@@ -471,7 +471,7 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     const adminMsg = (req.body && req.body.message) ? String(req.body.message).trim() : "";
     const html = `<div style="font-family:sans-serif;">
   <p>Bonjour,</p>
-  <p>Vous trouverez ci-joint le dossier de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
+  <p>Vous trouverez ci-joint une demande de garantie pour le produit&nbsp;: <strong>${dossier.produit_concerne || ''}</strong>.</p>
   ${adminMsg ? `<p>${adminMsg.replace(/\n/g,'<br>')}</p>` : ''}
   <p style="margin-top:24px;font-weight:bold;">
     Merci de répondre à l'adresse mail : <a href="mailto:${magasinEmail}" style="color:#004080;text-decoration:underline;">${magasinEmail}</a>

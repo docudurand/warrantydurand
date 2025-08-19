@@ -1145,7 +1145,7 @@ function ouvrirFournisseur(id) {
   const statusEl    = win.document.getElementById('status-msg');
   const supplierSelect = win.document.getElementById('fournisseur-select');
 
-  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET-CALORSTAT"]);
+  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET"]);
   function updateFormButtonVisibility() {
     if (!formBtn) return;
     const supVal = supplierSelect ? supplierSelect.value : "";
