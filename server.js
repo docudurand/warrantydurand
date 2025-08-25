@@ -197,25 +197,26 @@ async function getLogoBuffer() {
   return Buffer.from(res.data, "binary");
 }
 
-
-// Helper: format "YYYY-MM-DD" or parseable date -> "jj mm aa"
-function formatDateJJMMAA(input, sep = " ") {
+function formatDateJJMMAAAA(input) {
   if (!input) return "";
   const s = String(input).trim();
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   let y, mo, d;
-  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
-  else {
+  if (m) {
+    y = +m[1];
+    mo = +m[2];
+    d = +m[3];
+  } else {
     const dt = new Date(s);
     if (isNaN(dt)) return s;
     y = dt.getFullYear();
     mo = dt.getMonth() + 1;
     d = dt.getDate();
   }
-  const dd = String(d).padStart(2,"0");
-  const mm = String(mo).padStart(2,"0");
-  const yy = String(y).slice(-2);
-  return [dd, mm, yy].join(sep);
+  const dd = String(d).padStart(2, "0");
+  const mm = String(mo).padStart(2, "0");
+  const yyyy = String(y);
+  return `${dd}/${mm}/${yyyy}`;
 }
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
@@ -258,16 +259,15 @@ async function creerPDFDemande(d, nomFichier) {
         ["Marque", d.marque_vehicule || ""],
         ["Modèle", d.modele_vehicule || ""],
         ["Numéro de série", d.num_serie || ""],
-        ["1ère immatriculation", formatDateJJMMAA(d.premiere_immat) || "", "rowline"],
-        ["Date de pose", formatDateJJMMAA(d.date_pose) || ""],
-        ["Date du constat", formatDateJJMMAA(d.date_constat) || ""],
+        ["1ère immatriculation", formatDateJJMMAAAA(d.premiere_immat) || "", "rowline"],
+		["Date de pose", formatDateJJMMAAAA(d.date_pose)       || ""],
+		["Date du constat", formatDateJJMMAAAA(d.date_constat)    || ""],
         ["Kilométrage à la pose", d.km_pose || ""],
         ["Kilométrage au constat", d.km_constat || ""],
         ["N° BL 1ère Vente", d.bl_pose || ""],
         ["N° BL 2ème Vente", d.bl_constat || "", "rowline"],
         ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
       ];
-      // Mesure dynamique des hauteurs (wrap auto pour multiline)
       const sidePad = 16;
       const cornerRad = 14;
       function cellHeightFor(row) {
@@ -285,11 +285,9 @@ async function creerPDFDemande(d, nomFichier) {
       const heights = rows.map(cellHeightFor);
       const tableH = heights.reduce((a,b)=>a+b,0);
 
-      // Dessin du cadre
       doc.roundedRect(x0, y, tableW, tableH, cornerRad).fillAndStroke("#fff", "#3f628c");
       doc.lineWidth(1.7).roundedRect(x0, y, tableW, tableH, cornerRad).stroke("#3f628c");
 
-      // Rendu du contenu
       let yCursor = y;
       for (let i = 0; i < rows.length; i++) {
         const [label, value, type] = rows[i];
