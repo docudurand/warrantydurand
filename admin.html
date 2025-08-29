@@ -10,51 +10,40 @@
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
     .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-
     #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
     #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
-
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
-
     .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
     .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
     .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
     .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
     .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
-
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
     .tab.active { background: #006e90; color: #fff; z-index: 1; }
-
     #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
     .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
     .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
     .counter-card .counter-label.orange { color: #f8a900; }
     .counter-card .counter-label.green { color: #168b3e; }
     .counter-card .counter-label.red { color: #bb1810; }
-    .counter-card .counter-label.blue { color: #1978d2; }
-    .counter-card .counter-label.purple { color: #7a3cff; }
+	.counter-card .counter-label.blue { color: #1978d2; }
     .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
-    .counter-card .counter-value.blue { color: #1978d2; }
-    .counter-card .counter-value.purple { color: #7a3cff; }
-
+	.counter-card .counter-value.blue { color: #1978d2; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
-    td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
+	td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
     th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
     tr:nth-child(even) td { background:#f4fafd;}
     td.action, th.action { min-width: 215px; max-width: 330px; }
-
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
     .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
     .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
-
     .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
     #dossier-list p {margin-top:15px;}
-
     .mini-form-row td { background: #e8f3fa; border-top: 0 ; border-bottom: 2px solid #b3c9d9 ; padding-top: 19px ; padding-bottom: 19px ;}
     .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
     .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
@@ -64,22 +53,23 @@
     .mini-form .bouton { margin-left:7px;}
     .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
     .maj-btn { background: #1780b0; padding: 7px 12px;}
-
     .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
     .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
     .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
     .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
-    .statut-dot.mo { background:#7a3cff; border: 2px solid #cdb5ff; }
-
-    #dossier-list td[id^="pj-"] a { word-break: break-all; white-space: normal; display: inline-block; max-width: 210px; }
+    #dossier-list td[id^="pj-"] a {
+      word-break: break-all;
+      white-space: normal;
+      display: inline-block;
+      max-width: 210px;
+    }
     .mini-form label { font-size: 0.98em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
-
     .mini-form-encadre {
-      overflow-x: auto;
+	overflow-x: auto;
       border: 2px solid #111;
       background: #e8f3fa;
       border-radius: 4px;
@@ -96,27 +86,79 @@
       box-sizing: border-box;
     }
     .mini-form-flex {
-      display: flex; flex-direction: row; gap: 28px; align-items: flex-end; justify-content: flex-start;
-      width: 100%; flex-wrap: wrap; box-sizing: border-box; min-width: 0; max-width: 100%;
+	display: flex;
+  flex-direction: row;
+  gap: 28px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: 100%;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+    .mini-form-encadre .mini-form-flex > * {
+      margin-bottom: 0;
+      white-space: nowrap;
     }
-    .mini-form-encadre .mini-form-flex > * { margin-bottom: 0; white-space: nowrap; }
-    .mini-form-encadre textarea { min-width: 145px; max-width: 320px; }
+    .mini-form-encadre textarea {
+      min-width: 145px;
+      max-width: 320px;
+    }
     @media (max-width: 900px) {
-      .mini-form-encadre .mini-form-flex { flex-wrap: wrap; gap: 10px; }
-      .mini-form-encadre textarea { min-width: 100px; max-width: 100%; }
+      .mini-form-encadre .mini-form-flex {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .mini-form-encadre textarea {
+        min-width: 100px;
+        max-width: 100%;
+      }
     }
     .mini-form-avert {
-      width: 100%; text-align: center; font-size: 0.79em; font-weight: 500; color: #234156;
-      margin-bottom: 4px; margin-top: 0; letter-spacing: 0.01em;
-      display: flex; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap; background: none;
+      width: 100%;
+      text-align: center;
+      font-size: 0.79em;
+      font-weight: 500;
+      color: #234156;
+      margin-bottom: 4px;
+      margin-top: 0;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      background: none;
     }
-    .mini-form-avert .emoji { font-size: 1.10em; color: #f2a000; }
-
-    .file-list { margin: 4px 0 0 0; padding: 0; list-style: none; }
-    .file-list li { margin-bottom: 4px; display: flex; align-items: center; gap: 10px; font-size: 0.97em; }
-    .file-remove { background: #c62828; color: #fff; border: none; border-radius: 3px; padding: 2px 9px; cursor: pointer; font-size: 0.93em; }
-    .file-remove:hover { background: #a11610; }
-
+    .mini-form-avert .emoji {
+      font-size: 1.10em;
+      color: #f2a000;
+    }
+    .file-list {
+      margin: 4px 0 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .file-list li {
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.97em;
+    }
+    .file-remove {
+      background: #c62828;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 9px;
+      cursor: pointer;
+      font-size: 0.93em;
+    }
+    .file-remove:hover {
+      background: #a11610;
+    }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -137,51 +179,87 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
-
-    .mini-form-flex label[style*="flex-direction:column"] b { font-size: 1em; font-weight: 500; color: #195e7c; margin-bottom: 2px; }
+    .mini-form-flex label[style*="flex-direction:column"] b {
+      font-size: 1em;
+      font-weight: 500;
+      color: #195e7c;
+      margin-bottom: 2px;
+    }
     .mini-form-encadre { margin-bottom: 0; }
     .mini-form-flex > div { min-width: 140px; }
-    @media (max-width: 650px) { .mini-form-flex { flex-direction: column ; gap: 15px; } }
-    .mini-form-flex textarea { min-width: 110px; max-width: 230px; min-height: 28px; font-size: 0.96em; padding: 4px 6px; }
-    .mini-form-flex select, .mini-form-flex input[type="file"] { font-size: 0.96em; padding: 5px 9px; }
-
-    .mini-form-upload-block {
-      display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 12px;
-      min-width: 185px; max-width: 240px; width: 100%; box-sizing: border-box;
+    @media (max-width: 650px) {
+      .mini-form-flex { flex-direction: column ; gap: 15px; }
     }
-    .mini-form-upload-block label { margin-bottom: 2px; }
-    .mini-form-upload-block input[type="file"] { margin-bottom: 2px; min-height: 32px; box-sizing: border-box; }
-    .mini-form-upload-block .file-list { width: 100%; max-width: 240px; overflow-x: auto; word-break: break-all; overflow-wrap: break-word; white-space: normal; }
-    .mini-form-upload-block .file-list li { max-width: 220px; overflow-x: auto; text-overflow: ellipsis; white-space: nowrap; display: block; }
-    .mini-form-upload-block .file-list li span { display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
-
-    .switch { position: relative; display: inline-block; width: 58px; height: 30px; }
-    .switch input { display:none; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color:#cfcfe6; transition: .2s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
-    input:checked + .slider { background-color: #7a3cff; }
-    input:checked + .slider:before { transform: translateX(28px); }
+    .mini-form-flex textarea {
+      min-width: 110px;
+      max-width: 230px;
+      min-height: 28px;
+      font-size: 0.96em;
+      padding: 4px 6px;
+    }
+    .mini-form-flex select,
+    .mini-form-flex input[type="file"] {
+      font-size: 0.96em;
+      padding: 5px 9px;
+    }
+.mini-form-upload-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  min-width: 185px;
+  max-width: 240px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mini-form-upload-block label {
+  margin-bottom: 2px;
+}
+.mini-form-upload-block input[type="file"] {
+  margin-bottom: 2px;
+  min-height: 32px;
+  box-sizing: border-box;
+}
+.mini-form-upload-block .file-list {
+  width: 100%;
+  max-width: 240px;
+  overflow-x: auto;
+ word-break: break-all;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+.mini-form-upload-block .file-list li {
+ max-width: 220px;
+  overflow-x: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+.mini-form-upload-block .file-list li span {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
   </style>
 </head>
 <body>
   <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
-
   <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
-
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
-    <button id="btn-login" class="bouton">Connexion</button>
+    <button class="bouton" onclick="adminLogin()">Connexion</button>
     <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
   </div>
-
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
-
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
         <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
@@ -195,27 +273,24 @@
           <option value="accepté">Accepté</option>
           <option value="refusé">Refusé</option>
           <option value="en attente d'info">En attente d'info</option>
-          <option value="Attente MO">Attente MO</option>
         </select>
       </label>
     </div>
-
     <div id="dossier-list"></div>
   </div>
-
   <script>
-function formatDateFRshort(val) {
+  function formatDateFRshort(val) {
   if (!val) return "";
   let d = typeof val === "string" ? new Date(val) : val;
-  if (typeof val === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(val)) {
+  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
     let [y, m, d2] = val.split("-");
-    return \`\${d2}/\${m}/\${y.slice(2)}\`;
+    return `${d2}/${m}/${y.slice(2)}`;
   }
   if (!isNaN(d)) {
     let day = ("0"+d.getDate()).slice(-2);
     let month = ("0"+(d.getMonth()+1)).slice(-2);
     let year = d.getFullYear().toString().slice(-2);
-    return \`\${day}/\${month}/\${year}\`;
+    return `${day}/${month}/${year}`;
   }
   return val;
 }
@@ -235,11 +310,10 @@ const fileBuffers = {};
 
 function statutChip(statut) {
   let s = (statut||"").toLowerCase();
-  if (s==="enregistré") return \`<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>\`;
-  if (s==="accepté") return \`<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>\`;
-  if (s==="refusé") return \`<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>\`;
-  if (s==="en attente d'info") return \`<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>\`;
-  if (s==="attente mo") return \`<span class="statut-chip"><span class="statut-dot mo"></span>Attente MO</span>\`;
+  if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+  if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+  if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+  if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
   return statut||"";
 }
 
@@ -247,9 +321,9 @@ function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
 }
 
-function openExport() {
+document.getElementById("btn-export-excel").onclick = function(){
   window.open('/api/admin/export-excel', '_blank');
-}
+};
 
 function adminLogin() {
   let pw = document.getElementById('admin-pass').value;
@@ -272,24 +346,22 @@ function adminLogin() {
     } else {
       document.getElementById('login-msg').textContent = json.message || "Erreur";
     }
-  }).catch(()=>{
-    document.getElementById('login-msg').textContent = "Erreur réseau";
   });
 }
 window.adminLogin = adminLogin;
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
-    allDossiers = data||[];
+    allDossiers = data;
     afficherOnglets();
     if (!allDossiers || allDossiers.length === 0) {
       document.getElementById("dossier-list").innerHTML =
-        \`<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+        `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
         font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
         ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
         Il est probable que le serveur vient de redémarrer.<br>
         <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
-        </div>\`;
+        </div>`;
       return;
     }
     if (ongletActif === "global") {
@@ -303,23 +375,20 @@ function chargerDossiers() {
 function afficherOnglets() {
   let t = '';
   if (isAdmin || isSuperAdmin) {
-    t += \`<div class="tab\${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>\`;
+    t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
   }
   if (isAdmin || isSuperAdmin) {
     MAGASINS.forEach((m, i) => {
-      t += \`<div class="tab\${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="\${encodeURIComponent(m)}" id="onglet-\${i}">\${m}</div>\`;
+      t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
     });
     document.getElementById('tabs').innerHTML = t;
-    if (document.getElementById('onglet-global')) {
-      document.getElementById('onglet-global').onclick = function() {
-        ongletActif = "global";
-        document.getElementById("statut-filter-label").style.display = "none";
-        afficherGlobal();
-      }
+    document.getElementById('onglet-global').onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
     }
     MAGASINS.forEach((m, i) => {
-      const el = document.getElementById('onglet-' + i);
-      if (el) el.onclick = function() {
+      document.getElementById('onglet-' + i).onclick = function() {
         ongletActif = null;
         document.getElementById("statut-filter-label").style.display = "";
         afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
@@ -327,26 +396,26 @@ function afficherOnglets() {
     });
   } else if(magasinUnique){
     document.getElementById('tabs').innerHTML =
-      \`<div class="tab active" data-magasin="\${encodeURIComponent(magasinUnique)}" id="onglet-0">\${magasinUnique}</div>\`;
+      `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
   }
 }
 
 function afficherCompteurs(dossiers) {
   const stats = [
     { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
-    { label: "Attente MO <span>🛠️</span>", val: "Attente MO", color:"purple" },
     { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
     { label: "En attente d'info<span>📝</span>", val: "en attente d'info", color:"blue" },
     { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
   ];
   let html = "";
   stats.forEach(stat => {
-    const n = dossiers.filter(d => (d.statut||"") === stat.val).length;
-    html += \`
+    const n = dossiers.filter(d => d.statut === stat.val).length;
+    html += `
       <div class="counter-card">
-        <span class="counter-label \${stat.color}">\${stat.label}</span>
-        <span class="counter-value \${stat.color}">\${n}</span>
-      </div>\`;
+        <span class="counter-label ${stat.color}">${stat.label}</span>
+        <span class="counter-value ${stat.color}">${n}</span>
+      </div>
+    `;
   });
   document.getElementById("status-counters").innerHTML = html;
 }
@@ -370,9 +439,9 @@ function afficherFiltres(dossiers, options={}) {
   const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
   moisSel.innerHTML = `<option value="">Tous</option>`;
-  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += \`<option value="\${m}">\${moisLib[i]}</option>\`; });
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
   anneeSel.innerHTML = `<option value="">Toutes</option>`;
-  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += \`<option value="\${a}">\${a}</option>\`; });
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
   document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
@@ -392,9 +461,14 @@ function afficherFiltres(dossiers, options={}) {
     }
   };
 }
+
 document.getElementById('search-client').addEventListener('input', function() {
   rechercheClient = this.value;
-  if(ongletActif === "global"){ afficherGlobal(); } else { afficherDossiers(currentMagasin); }
+  if(ongletActif === "global"){
+    afficherGlobal();
+  } else {
+    afficherDossiers(currentMagasin);
+  }
 });
 
 function afficherDossiers(magasin, forceFiltres=false) {
@@ -433,7 +507,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
     });
   }
   if(filtres.statut) {
-    dossiers = dossiers.filter(d=> (d.statut||"")===filtres.statut );
+    dossiers = dossiers.filter(d=>d.statut===filtres.statut);
   }
 
   let html = `<table>
@@ -452,114 +526,99 @@ function afficherDossiers(magasin, forceFiltres=false) {
       <th class="action">Fournisseur</th>
       ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
     </tr>`;
-
   dossiers.forEach(d=>{
     let id = d.id;
-    let fichiersDocs = [].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[]);
-    fichiersDocs = fichiersDocs.filter((f, i, arr) => f && f.url && arr.findIndex(x => x.url === f.url) === i);
+
+    let fichiersDocs = [].concat(
+	  d.files||[],
+      d.documentsAjoutes||[],
+      d.reponseFiles||[]
+    );
+    fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+      f && f.url && arr.findIndex(x => x.url === f.url) === i
+    );
 
     html += `<tr>
       <td>${d.numero_dossier || ''}</td>
       <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
       <td>${d.nom||''}</td>
       <td>${d.produit_concerne||''}</td>
-      <td>${(d.reference_piece||'').replace(/\\s*\\/\\s*/g, ' /<wbr>')}</td>
+      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
       <td>${d.marque_produit||''}</td>
       <td id="statut-${id}">${statutChip(d.statut)}</td>
-      <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\\n/g,"<br>") : ''}</td>
+      <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
       <td id="pj-${id}">
-        <div class="pj-documents">${
+      <div class="pj-documents">
+        ${
           fichiersDocs.length
             ? fichiersDocs.map(f=>{
                 let ext = f.original.split('.').pop().toLowerCase();
                 if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                  return \`<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/\${f.url}','\${f.original}')"><img src="/download/\${f.url}" class="pj-img"></a>\`;
-                } else {
-                  return \`<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/\${f.url}','\${f.original}')">\${f.original}</a>\`;
-                }
+  return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+} else {
+  return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
+}
               }).join("<br>")
             : ""
-        }</div>
+        }
+      </div>
       </td>
       <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
       <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
       <td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>
       ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
     </tr>
-
 <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
   <td colspan="${isSuperAdmin ? 13 : 12}">
     <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
-
       <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
         <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
           <span class="emoji">⚠️</span>
           TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
           <span class="emoji">⚠️</span>
         </div>
-
         <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
-
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
-            <select class="statut-select" name="statut" data-for="${id}">
+            <select class="statut-select" name="statut">
               <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
               <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
               <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-              <option value="Attente MO"${d.statut==="Attente MO"?" selected":""}>Attente MO</option>
             </select>
           </div>
-
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
             <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
             <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
           </div>
-
           <div class="mini-form-upload-block">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>
-            <input type="file" name="reponseFiles" multiple>
-            <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
-          </div>
+  <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>
+  <input type="file" name="reponseFiles" multiple>
+  <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
+</div>
         </div>
       </div>
-
-      <div>
-        <div class="mini-form-upload-block">
-          <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
-          <input type="file" name="documentsAjoutes" multiple>
-          <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+      <div class="mini-form-upload-block">
+  <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+  <input type="file" name="documentsAjoutes" multiple>
+  <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+</div>
+        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
+  <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
+  <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
+  <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:9px; margin-left:14px; align-self:flex-start;">Compléter Dossier</button>
+</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
+          <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
+          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
+          <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
         </div>
-
-        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;">
-          <label style="font-size:1em;font-weight:600;color:#195e7c;">Attente MO</label>
-          <label class="switch" title="Basculer le dossier en Attente MO (non notifié au client)">
-            <input type="checkbox" name="attente_mo" id="attente_mo-${id}" ${ (d.attente_mo || d.statut==="Attente MO") ? 'checked' : '' }>
-            <span class="slider"></span>
-          </label>
-          <small style="color:#555;line-height:1.2;max-width:220px;">
-            Quand ce curseur est <b>activé</b>, le statut passe en <b>Attente MO</b> sans notification client.<br>
-            En <b>Accepté</b>, il se désactive automatiquement.
-          </small>
-        </div>
-
-        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-top:16px; margin-bottom:40px;">
-          <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:2px;">Numéro d'avoir</label>
-          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;">
-          <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:9px; align-self:flex-start;">Compléter Dossier</button>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
-        <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
-        <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
-        <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
       </div>
     </form>
   </td>
-</tr>`;
+</tr>
+`;
   });
-
   html += `</table>`;
   document.getElementById('dossier-list').innerHTML = html;
 
@@ -572,20 +631,6 @@ function afficherDossiers(magasin, forceFiltres=false) {
         row.style.display = "table-row";
         row.scrollIntoView({behavior:"smooth",block:"center"});
         setTimeout(()=>initMiniFormBuffer(id), 20);
-
-        const select = row.querySelector('select.statut-select[name="statut"]');
-        const toggle = row.querySelector('#attente_mo-'+id);
-        if (select && toggle) {
-          const syncToggle = () => {
-            if (select.value === "accepté") { toggle.checked = false; toggle.disabled = true; }
-            else { toggle.disabled = false; }
-            toggle.onchange = () => {
-              if (toggle.checked) select.value = "Attente MO";
-            };
-          };
-          select.addEventListener('change', syncToggle);
-          syncToggle();
-        }
       }
     };
   });
@@ -596,29 +641,24 @@ function afficherDossiers(magasin, forceFiltres=false) {
       let id = this.getAttribute('data-id');
       let fd = new FormData(this);
 
-      const chk = this.querySelector('#attente_mo-'+id);
-      if (chk) fd.set('attente_mo', chk.checked ? 'on' : 'off');
-
       ["reponseFiles", "documentsAjoutes"].forEach(field=>{
         if(fileBuffers[id] && fileBuffers[id][field]) {
-          fileBuffers[id][field].forEach(f=>fd.append(field, f));
+          fileBuffers[id][field].forEach(f=>{
+            fd.append(field, f);
+          });
         }
       });
 
       this.querySelector('.admin-msg').textContent = "Envoi...";
-      try {
-        let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
-        let json = await resp.json();
-        if (json.success) {
-          this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
-          setTimeout(()=>{
-            document.getElementById('mini-row-'+id).style.display="none";
-            chargerDossiers();
-          }, 1100);
-        } else {
-          this.querySelector('.admin-msg').textContent = json.message || "Erreur";
-        }
-      } catch (err) {
+      let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+      let json = await resp.json();
+      if (json.success) {
+        this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
+        setTimeout(()=>{
+          document.getElementById('mini-row-'+id).style.display="none";
+          chargerDossiers();
+        }, 1100);
+      } else {
         this.querySelector('.admin-msg').textContent = "Erreur";
       }
     };
@@ -634,11 +674,13 @@ function initMiniFormBuffer(id) {
     if(!input || !ul) return;
     input.value = "";
     ul.innerHTML = "";
+
     input.addEventListener("change", function() {
       Array.from(input.files).forEach(f=>fileBuffers[id][field].push(f));
       renderFileListBuffer(id, field);
       input.value = "";
     });
+
     renderFileListBuffer(id, field);
   });
 }
@@ -706,7 +748,7 @@ function afficherGlobal() {
       <td>${d.magasin||''}</td>
       <td>${d.marque_produit||''}</td>
       <td>${d.produit_concerne||''}</td>
-      <td>${(d.reference_piece||'').replace(/\\s*\\/\\s*/g, ' /<wbr>')}</td>
+      <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
       <td>${d.probleme_rencontre||''}</td>
     </tr>`;
   });
@@ -714,7 +756,9 @@ function afficherGlobal() {
   document.getElementById('dossier-list').innerHTML = html;
 }
 
-function fermerMiniForm(id){ const r=document.getElementById('mini-row-'+id); if(r) r.style.display = "none"; }
+function fermerMiniForm(id){
+  document.getElementById('mini-row-'+id).style.display = "none";
+}
 
 function supprimerDossier(id) {
   if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
@@ -722,7 +766,11 @@ function supprimerDossier(id) {
     method: "DELETE",
     headers: {'x-superadmin': '1'}
   }).then(r=>r.json()).then(json=>{
-    if(json.success){ chargerDossiers(); } else { alert(json.message || "Erreur lors de la suppression"); }
+    if(json.success){
+      chargerDossiers();
+    } else {
+      alert(json.message || "Erreur lors de la suppression");
+    }
   });
 }
 
@@ -735,15 +783,24 @@ function voirDossier(id) {
   let dateStr = "";
   if (d.date) {
     let dt = new Date(d.date);
-    if (!isNaN(dt)) { dateStr = dt.toISOString().slice(0,10); }
+    if (!isNaN(dt)) {
+      dateStr = dt.toISOString().slice(0,10);
+    }
   }
   let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
-  let fichiersDocs = [].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[]).filter(f => f && f.url);
-  fichiersDocs = fichiersDocs.filter((f, i, arr) => arr.findIndex(x => x.url === f.url) === i);
+  let fichiersDocs = [].concat(
+  d.files||[],
+  d.documentsAjoutes||[],
+  d.reponseFiles||[]
+).filter(f => f && f.url);
+fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+  arr.findIndex(x => x.url === f.url) === i
+);
 
   let detailHtml = `
     <html><head>
-    <meta charset="UTF-8"><title>${nomFichier}</title>
+    <meta charset="UTF-8">
+    <title>${nomFichier}</title>
     <style>
       body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
       .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
@@ -773,7 +830,6 @@ function voirDossier(id) {
       .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
       .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
       .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
-      .statut-dot.mo { background:#7a3cff; border: 2px solid #cdb5ff; }
       .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
     </style>
     </head><body>
@@ -810,17 +866,17 @@ function voirDossier(id) {
         <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
         <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
         <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
-        <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\\n/g,"<br>") : ""}</td></tr>
+        <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
         <tr><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
         <tr class="hide-print"><th>Documents ajoutés</th>
           <td>${
             fichiersDocs.length ? fichiersDocs.map(f=>{
               let ext = (f.original||"").split('.').pop().toLowerCase();
               if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                return \`<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/\${f.url}','\${f.original}')"><img src="/download/\${f.url}" class="pj-img"></a>\`;
-              } else {
-                return \`<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/\${f.url}','\${f.original}')">\${f.original||""}</a>\`;
-              }
+  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+} else {
+  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original||""}</a>`;
+}
             }).join("<br>") : ""
           }</td>
         </tr>
@@ -831,10 +887,18 @@ function voirDossier(id) {
         var oldTitle = document.title;
         document.title = filename;
         window.print();
-        setTimeout(function() { document.title = oldTitle; }, 1500);
+        setTimeout(function() {
+          document.title = oldTitle;
+        }, 1500);
       }
-      window.onbeforeprint = function() { document.title = "${nomFichier}"; };
-      window.onafterprint  = function() { setTimeout(function(){ document.title = "${nomFichier}"; }, 500); };
+      window.onbeforeprint = function() {
+        document.title = "${nomFichier}";
+      };
+      window.onafterprint = function() {
+        setTimeout(function(){
+          document.title = "${nomFichier}";
+        }, 500);
+      };
     <\/script>
     </body></html>
   `;
@@ -845,11 +909,15 @@ function voirDossier(id) {
 
 function completerDossier(id) {
   let d = allDossiers.find(x => x.id === id);
-  if (!d) { alert("Dossier introuvable !"); return; }
+  if (!d) {
+    alert("Dossier introuvable !");
+    return;
+  }
   const options = MAGASINS.map(m => `<option value="${m}"${d.magasin === m ? ' selected' : ''}>${m}</option>`).join('');
   let editHtml = `
     <html><head>
-    <meta charset="UTF-8"><title>Compléter Dossier</title>
+    <meta charset="UTF-8">
+    <title>Compléter Dossier</title>
     <style>
       body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
       h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
@@ -868,37 +936,97 @@ function completerDossier(id) {
     <h2>Compléter Dossier</h2>
     <form id="completerForm">
       <div class="form-row">
-        <div class="field"><label>Nom du client</label><input type="text" name="nom" value="${d.nom || ''}"></div>
-        <div class="field"><label>Email</label><input type="email" name="email" value="${d.email || ''}"></div>
+        <div class="field">
+          <label>Nom du client</label>
+          <input type="text" name="nom" value="${d.nom || ''}">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" value="${d.email || ''}">
+        </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Magasin</label><select name="magasin">${options}</select></div>
-        <div class="field"><label>Marque du produit</label><input type="text" name="marque_produit" value="${d.marque_produit || ''}"></div>
-        <div class="field"><label>Produit concerné</label><input type="text" name="produit_concerne" value="${d.produit_concerne || ''}"></div>
+        <div class="field">
+          <label>Magasin</label>
+          <select name="magasin">${options}</select>
+        </div>
+        <div class="field">
+          <label>Marque du produit</label>
+          <input type="text" name="marque_produit" value="${d.marque_produit || ''}">
+        </div>
+        <div class="field">
+          <label>Produit concerné</label>
+          <input type="text" name="produit_concerne" value="${d.produit_concerne || ''}">
+        </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Référence de la pièce</label><input type="text" name="reference_piece" value="${d.reference_piece || ''}"></div>
-        <div class="field"><label>Quantité posée</label><input type="number" name="quantite_posee" value="${d.quantite_posee || ''}"></div>
-        <div class="field"><label>Immatriculation</label><input type="text" name="immatriculation" value="${d.immatriculation || ''}"></div>
+        <div class="field">
+          <label>Référence de la pièce</label>
+          <input type="text" name="reference_piece" value="${d.reference_piece || ''}">
+        </div>
+        <div class="field">
+          <label>Quantité posée</label>
+          <input type="number" name="quantite_posee" value="${d.quantite_posee || ''}">
+        </div>
+        <div class="field">
+          <label>Immatriculation</label>
+          <input type="text" name="immatriculation" value="${d.immatriculation || ''}">
+        </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Marque véhicule</label><input type="text" name="marque_vehicule" value="${d.marque_vehicule || ''}"></div>
-        <div class="field"><label>Modèle véhicule</label><input type="text" name="modele_vehicule" value="${d.modele_vehicule || ''}"></div>
-        <div class="field"><label>Numéro de série</label><input type="text" name="num_serie" value="${d.num_serie || ''}"></div>
+        <div class="field">
+          <label>Marque véhicule</label>
+          <input type="text" name="marque_vehicule" value="${d.marque_vehicule || ''}">
+        </div>
+        <div class="field">
+          <label>Modèle véhicule</label>
+          <input type="text" name="modele_vehicule" value="${d.modele_vehicule || ''}">
+        </div>
+        <div class="field">
+          <label>Numéro de série</label>
+          <input type="text" name="num_serie" value="${d.num_serie || ''}">
+        </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>1ère immatriculation</label><input type="date" name="premiere_immat" value="${d.premiere_immat || ''}"></div>
-        <div class="field"><label>Date de pose</label><input type="date" name="date_pose" value="${d.date_pose || ''}"></div>
-        <div class="field"><label>Date du constat</label><input type="date" name="date_constat" value="${d.date_constat || ''}"></div>
+        <div class="field">
+          <label>1ère immatriculation</label>
+          <input type="date" name="premiere_immat" value="${d.premiere_immat || ''}">
+        </div>
+        <div class="field">
+          <label>Date de pose</label>
+          <input type="date" name="date_pose" value="${d.date_pose || ''}">
+        </div>
+        <div class="field">
+          <label>Date du constat</label>
+          <input type="date" name="date_constat" value="${d.date_constat || ''}">
+        </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Kilométrage à la pose</label><input type="number" name="km_pose" value="${d.km_pose || ''}"></div>
-        <div class="field"><label>Kilométrage au constat</label><input type="number" name="km_constat" value="${d.km_constat || ''}"></div>
-        <div class="field"><label>N° BL 1ère Vente</label><input type="text" name="bl_pose" value="${d.bl_pose || ''}"></div>
-        <div class="field"><label>N° BL 2ème Vente</label><input type="text" name="bl_constat" value="${d.bl_constat || ''}"></div>
+        <div class="field">
+          <label>Kilométrage à la pose</label>
+          <input type="number" name="km_pose" value="${d.km_pose || ''}">
+        </div>
+        <div class="field">
+          <label>Kilométrage au constat</label>
+          <input type="number" name="km_constat" value="${d.km_constat || ''}">
+        </div>
+        <div class="field">
+          <label>N° BL 1ère Vente</label>
+          <input type="text" name="bl_pose" value="${d.bl_pose || ''}">
+        </div>
+        <div class="field">
+          <label>N° BL 2ème Vente</label>
+          <input type="text" name="bl_constat" value="${d.bl_constat || ''}">
+        </div>
       </div>
-      <div class="field" style="margin-top:10px;"><label>Problème rencontré</label><textarea name="probleme_rencontre" rows="4">${d.probleme_rencontre || ''}</textarea></div>
-      <div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="validate">Valider</button></div>
+      <div class="field" style="margin-top:10px;">
+        <label>Problème rencontré</label>
+        <textarea name="probleme_rencontre" rows="4">${d.probleme_rencontre || ''}</textarea>
+      </div>
+      <div class="buttons">
+        <button type="button" class="cancel">Annuler</button>
+        <button type="button" class="validate">Valider</button>
+      </div>
     </form>
     <script>
       const cancelBtn = document.querySelector('.cancel');
@@ -909,28 +1037,43 @@ function completerDossier(id) {
         const data = {};
         new FormData(form).forEach((value, key) => { data[key] = value; });
         fetch('/api/admin/completer-dossier/${id}', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         }).then(resp => resp.json()).then(json => {
           if (json.success) {
-            if (window.opener && window.opener.chargerDossiers) { window.opener.chargerDossiers(); }
+            if (window.opener && window.opener.chargerDossiers) {
+              window.opener.chargerDossiers();
+            }
             window.close();
-          } else { alert('Erreur lors de la mise à jour'); }
+          } else {
+            alert('Erreur lors de la mise à jour');
+          }
         });
       });
     <\/script>
-    </body></html>`;
+    </body></html>
+  `;
   const win = window.open('', '_blank', 'width=900,height=800');
-  win.document.open(); win.document.write(editHtml); win.document.close();
+  win.document.open();
+  win.document.write(editHtml);
+  win.document.close();
 }
 
 function ouvrirFournisseur(id) {
   const d = allDossiers.find(x => x.id === id);
-  if (!d) { alert("Dossier introuvable !"); return; }
+  if (!d) {
+    alert("Dossier introuvable !");
+    return;
+  }
+
   const win = window.open('', '_blank', 'width=700,height=600');
   const titre = 'Envoyer dossier au fournisseur';
+
   const html = `
-    <html><head><meta charset="UTF-8"><title>${titre}</title>
+    <html><head>
+      <meta charset="UTF-8">
+      <title>${titre}</title>
       <style>
         body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
         h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
@@ -961,7 +1104,7 @@ function ouvrirFournisseur(id) {
           <option value="DELPHI">DELPHI</option>
           <option value="EFI">EFI</option>
           <option value="FEBI">FEBI</option>
-          <option value="KYB">KYB</option>
+		  <option value="KYB">KYB</option>
           <option value="MAGNETI">MAGNETI</option>
           <option value="METELLI">METELLI</option>
           <option value="MS MOTORS">MS MOTORS</option>
@@ -969,9 +1112,9 @@ function ouvrirFournisseur(id) {
           <option value="NRF">NRF</option>
           <option value="QH">QH</option>
           <option value="RIAL">RIAL</option>
-          <option value="SCHAEFFLER">SCHAEFFLER</option>
-          <option value="SEIM">SEIM</option>
-          <option value="VERNET">VERNET-CALORSTAT</option>
+		  <option value="SCHAEFFLER">SCHAEFFLER</option>
+		  <option value="SEIM">SEIM</option>
+		  <option value="VERNET">VERNET-CALORSTAT</option>
         </select>
 
         <label for="message-input">Message (optionnel)</label>
@@ -990,79 +1133,100 @@ function ouvrirFournisseur(id) {
         </div>
         <div class="status-msg" id="status-msg"></div>
       </form>
-      <script>
-        const cancelBtn = document.querySelector('.cancel');
-        const sendBtn   = document.querySelector('.send');
-        const formBtn   = document.querySelector('.send-form');
-        const statusEl  = document.getElementById('status-msg');
-        const supplierSelect = document.getElementById('fournisseur-select');
+    </body></html>
+  `;
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 
-        const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET"]);
-        function updateFormButtonVisibility() {
-          if (!formBtn) return;
-          const supVal = supplierSelect ? supplierSelect.value : "";
-          formBtn.style.display = HIDE_FORM_FOR.has(supVal) ? "none" : "inline-block";
-        }
-        if (supplierSelect) {
-          updateFormButtonVisibility();
-          supplierSelect.addEventListener("change", updateFormButtonVisibility);
-        }
-        if (cancelBtn) cancelBtn.addEventListener('click', () => window.close());
+  const cancelBtn   = win.document.querySelector('.cancel');
+  const sendBtn     = win.document.querySelector('.send');
+  const formBtn     = win.document.querySelector('.send-form');
+  const statusEl    = win.document.getElementById('status-msg');
+  const supplierSelect = win.document.getElementById('fournisseur-select');
 
-        if (formBtn) {
-          formBtn.addEventListener('click', () => {
-            const supVal = supplierSelect ? supplierSelect.value : '';
-            const resourceMap = {
-              "FEBI":       { type: "pdf", file: "FICHE_GARANTIE_FEBI.pdf" },
-              "METELLI":    { type: "pdf", file: "formulaire_garantie_metelli.pdf" },
-              "EFI":        { type: "pdf", file: "Formulaire_EFI.pdf" },
-              "MAGNETI":    { type: "pdf", file: "FORMULAIRE_MAGNETI.pdf" },
-              "QH":         { type: "pdf", file: "FORMULAIRE_QH.pdf" },
-              "RIAL":       { type: "pdf", file: "DEMANDE_RIAL.pdf" },
-              "AUTOGAMMA":  { type: "pdf", file: "Formulaire_ AUTOGAMMA.pdf" },
-              "DELPHI":     { type: "pdf", file: "Formulaire_delphi.pdf" },
-              "MS MOTORS":  { type: "pdf", file: "FORMULAIRE_ms.pdf" },
-              "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
-              "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
-              "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
-              "SCHAEFFLER": { type: "url", link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081" }
-            };
-            const res = resourceMap[supVal];
-            if (!res) return;
-            if (res.type === "pdf") {
-              const pdfUrl = \`/templates/\${res.file}\`;
-              const formWin = window.open('', '_blank', 'width=800,height=750');
-              formWin.document.open();
-              formWin.document.write(\`<html><head><meta charset="UTF-8"><title>Formulaire \${supVal}</title></head><body style="margin:0;padding:0;"><embed src="\${pdfUrl}" type="application/pdf" width="100%" height="100%"></body></html>\`);
-              formWin.document.close();
-            } else if (res.type === "url") {
-              window.open(res.link, '_blank');
-            }
-          });
-        }
+  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET"]);
+  function updateFormButtonVisibility() {
+    if (!formBtn) return;
+    const supVal = supplierSelect ? supplierSelect.value : "";
+    formBtn.style.display = HIDE_FORM_FOR.has(supVal) ? "none" : "inline-block";
+  }
+  if (supplierSelect) {
+    updateFormButtonVisibility();
+    supplierSelect.addEventListener("change", updateFormButtonVisibility);
+  }
 
-        if (sendBtn) {
-          sendBtn.addEventListener('click', async () => {
-            const form = document.getElementById('fournisseurForm');
-            const fd = new FormData(form);
-            if (statusEl) statusEl.textContent = 'Envoi en cours...';
-            try {
-              const resp = await fetch('/api/admin/envoyer-fournisseur/${id}', { method: 'POST', body: fd });
-              const json = await resp.json();
-              if (json.success) {
-                if (statusEl) statusEl.textContent = 'Dossier envoyé au fournisseur ✔';
-                setTimeout(() => window.close(), 1500);
-              } else {
-                if (statusEl) statusEl.textContent = (json.message || "Erreur lors de l'envoi");
-              }
-            } catch (e) {
-              if (statusEl) statusEl.textContent = 'Erreur lors de l\\'envoi';
-            }
-          });
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => win.close());
+  }
+
+if (formBtn) {
+  formBtn.addEventListener('click', () => {
+    const supVal = supplierSelect ? supplierSelect.value : '';
+
+    const resourceMap = {
+      "FEBI":       { type: "pdf", file: "FICHE_GARANTIE_FEBI.pdf" },
+      "METELLI":    { type: "pdf", file: "formulaire_garantie_metelli.pdf" },
+      "EFI":        { type: "pdf", file: "Formulaire_EFI.pdf" },
+      "MAGNETI":    { type: "pdf", file: "FORMULAIRE_MAGNETI.pdf" },
+      "QH":         { type: "pdf", file: "FORMULAIRE_QH.pdf" },
+      "RIAL":       { type: "pdf", file: "DEMANDE_RIAL.pdf" },
+      "AUTOGAMMA":  { type: "pdf", file: "Formulaire_ AUTOGAMMA.pdf" },
+      "DELPHI":     { type: "pdf", file: "Formulaire_delphi.pdf" },
+      "MS MOTORS":  { type: "pdf", file: "FORMULAIRE_ms.pdf" },
+      "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
+      "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
+      "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
+
+      "SCHAEFFLER": { 
+        type: "url",
+        link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081"
+      }
+    };
+
+    const res = resourceMap[supVal];
+    if (!res) return;
+
+    if (res.type === "pdf") {
+      const pdfUrl = `/templates/${res.file}`;
+      const formWin = window.open('', '_blank', 'width=800,height=750');
+      formWin.document.open();
+      formWin.document.write(`
+        <html><head><meta charset="UTF-8"><title>Formulaire ${supVal}</title></head>
+        <body style="margin:0;padding:0;">
+          <embed src="${pdfUrl}" type="application/pdf" width="100%" height="100%">
+        </body></html>
+      `);
+      formWin.document.close();
+    } else if (res.type === "url") {
+      window.open(res.link, '_blank');
+    }
+  });
+}
+
+  if (sendBtn) {
+    sendBtn.addEventListener('click', async () => {
+      const form = win.document.getElementById('fournisseurForm');
+      const fd = new FormData(form);
+
+      if (statusEl) statusEl.textContent = 'Envoi en cours...';
+      try {
+        const resp = await fetch('/api/admin/envoyer-fournisseur/' + id, {
+          method: 'POST',
+          body: fd
+        });
+        const json = await resp.json();
+        if (json.success) {
+          if (statusEl) statusEl.textContent = 'Dossier envoyé au fournisseur ✔';
+          setTimeout(() => win.close(), 1500);
+        } else {
+          if (statusEl) statusEl.textContent = (json.message || "Erreur lors de l'envoi");
         }
-      <\/script>
-    </body></html>`;
-  win.document.open(); win.document.write(html); win.document.close();
+      } catch (e) {
+        if (statusEl) statusEl.textContent = 'Erreur lors de l\'envoi';
+      }
+    });
+  }
 }
 window.ouvrirFournisseur = ouvrirFournisseur;
 
@@ -1078,20 +1242,23 @@ function ouvrirDocumentDansPopup(url, nomFichier) {
   }
   const win = window.open("", "_blank", "width=900,height=900");
   win.document.write(`
-    <html><head><meta charset="UTF-8"><title>${nomFichier}</title>
-      <style>body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; }</style>
-    </head><body><div>${content}</div></body></html>`);
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${nomFichier}</title>
+      <style>
+        body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; }
+        .close-btn { position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10; }
+        .close-btn:hover { background:#d32121; }
+      </style>
+    </head>
+    <body>
+      <div>${content}</div>
+    </body>
+    </html>
+  `);
   win.document.close();
 }
-window.ouvrirDocumentDansPopup = ouvrirDocumentDansPopup;
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btnLogin = document.getElementById('btn-login');
-  if (btnLogin) btnLogin.addEventListener('click', adminLogin);
-
-  const exportBtn = document.getElementById('btn-export-excel');
-  if (exportBtn) exportBtn.addEventListener('click', openExport);
-});
   </script>
 </body>
 </html>
