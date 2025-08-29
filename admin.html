@@ -28,13 +28,11 @@
     .counter-card .counter-label.green { color: #168b3e; }
     .counter-card .counter-label.red { color: #bb1810; }
     .counter-card .counter-label.blue { color: #1978d2; }
-    .counter-card .counter-label.purple { color: #7d3cff; }
     .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
     .counter-card .counter-value.orange { color: #f8a900; }
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
     .counter-card .counter-value.blue { color: #1978d2; }
-    .counter-card .counter-value.purple { color: #7d3cff; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
     td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
@@ -61,29 +59,106 @@
     .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
-    .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
-    #dossier-list td[id^="pj-"] a { word-break: break-all; white-space: normal; display: inline-block; max-width: 210px; }
+    #dossier-list td[id^="pj-"] a {
+      word-break: break-all;
+      white-space: normal;
+      display: inline-block;
+      max-width: 210px;
+    }
     .mini-form label { font-size: 0.98em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
     .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
     .pj-documents a { font-size: 0.93em; word-break: break-all;}
     .mini-form-encadre {
-      overflow-x: auto; border: 2px solid #111; background: #e8f3fa; border-radius: 4px;
-      padding: 12px 16px 10px 16px; display: flex; flex-direction: column; align-items: center;
-      gap: 7px; margin-bottom: 0; margin-right: 18px; min-width: 0; max-width: 900px; width: 100%; box-sizing: border-box;
+      overflow-x: auto;
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 12px 16px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-width: 0;
+      max-width: 900px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .mini-form-flex { display: flex; flex-direction: row; gap: 28px; align-items: flex-end; justify-content: flex-start; width: 100%; flex-wrap: wrap; box-sizing: border-box; min-width: 0; max-width: 100%; }
-    .mini-form-encadre .mini-form-flex > * { margin-bottom: 0; white-space: nowrap; }
-    .mini-form-encadre textarea { min-width: 145px; max-width: 320px; }
+    .mini-form-flex {
+      display: flex;
+      flex-direction: row;
+      gap: 28px;
+      align-items: flex-end;
+      justify-content: flex-start;
+      width: 100%;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .mini-form-encadre .mini-form-flex > * {
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+    .mini-form-encadre textarea {
+      min-width: 145px;
+      max-width: 320px;
+    }
     @media (max-width: 900px) {
-      .mini-form-encadre .mini-form-flex { flex-wrap: wrap; gap: 10px; }
-      .mini-form-encadre textarea { min-width: 100px; max-width: 100%; }
+      .mini-form-encadre .mini-form-flex {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .mini-form-encadre textarea {
+        min-width: 100px;
+        max-width: 100%;
+      }
     }
-    .mini-form-avert { width: 100%; text-align: center; font-size: 0.79em; font-weight: 500; color: #234156; margin-bottom: 4px; margin-top: 0; letter-spacing: 0.01em; display: flex; align-items: center; justify-content: center; gap: 7px; flex-wrap: wrap; background: none; }
-    .mini-form-avert .emoji { font-size: 1.10em; color: #f2a000; }
-    .file-list { margin: 4px 0 0 0; padding: 0; list-style: none; }
-    .file-list li { margin-bottom: 4px; display: flex; align-items: center; gap: 10px; font-size: 0.97em; }
-    .file-remove { background: #c62828; color: #fff; border: none; border-radius: 3px; padding: 2px 9px; cursor: pointer; font-size: 0.93em; }
-    .file-remove:hover { background: #a11610; }
+    .mini-form-avert {
+      width: 100%;
+      text-align: center;
+      font-size: 0.79em;
+      font-weight: 500;
+      color: #234156;
+      margin-bottom: 4px;
+      margin-top: 0;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      background: none;
+    }
+    .mini-form-avert .emoji {
+      font-size: 1.10em;
+      color: #f2a000;
+    }
+    .file-list {
+      margin: 4px 0 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .file-list li {
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.97em;
+    }
+    .file-remove {
+      background: #c62828;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 9px;
+      cursor: pointer;
+      font-size: 0.93em;
+    }
+    .file-remove:hover {
+      background: #a11610;
+    }
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -104,33 +179,70 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
-    .mini-form-flex label[style*="flex-direction:column"] b { font-size: 1em; font-weight: 500; color: #195e7c; margin-bottom: 2px; }
+    .mini-form-flex label[style*="flex-direction:column"] b {
+      font-size: 1em;
+      font-weight: 500;
+      color: #195e7c;
+      margin-bottom: 2px;
+    }
     .mini-form-encadre { margin-bottom: 0; }
     .mini-form-flex > div { min-width: 140px; }
-    @media (max-width: 650px) { .mini-form-flex { flex-direction: column ; gap: 15px; } }
-    .mini-form-flex textarea { min-width: 110px; max-width: 230px; min-height: 28px; font-size: 0.96em; padding: 4px 6px; }
-    .mini-form-flex select, .mini-form-flex input[type="file"] { font-size: 0.96em; padding: 5px 9px; }
-
+    @media (max-width: 650px) {
+      .mini-form-flex { flex-direction: column ; gap: 15px; }
+    }
+    .mini-form-flex textarea {
+      min-width: 110px;
+      max-width: 230px;
+      min-height: 28px;
+      font-size: 0.96em;
+      padding: 4px 6px;
+    }
+    .mini-form-flex select,
+    .mini-form-flex input[type="file"] {
+      font-size: 0.96em;
+      padding: 5px 9px;
+    }
     .mini-form-upload-block {
-      display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 20px;
-      min-width: 185px; max-width: 240px; width: 100%; box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      min-width: 185px;
+      max-width: 260px;
+      width: 100%;
+      box-sizing: border-box;
     }
     .mini-form-upload-block label { margin-bottom: 2px; }
-    .mini-form-upload-block input[type="file"] { margin-bottom: 2px; min-height: 32px; box-sizing: border-box; }
-    .mini-form-upload-block .file-list { width: 100%; max-width: 240px; overflow-x: auto; word-break: break-all; overflow-wrap: break-word; white-space: normal; }
-    .mini-form-upload-block .file-list li { max-width: 220px; overflow-x: auto; text-overflow: ellipsis; white-space: nowrap; display: block; }
-    .mini-form-upload-block .file-list li span { display: inline-block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; white-space: nowrap; }
-
-    /* Column wrapper so "Attente MO" sits UNDER "Ajout document dans dossier" */
-    .mini-right-col { display:flex; flex-direction:column; align-items:flex-start; gap:10px; margin-right:6px; }
-
-    /* Switch Attente MO */
-    .switch { position:relative; display:inline-block; width:46px; height:24px; }
-    .switch input { opacity:0; width:0; height:0; }
-    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition:.2s; border-radius:34px; box-shadow:inset 0 0 2px #0002; }
-    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003; }
-    .switch input:checked + .slider { background:#7d3cff; }
-    .switch input:checked + .slider:before { transform: translateX(22px); }
+    .mini-form-upload-block input[type="file"] {
+      margin-bottom: 2px;
+      min-height: 32px;
+      box-sizing: border-box;
+    }
+    .mini-form-upload-block .file-list {
+      width: 100%;
+      max-width: 260px;
+      overflow-x: auto;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+    .mini-form-upload-block .file-list li {
+      max-width: 240px;
+      overflow-x: auto;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+    .mini-form-upload-block .file-list li span {
+      display: inline-block;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .attente-mo-block { margin-top: 12px; }
+    .attente-mo-desc { font-size: 0.92em; color: #234156; margin-top: 6px; line-height: 1.25; }
   </style>
 </head>
 <body>
@@ -138,633 +250,832 @@
   <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
-
   <div id="login">
     <h2>Connexion admin</h2>
     <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
     <button class="bouton" onclick="adminLogin()">Connexion</button>
     <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
   </div>
-
   <div id="admin-content">
     <h2>Gestion des dossiers - Garantie Durand Services</h2>
     <div class="tabs" id="tabs"></div>
     <div id="status-counters"></div>
-
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
         <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
       </div>
-      <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
-      <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
+      <label>Mois : <select id="mois-filter"><option value=\"\">Tous</option></select></label>
+      <label>Année : <select id="annee-filter"><option value=\"\">Toutes</option></select></label>
       <label id="statut-filter-label">Statut :
         <select id="statut-filter">
-          <option value="">Tous</option>
+          <option value=\"\">Tous</option>
           <option value="enregistré">Enregistré</option>
           <option value="accepté">Accepté</option>
           <option value="refusé">Refusé</option>
           <option value="en attente d'info">En attente d'info</option>
-          <option value="Attente MO">Attente MO</option>
         </select>
       </label>
     </div>
-
     <div id="dossier-list"></div>
   </div>
 
-  <script>
-    // --- Utils
-    function formatDateFRshort(val) {
-      if (!val) return "";
-      var d = (typeof val === "string") ? new Date(val) : val;
-      if (typeof val === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(val)) {
-        var parts = val.split("-");
-        return parts[2] + "/" + parts[1] + "/" + parts[0].slice(2);
-      }
-      if (!isNaN(d)) {
-        var day = ("0"+d.getDate()).slice(-2);
-        var month = ("0"+(d.getMonth()+1)).slice(-2);
-        var year = d.getFullYear().toString().slice(-2);
-        return day + "/" + month + "/" + year;
-      }
-      return val;
+<script>
+"use strict";
+
+// --- Constantes ---
+const STATUTS = {
+  ENREGISTRE: "enregistré",
+  ACCEPTE: "accepté",
+  REFUSE: "refusé",
+  ATTENTE_INFO: "en attente d'info",
+  ATTENTE_MO: "Attente MO",
+};
+
+let isSuperAdmin = false;
+let isAdmin = false;
+let magasinUnique = null;
+const MAGASINS = [
+  "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+];
+
+let allDossiers = [];
+let currentMagasin = null;
+let filtres = { mois: "", annee: "", statut: "" };
+let rechercheClient = "";
+let ongletActif = null;
+const fileBuffers = {};
+
+// --- Utilitaires ---
+function formatDateFRshort(val) {
+  if (!val) return "";
+  let d = typeof val === "string" ? new Date(val) : val;
+  if (typeof val === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(val)) {
+    let [y, m, d2] = val.split("-");
+    return d2 + "/" + m + "/" + y.slice(2);
+  }
+  if (!isNaN(d)) {
+    let day = ("0"+d.getDate()).slice(-2);
+    let month = ("0"+(d.getMonth()+1)).slice(-2);
+    let year = d.getFullYear().toString().slice(2);
+    return day + "/" + month + "/" + year;
+  }
+  return val;
+}
+
+function statutChip(statut) {
+  const s = (statut || "").toLowerCase();
+  if (s === STATUTS.ENREGISTRE) return '<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>';
+  if (s === STATUTS.ACCEPTE)    return '<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>';
+  if (s === STATUTS.REFUSE)     return '<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>';
+  if (s === STATUTS.ATTENTE_INFO) return '<span class="statut-chip"><span class="statut-dot info"></span>En attente d\\'info</span>';
+  if (s === STATUTS.ATTENTE_MO.toLowerCase()) return '<span class="statut-chip"><span class="statut-dot info"></span>Attente MO</span>';
+  return statut || "";
+}
+
+function toggleSuperAdminUI() {
+  document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+}
+
+document.getElementById("btn-export-excel").onclick = function(){
+  window.open("/api/admin/export-excel", "_blank");
+};
+
+// --- Auth ---
+function adminLogin() {
+  const pw = document.getElementById("admin-pass").value;
+  fetch("/api/admin/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({password: pw})
+  })
+  .then(resp=>resp.json())
+  .then(json=>{
+    if(json.success){
+      isSuperAdmin = !!json.isSuper;
+      isAdmin = !!json.isAdmin;
+      magasinUnique = json.magasin || null;
+      currentMagasin = magasinUnique || MAGASINS[0];
+      document.getElementById("login").style.display = "none";
+      document.getElementById("admin-content").style.display = "block";
+      toggleSuperAdminUI();
+      chargerDossiers();
+    } else {
+      document.getElementById("login-msg").textContent = json.message || "Erreur";
     }
+  })
+  .catch(()=>{
+    document.getElementById("login-msg").textContent = "Erreur réseau";
+  });
+}
+window.adminLogin = adminLogin;
 
-    var isSuperAdmin = false;
-    var isAdmin = false;
-    var magasinUnique = null;
-    var MAGASINS = ["Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"];
-    var allDossiers = [];
-    var currentMagasin = null;
-    var filtres = { mois: "", annee: "", statut: "" };
-    var rechercheClient = "";
-    var ongletActif = null;
-
-    var fileBuffers = {};
-
-    function statutChip(statut) {
-      var s = (statut||"").toLowerCase();
-      if (s==="enregistré") return '<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>';
-      if (s==="accepté") return '<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>';
-      if (s==="refusé") return '<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>';
-      if (s==="en attente d\\'info") return '<span class="statut-chip"><span class="statut-dot info"></span>En attente d\\'info</span>';
-      if (s==="attente mo") return '<span class="statut-chip"><span class="statut-dot attente-mo"></span>Attente MO</span>';
-      return statut||"";
+// --- Chargement & affichage ---
+function chargerDossiers() {
+  fetch("/api/admin/dossiers").then(r=>r.json()).then(data=>{
+    allDossiers = data || [];
+    afficherOnglets();
+    if (allDossiers.length === 0) {
+      document.getElementById("dossier-list").innerHTML =
+        '<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">⚠️ <u>Aucun dossier n\\'est présent dans la base !</u><br>Il est probable que le serveur vient de redémarrer.<br><span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d\\'utiliser l\\'outil !</span></div>';
+      return;
     }
+    if (ongletActif === "global") afficherGlobal();
+    else afficherDossiers(currentMagasin, true);
+  });
+}
 
-    function toggleSuperAdminUI() {
-      document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
-    }
-
-    document.getElementById("btn-export-excel").onclick = function(){
-      window.open('/api/admin/export-excel', '_blank');
-    };
-
-    function adminLogin() {
-      var pw = document.getElementById('admin-pass').value;
-      fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({password: pw})
-      })
-      .then(function(resp){ return resp.json(); })
-      .then(function(json){
-        if(json.success){
-          isSuperAdmin = !!json.isSuper;
-          isAdmin = !!json.isAdmin;
-          magasinUnique = json.magasin || null;
-          currentMagasin = magasinUnique || MAGASINS[0];
-          document.getElementById('login').style.display = "none";
-          document.getElementById('admin-content').style.display = "block";
-          toggleSuperAdminUI();
-          chargerDossiers();
-        } else {
-          document.getElementById('login-msg').textContent = json.message || "Erreur";
-        }
-      })
-      .catch(function(){ document.getElementById('login-msg').textContent = "Erreur réseau"; });
-    }
-    window.adminLogin = adminLogin; // export for inline onclick
-
-    function chargerDossiers() {
-      fetch('/api/admin/dossiers')
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          allDossiers = Array.isArray(data) ? data : [];
-          afficherOnglets();
-          if (!allDossiers || allDossiers.length === 0) {
-            document.getElementById("dossier-list").innerHTML =
-              '<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">' +
-              '⚠️ <u>Aucun dossier n\\'est présent dans la base !</u><br>Il est probable que le serveur vient de redémarrer.<br>' +
-              '<span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d\\'utiliser l\\'outil !</span></div>';
-            return;
-          }
-          if (ongletActif === "global") { afficherGlobal(); } else { afficherDossiers(currentMagasin, true); }
-        });
-    }
-
-    function afficherOnglets() {
-      var t = '';
-      if (isAdmin || isSuperAdmin) {
-        t += '<div class="tab' + (ongletActif === "global" ? " active" : "") + '" data-global="1" id="onglet-global">Données globales</div>';
-      }
-      if (isAdmin || isSuperAdmin) {
-        MAGASINS.forEach(function(m, i){
-          t += '<div class="tab' + ((ongletActif !== "global" && m === currentMagasin) ? " active" : "") + '" data-magasin="' + encodeURIComponent(m) + '" id="onglet-' + i + '">' + m + '</div>';
-        });
-        document.getElementById('tabs').innerHTML = t;
-        if (document.getElementById('onglet-global')) {
-          document.getElementById('onglet-global').onclick = function() {
-            ongletActif = "global";
-            document.getElementById("statut-filter-label").style.display = "none";
-            afficherGlobal();
-          };
-        }
-        MAGASINS.forEach(function(m,i){
-          var el = document.getElementById('onglet-'+i);
-          if (el) {
-            el.onclick = function() {
-              ongletActif = null;
-              document.getElementById("statut-filter-label").style.display = "";
-              afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
-            };
-          }
-        });
-      } else if (magasinUnique) {
-        document.getElementById('tabs').innerHTML =
-          '<div class="tab active" data-magasin="' + encodeURIComponent(magasinUnique) + '" id="onglet-0">' + magasinUnique + '</div>';
-      }
-    }
-
-    function afficherCompteurs(dossiers) {
-      var stats = [
-        { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
-        { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
-        { label: "Attente MO <span>🛠️</span>", val: "Attente MO", color:"purple" },
-        { label: "En attente d'info<span>📝</span>", val: "en attente d'info", color:"blue" },
-        { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
-      ];
-      var html = "";
-      stats.forEach(function(stat){
-        var n = dossiers.filter(function(d){ return d.statut === stat.val; }).length;
-        html += '<div class="counter-card"><span class="counter-label ' + stat.color + '">' + stat.label + '</span><span class="counter-value ' + stat.color + '">' + n + '</span></div>';
-      });
-      document.getElementById("status-counters").innerHTML = html;
-    }
-
-    function afficherFiltres(dossiers, options) {
-      options = options || {};
-      var moisSel = document.getElementById("mois-filter");
-      var anneeSel = document.getElementById("annee-filter");
-      var statutSel = document.getElementById("statut-filter");
-      var moisSet = {}; var anneeSet = {};
-
-      dossiers.forEach(function(d){
-        var date = new Date(d.date);
-        if (!isNaN(date)) {
-          var mois = ("0" + (date.getMonth() + 1)).slice(-2);
-          var annee = String(date.getFullYear());
-          moisSet[mois] = true; anneeSet[annee] = true;
-        }
-      });
-
-      var moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-      var moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
-
-      moisSel.innerHTML = '<option value="">Tous</option>';
-      moisFr.forEach(function(m, i){ if (moisSet[m]) { moisSel.innerHTML += '<option value="'+m+'">'+moisLib[i]+'</option>'; } });
-
-      anneeSel.innerHTML = '<option value="">Toutes</option>';
-      Object.keys(anneeSet).sort().forEach(function(a){ anneeSel.innerHTML += '<option value="'+a+'">'+a+'</option>'; });
-
-      document.getElementById("filters-row").style.display = "flex";
-      document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
-
-      moisSel.value = filtres.mois;
-      anneeSel.value = filtres.annee;
-      statutSel.value = filtres.statut;
-
-      var onChange = function(){
-        filtres.mois = moisSel.value;
-        filtres.annee = anneeSel.value;
-        filtres.statut = statutSel.value;
-        if (ongletActif === "global") { afficherGlobal(); } else { afficherDossiers(currentMagasin); }
-      };
-      moisSel.onchange = onChange; anneeSel.onchange = onChange; statutSel.onchange = onChange;
-    }
-
-    document.getElementById('search-client').addEventListener('input', function() {
-      rechercheClient = this.value;
-      if (ongletActif === "global") { afficherGlobal(); } else { afficherDossiers(currentMagasin); }
+function afficherOnglets() {
+  let t = "";
+  if (isAdmin || isSuperAdmin) {
+    t += '<div class="tab' + (ongletActif === "global" ? " active" : "") + '" data-global="1" id="onglet-global">Données globales</div>';
+  }
+  if (isAdmin || isSuperAdmin) {
+    MAGASINS.forEach((m, i) => {
+      t += '<div class="tab' + ((ongletActif !== "global" && m === currentMagasin) ? " active" : "") + '" data-magasin="' + encodeURIComponent(m) + '" id="onglet-' + i + '">' + m + "</div>";
     });
+    document.getElementById("tabs").innerHTML = t;
+    document.getElementById("onglet-global").onclick = function() {
+      ongletActif = "global";
+      document.getElementById("statut-filter-label").style.display = "none";
+      afficherGlobal();
+    };
+    MAGASINS.forEach((m, i) => {
+      document.getElementById("onglet-" + i).onclick = function() {
+        ongletActif = null;
+        document.getElementById("statut-filter-label").style.display = "";
+        afficherDossiers(decodeURIComponent(this.getAttribute("data-magasin")), true);
+      };
+    });
+  } else if (magasinUnique) {
+    document.getElementById("tabs").innerHTML = '<div class="tab active" data-magasin="' + encodeURIComponent(magasinUnique) + '" id="onglet-0">' + magasinUnique + "</div>";
+  }
+}
 
-    function afficherDossiers(magasin, forceFiltres) {
-      currentMagasin = magasin;
-      ongletActif = null;
-      afficherOnglets();
-      var dossiers = allDossiers.filter(function(d){ return d.magasin === magasin; });
+function afficherCompteurs(dossiers) {
+  const stats = [
+    { label: "En attente de traitement <span title=\\"Enregistré\\">⏳</span>", val: STATUTS.ENREGISTRE, color:"orange" },
+    { label: "Acceptés <span>👍</span>", val: STATUTS.ACCEPTE, color:"green" },
+    { label: "En attente d'info<span>📝</span>", val: STATUTS.ATTENTE_INFO, color:"blue" },
+    { label: "Refusés <span>👎</span>", val: STATUTS.REFUSE, color:"red" }
+  ];
+  let html = "";
+  stats.forEach(stat => {
+    const n = dossiers.filter(d => String(d.statut).toLowerCase() === stat.val).length;
+    html += '<div class="counter-card"><span class="counter-label ' + stat.color + '">' + stat.label + '</span><span class="counter-value ' + stat.color + '">' + n + "</span></div>";
+  });
+  document.getElementById("status-counters").innerHTML = html;
+}
 
-      if (rechercheClient && rechercheClient.trim().length > 0) {
-        var rc = rechercheClient.trim().toLowerCase();
-        dossiers = dossiers.filter(function(d){
-          var numero = String(d.numero_dossier || "").padStart(4, "0");
-          return (
-            String(d.nom||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.produit_concerne||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.reference_piece||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.marque_produit||"").toLowerCase().indexOf(rc) !== -1 ||
-            numero.indexOf(rc) !== -1
-          );
-        });
-      }
+function afficherFiltres(dossiers, options={}) {
+  let moisSel = document.getElementById("mois-filter");
+  let anneeSel = document.getElementById("annee-filter");
+  let statutSel = document.getElementById("statut-filter");
+  let moisSet = new Set(), anneeSet = new Set();
 
-      afficherCompteurs(dossiers);
-      afficherFiltres(dossiers);
+  dossiers.forEach(d => {
+    let date = new Date(d.date);
+    if (!isNaN(date)) {
+      let mois = ("0" + (date.getMonth() + 1)).slice(-2);
+      let annee = date.getFullYear().toString();
+      moisSet.add(mois);
+      anneeSet.add(annee);
+    }
+  });
 
-      if (filtres.mois) {
-        dossiers = dossiers.filter(function(d){
-          var date = new Date(d.date);
-          return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
-        });
-      }
-      if (filtres.annee) {
-        dossiers = dossiers.filter(function(d){
-          var date = new Date(d.date);
-          return !isNaN(date) && String(date.getFullYear()) === filtres.annee;
-        });
-      }
-      if (filtres.statut) {
-        dossiers = dossiers.filter(function(d){ return d.statut === filtres.statut; });
-      }
+  const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+  const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+  moisSel.innerHTML = '<option value="">Tous</option>';
+  moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += '<option value="' + m + '">' + moisLib[i] + "</option>"; });
+  anneeSel.innerHTML = '<option value="">Toutes</option>';
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += '<option value="' + a + '">' + a + "</option>"; });
 
-      var html = '<table><tr>' +
-        '<th style="width: 90px;">Numéro de dossier</th>' +
-        '<th>Date</th><th>Client</th><th>Produit</th><th>Référence de la pièce</th><th>Marque du produit</th>' +
-        '<th>Statut</th><th>Réponse</th><th>Documents ajoutés</th>' +
-        '<th class="action">Mettre à jour</th><th class="action">Voir</th><th class="action">Fournisseur</th>' +
-        (isSuperAdmin ? '<th class="action">Supprimer</th>' : '') + '</tr>';
+  document.getElementById("filters-row").style.display = "flex";
+  document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
-      dossiers.forEach(function(d){
-        var id = d.id;
-        var fichiersDocs = []
-          .concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[])
-          .filter(function(f){ return f && f.url; });
-        // dedupe by url
-        var seen = {};
-        fichiersDocs = fichiersDocs.filter(function(f){ if (seen[f.url]) return false; seen[f.url]=1; return true; });
+  moisSel.value = filtres.mois;
+  anneeSel.value = filtres.annee;
+  statutSel.value = filtres.statut;
 
-        html += '<tr>' +
-          '<td>'+(d.numero_dossier || '')+'</td>' +
-          '<td>'+new Date(d.date).toLocaleDateString("fr-FR")+'</td>' +
-          '<td>'+(d.nom||'')+'</td>' +
-          '<td>'+(d.produit_concerne||'')+'</td>' +
-          '<td>'+String(d.reference_piece||'').replace(/\\s*\\/\\s*/g, " /<wbr>")+'</td>' +
-          '<td>'+(d.marque_produit||'')+'</td>' +
-          '<td id="statut-'+id+'">'+statutChip(d.statut)+'</td>' +
-          '<td id="reponse-'+id+'">'+(d.reponse ? String(d.reponse).replace(/\\n/g,"<br>") : '')+'</td>' +
-          '<td id="pj-'+id+'"><div class="pj-documents">' +
-            (fichiersDocs.length ? fichiersDocs.map(function(f){ var ext = f.original.split('.').pop().toLowerCase(); if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)!==-1) { return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/'+f.url+'\\', \\'"+f.original.replace(/'/g,"&#39;")+"\\')"><img src="/download/'+f.url+'" class="pj-img"></a>'; } else { return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/'+f.url+'\\', \\'"+f.original.replace(/'/g,"&#39;")+"\\')">'+f.original+'</a>'; } }).join("<br>") : "") +
-          '</div></td>' +
-          '<td class="action"><button class="maj-btn" data-id="'+id+'">Mettre à jour</button></td>' +
-          '<td class="action"><button class="voir-btn" onclick="voirDossier(\\''+d.id+'\\')">Voir</button></td>' +
-          '<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur(\\''+d.id+'\\')">Dossier</button></td>' +
-          (isSuperAdmin ? '<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier(\\''+id+'\\')">Supprimer</button></td>' : '') +
-        '</tr>';
+  const onChange = function(){
+    filtres.mois = moisSel.value;
+    filtres.annee = anneeSel.value;
+    filtres.statut = statutSel.value;
+    if(ongletActif === "global") afficherGlobal();
+    else afficherDossiers(currentMagasin);
+  };
+  moisSel.onchange = anneeSel.onchange = statutSel.onchange = onChange;
+}
 
-        // Row with mini form
-        html += '<tr class="mini-form-row" id="mini-row-'+id+'" style="display:none;">' +
-          '<td colspan="'+(isSuperAdmin ? '13' : '12')+'">' +
-          '<form class="mini-form" id="form-'+id+'" data-id="'+id+'" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">' +
+document.getElementById("search-client").addEventListener("input", function() {
+  rechercheClient = this.value;
+  if(ongletActif === "global") afficherGlobal();
+  else afficherDossiers(currentMagasin);
+});
 
-            // Left big framed block
-            '<div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">' +
-              '<div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">' +
-                '<span class="emoji">⚠️</span> TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT <span class="emoji">⚠️</span>' +
-              '</div>' +
-              '<div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">' +
-                '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">' +
+function afficherDossiers(magasin, forceFiltres=false) {
+  currentMagasin = magasin;
+  ongletActif = null;
+  afficherOnglets();
+  let dossiers = allDossiers.filter(d=>d.magasin===magasin);
+
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => {
+      const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+      return (
+        (String(d.nom||"")).toLowerCase().includes(rc) ||
+        (String(d.produit_concerne||"")).toLowerCase().includes(rc) ||
+        (String(d.reference_piece||"")).toLowerCase().includes(rc) ||
+        (String(d.marque_produit||"")).toLowerCase().includes(rc) ||
+        numero.includes(rc)
+      );
+    });
+  }
+
+  afficherCompteurs(dossiers);
+  afficherFiltres(dossiers);
+
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(filtres.statut) {
+    dossiers = dossiers.filter(d=>String(d.statut).toLowerCase()===filtres.statut);
+  }
+
+  let html = '<table><tr>' +
+      '<th style="width: 90px;">Numéro de dossier</th>' +
+      '<th>Date</th>' +
+      '<th>Client</th>' +
+      '<th>Produit</th>' +
+      '<th>Référence de la pièce</th>' +
+      '<th>Marque du produit</th>' +
+      '<th>Statut</th>' +
+      '<th>Réponse</th>' +
+      '<th>Documents ajoutés</th>' +
+      '<th class="action">Mettre à jour</th>' +
+      '<th class="action">Voir</th>' +
+      '<th class="action">Fournisseur</th>' +
+      (isSuperAdmin ? '<th class="action">Supprimer</th>' : '') +
+    '</tr>';
+
+  dossiers.forEach(d=>{
+    const id = d.id;
+    let fichiersDocs = [].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[]);
+    fichiersDocs = fichiersDocs.filter((f, i, arr) => f && f.url && arr.findIndex(x => x.url === f.url) === i);
+
+    html += '<tr>' +
+      '<td>' + (d.numero_dossier || "") + '</td>' +
+      '<td>' + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "") + '</td>' +
+      '<td>' + (d.nom||"") + '</td>' +
+      '<td>' + (d.produit_concerne||"") + '</td>' +
+      '<td>' + String(d.reference_piece||"").replace(/\\s*\\/\\s*/g, " /<wbr>") + '</td>' +
+      '<td>' + (d.marque_produit||"") + '</td>' +
+      '<td id="statut-' + id + '">' + statutChip(String(d.statut)) + '</td>' +
+      '<td id="reponse-' + id + '">' + (d.reponse ? String(d.reponse).replace(/\\n/g,"<br>") : "") + '</td>' +
+      '<td id="pj-' + id + '"><div class="pj-documents">' +
+        (fichiersDocs.length
+          ? fichiersDocs.map(f=>{
+              const ext = String(f.original||"").split(".").pop().toLowerCase();
+              if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/' + f.url + '\\',\\'' + (f.original||"") + '\\')"><img src="/download/' + f.url + '" class="pj-img"></a>';
+              } else {
+                return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/' + f.url + '\\',\\'' + (f.original||"") + '\\')">' + (f.original||"") + "</a>";
+              }
+            }).join("<br>")
+          : ""
+        ) +
+      "</div></td>" +
+      '<td class="action"><button class="maj-btn" data-id="' + id + '">Mettre à jour</button></td>' +
+      '<td class="action"><button class="voir-btn" onclick="voirDossier(\\'' + id + '\\')">Voir</button></td>' +
+      '<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur(\\'' + id + '\\')">Dossier</button></td>' +
+      (isSuperAdmin ? '<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier(\\'' + id + '\\')">Supprimer</button></td>' : '') +
+    "</tr>" +
+
+    // Mini form row
+    '<tr class="mini-form-row" id="mini-row-' + id + '" style="display:none;">' +
+      '<td colspan="' + (isSuperAdmin ? 13 : 12) + '">' +
+        '<form class="mini-form" id="form-' + id + '" data-id="' + id + '" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">' +
+          '<div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">' +
+            '<div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">' +
+              '<span class="emoji">⚠️</span> TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT <span class="emoji">⚠️</span>' +
+            "</div>" +
+            '<div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">' +
+
+              // Col 1: statut + réponse + envoi client
+              '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:320px;">' +
+                '<div style="display:flex;flex-direction:column;gap:6px;min-width:145px;">' +
                   '<label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>' +
                   '<select class="statut-select" name="statut">' +
-                    '<option value="enregistré"'+(d.statut==="enregistré"?" selected":"")+'>Enregistré</option>' +
-                    '<option value="accepté"'+(d.statut==="accepté"?" selected":"")+'>Accepté</option>' +
-                    '<option value="refusé"'+(d.statut==="refusé"?" selected":"")+'>Refusé</option>' +
-                    '<option value="en attente d\\'info"'+(d.statut==="en attente d'info"?" selected":"")+'>En attente d\\'info</option>' +
-                    '<option value="Attente MO"'+(d.statut==="Attente MO"?" selected":"")+'>Attente MO</option>' +
-                  '</select>' +
-                '</div>' +
-                '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">' +
+                    '<option value="enregistré"' + (String(d.statut)===STATUTS.ENREGISTRE ? " selected" : "") + '>Enregistré</option>' +
+                    '<option value="accepté"'    + (String(d.statut)===STATUTS.ACCEPTE    ? " selected" : "") + '>Accepté</option>' +
+                    '<option value="refusé"'     + (String(d.statut)===STATUTS.REFUSE     ? " selected" : "") + '>Refusé</option>' +
+                    '<option value="en attente d\\'info"' + (String(d.statut)===STATUTS.ATTENTE_INFO ? " selected" : "") + '>En attente d\\'info</option>' +
+                  "</select>" +
+                "</div>" +
+                '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;">' +
                   '<label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>' +
-                  '<textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">'+(d.reponse||"")+'</textarea>' +
-                '</div>' +
+                  '<textarea name="reponse" style="width:100%;min-width:110px;max-width:280px;min-height:29px;font-size:0.96em;padding:4px 8px;">' + (d.reponse||"") + "</textarea>" +
+                "</div>" +
                 '<div class="mini-form-upload-block">' +
-                  '<label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>' +
+                  '<label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:2px;">Envoie document au client</label>' +
                   '<input type="file" name="reponseFiles" multiple>' +
-                  '<ul class="file-list" id="file-list-reponseFiles-'+id+'"></ul>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
+                  '<ul class="file-list" id="file-list-reponseFiles-' + id + '"></ul>' +
+                "</div>" +
+              "</div>" +
 
-            // Right column wrapper: Ajout doc + Attente MO stacked
-            '<div class="mini-right-col">' +
-              '<div class="mini-form-upload-block">' +
-                '<label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>' +
-                '<input type="file" name="documentsAjoutes" multiple>' +
-                '<ul class="file-list" id="file-list-documentsAjoutes-'+id+'"></ul>' +
-              '</div>' +
-              '<div class="attente-mo-toggle" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">' +
-                '<label style="font-size:1em;font-weight:600;color:#195e7c;">Attente MO</label>' +
-                '<label class="switch">' +
-                  '<input type="checkbox" name="attente_mo" '+(((d.statut==="Attente MO") || d.attente_mo) ? "checked" : "")+'>' +
-                  '<span class="slider"></span>' +
-                '</label>' +
-                '<small style="color:#555;max-width:240px;">Quand activé, le statut passe en "Attente MO" sans notifier le client.</small>' +
-              '</div>' +
-            '</div>' +
+              // Col 2: Ajout doc + Attente MO (under it)
+              '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:220px;">' +
+                '<div class="mini-form-upload-block" style="margin-bottom:8px;">' +
+                  '<label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>' +
+                  '<input type="file" name="documentsAjoutes" multiple>' +
+                  '<ul class="file-list" id="file-list-documentsAjoutes-' + id + '"></ul>' +
+                "</div>" +
+                '<div class="attente-mo-block">' +
+                  '<label style="font-size:1em;font-weight:600;color:#195e7c;display:block;margin-bottom:4px;">Attente MO</label>' +
+                  '<input type="checkbox" name="attente_mo" ' + (d.attente_mo ? "checked" : "") + '>' +
+                  '<div class="attente-mo-desc">Quand activé, le statut passe en "Attente MO" sans notifier le client.</div>' +
+                "</div>" +
+              "</div>" +
 
-            // Avoir + actions
-            '<div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">' +
-              '<label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d\\'avoir</label>' +
-              '<input type="text" name="numero_avoir" placeholder="Numéro d\\'avoir" value="'+(d.numero_avoir||"")+'" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">' +
-              '<button type="button" class="bouton completer-btn" onclick="completerDossier(\\''+id+'\\')" style="margin-top:9px; margin-left:14px; align-self:flex-start;">Compléter Dossier</button>' +
-            '</div>' +
-            '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">' +
-              '<button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>' +
-              '<button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm(\\''+id+'\\')">Annuler</button>' +
-              '<span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>' +
-            '</div>' +
+              // Col 3: N° avoir + compléter + actions
+              '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px;">' +
+                '<label style="font-size:1em; font-weight:600; color:#195e7c;">Numéro d\\'avoir</label>' +
+                '<input type="text" name="numero_avoir" placeholder="Numéro d\\'avoir" value="' + (d.numero_avoir||"") + '" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;">' +
+                '<button type="button" class="bouton completer-btn" onclick="completerDossier(\\'' + id + '\\')" style="align-self:flex-start;">Compléter Dossier</button>' +
+                '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-top:6px;">' +
+                  '<button type="submit" class="bouton" style="font-size:1em;width:140px;">Mettre à jour</button>' +
+                  '<button type="button" class="bouton" style="background:#ccc;color:#234;width:140px;" onclick="fermerMiniForm(\\'' + id + '\\')">Annuler</button>' +
+                  '<span class="admin-msg" style="margin-top:2px;min-height:18px;display:inline-block;width:140px;font-size:0.97em;text-align:center;"></span>' +
+                "</div>" +
+              "</div>" +
 
-          '</form></td></tr>';
-      });
+            "</div>" +
+          "</div>" +
+        "</form>" +
+      "</td>" +
+    "</tr>";
+  });
 
-      html += '</table>';
-      document.getElementById('dossier-list').innerHTML = html;
+  html += "</table>";
+  document.getElementById("dossier-list").innerHTML = html;
 
-      // Bind "Mettre à jour" toggles and submit
-      Array.prototype.forEach.call(document.querySelectorAll('.maj-btn'), function(btn){
-        btn.onclick = function(){
-          Array.prototype.forEach.call(document.querySelectorAll('.mini-form-row'), function(f){ f.style.display="none"; });
-          var id = btn.getAttribute('data-id');
-          var row = document.getElementById('mini-row-'+id);
-          if (row) {
-            row.style.display = "table-row";
-            row.scrollIntoView({behavior:"smooth",block:"center"});
-            setTimeout(function(){ initMiniFormBuffer(id); }, 20);
-            // keep Attente MO <-> statut sync
-            var form = document.getElementById('form-'+id);
-            var attToggle = form.querySelector("input[name='attente_mo']");
-            var statutSelIn = form.querySelector("select[name='statut']");
-            if (attToggle && statutSelIn) {
-              attToggle.addEventListener('change', function(){
-                if (attToggle.checked) statutSelIn.value = 'Attente MO';
-                else if (statutSelIn.value === 'Attente MO') statutSelIn.value = 'enregistré';
-              });
-              statutSelIn.addEventListener('change', function(){
-                if (statutSelIn.value === 'Attente MO') attToggle.checked = true;
-                if (statutSelIn.value === 'accepté' || statutSelIn.value === 'refusé' || statutSelIn.value === 'enregistré' || statutSelIn.value === "en attente d'info") {
-                  if (statutSelIn.value !== 'Attente MO') attToggle.checked = false;
-                }
-              });
-            }
-          }
-        };
-      });
-
-      Array.prototype.forEach.call(document.querySelectorAll('.mini-form'), function(form){
-        form.onsubmit = function(e){
-          e.preventDefault();
-          var id = this.getAttribute('data-id');
-          var fd = new FormData(this);
-
-          ["reponseFiles", "documentsAjoutes"].forEach(function(field){
-            if (fileBuffers[id] && fileBuffers[id][field]) {
-              fileBuffers[id][field].forEach(function(f){ fd.append(field, f); });
-            }
-          });
-
-          this.querySelector('.admin-msg').textContent = "Envoi...";
-          fetch('/api/admin/dossier/' + id, { method:"POST", body: fd })
-            .then(function(r){ return r.json(); })
-            .then(function(json){
-              if (json && json.success) {
-                form.querySelector('.admin-msg').textContent = "Mis à jour ✔";
-                setTimeout(function(){
-                  document.getElementById('mini-row-'+id).style.display = "none";
-                  chargerDossiers();
-                }, 900);
-              } else {
-                form.querySelector('.admin-msg').textContent = "Erreur";
-              }
-            })
-            .catch(function(){ form.querySelector('.admin-msg').textContent = "Erreur réseau"; });
-        };
-      });
-    }
-
-    function initMiniFormBuffer(id) {
-      if(!fileBuffers[id]) fileBuffers[id] = {};
-      ["reponseFiles", "documentsAjoutes"].forEach(function(field){
-        if(!fileBuffers[id][field]) fileBuffers[id][field] = [];
-        var input = document.querySelector('#form-'+id+' input[name="'+field+'"]');
-        var ul = document.getElementById('file-list-'+field+'-'+id);
-        if(!input || !ul) return;
-        input.value = ""; ul.innerHTML = "";
-        input.addEventListener("change", function() {
-          Array.prototype.forEach.call(input.files, function(f){ fileBuffers[id][field].push(f); });
-          renderFileListBuffer(id, field);
-          input.value = "";
-        });
-        renderFileListBuffer(id, field);
-      });
-    }
-    function renderFileListBuffer(id, field) {
-      var ul = document.getElementById('file-list-'+field+'-'+id);
-      if(!ul) return;
-      var arr = (fileBuffers[id] && fileBuffers[id][field]) ? fileBuffers[id][field] : [];
-      ul.innerHTML = "";
-      arr.forEach(function(file, i){
-        var li = document.createElement("li");
-        li.innerHTML = '<span>'+file.name+'</span> <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer(\\''+id+'\\', \\''+field+'\\', '+i+')">✕</button>';
-        ul.appendChild(li);
-      });
-    }
-    window.removeFileBuffer = function(id, field, idx) {
-      if(fileBuffers[id] && fileBuffers[id][field]) {
-        fileBuffers[id][field].splice(idx,1);
-        renderFileListBuffer(id, field);
+  document.querySelectorAll(".maj-btn").forEach(btn => {
+    btn.onclick = function(){
+      document.querySelectorAll(".mini-form-row").forEach(f=>f.style.display="none");
+      let id = btn.getAttribute("data-id");
+      let row = document.getElementById("mini-row-"+id);
+      if(row) {
+        row.style.display = "table-row";
+        row.scrollIntoView({behavior:"smooth",block:"center"});
+        setTimeout(()=>initMiniFormBuffer(id), 20);
       }
     };
+  });
 
-    function afficherGlobal() {
-      ongletActif = "global";
-      afficherOnglets();
-      var dossiers = allDossiers.slice();
+  document.querySelectorAll(".mini-form").forEach(form => {
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const id = this.getAttribute("data-id");
+      const fd = new FormData(this);
 
-      if(filtres.mois) {
-        dossiers = dossiers.filter(function(d){
-          var date = new Date(d.date);
-          return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
-        });
-      }
-      if(filtres.annee) {
-        dossiers = dossiers.filter(function(d){
-          var date = new Date(d.date);
-          return !isNaN(date) && String(date.getFullYear()) === filtres.annee;
-        });
-      }
-      if(rechercheClient && rechercheClient.trim().length > 0){
-        var rc = rechercheClient.trim().toLowerCase();
-        dossiers = dossiers.filter(function(d){
-          return (
-            String(d.marque_produit||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.produit_concerne||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.reference_piece||"").toLowerCase().indexOf(rc) !== -1 ||
-            String(d.probleme_rencontre||"").toLowerCase().indexOf(rc) !== -1
-          );
-        });
-      }
-
-      afficherFiltres(allDossiers, {statut: false});
-      document.getElementById("status-counters").innerHTML = "";
-
-      var html = '<table><tr><th>Date</th><th>Magasin</th><th>Marque du produit</th><th>Produit concerné</th><th>Référence de la pièce</th><th>Problème rencontré</th></tr>';
-      dossiers.forEach(function(d){
-        html += '<tr><td>'+(d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "")+'</td><td>'+(d.magasin||'')+'</td><td>'+(d.marque_produit||'')+'</td><td>'+(d.produit_concerne||'')+'</td><td>'+String(d.reference_piece||'').replace(/\\s*\\/\\s*/g, " /<wbr>")+'</td><td>'+(d.probleme_rencontre||'')+'</td></tr>';
+      ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+        if(fileBuffers[id] && fileBuffers[id][field]) {
+          fileBuffers[id][field].forEach(f=>fd.append(field, f));
+        }
       });
-      html += '</table>';
-      document.getElementById('dossier-list').innerHTML = html;
-    }
 
-    function fermerMiniForm(id){ var row = document.getElementById('mini-row-'+id); if (row) row.style.display = "none"; }
+      this.querySelector(".admin-msg").textContent = "Envoi...";
+      try {
+        const resp = await fetch("/api/admin/dossier/" + id, { method:"POST", body:fd });
+        const json = await resp.json();
+        if (json.success) {
+          this.querySelector(".admin-msg").textContent = "Mis à jour ✔";
+          setTimeout(()=>{
+            document.getElementById("mini-row-"+id).style.display="none";
+            chargerDossiers();
+          }, 900);
+        } else {
+          this.querySelector(".admin-msg").textContent = "Erreur";
+        }
+      } catch {
+        this.querySelector(".admin-msg").textContent = "Erreur réseau";
+      }
+    };
+  });
+}
 
-    function supprimerDossier(id) {
-      if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
-      fetch('/api/admin/dossier/' + id, { method: "DELETE", headers: {'x-superadmin': '1'} })
-        .then(function(r){ return r.json(); })
-        .then(function(json){ if(json.success){ chargerDossiers(); } else { alert(json.message || "Erreur lors de la suppression"); } });
-    }
+function initMiniFormBuffer(id) {
+  if(!fileBuffers[id]) fileBuffers[id] = {};
+  ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+    if(!fileBuffers[id][field]) fileBuffers[id][field] = [];
+    let input = document.querySelector("#form-" + id + " input[name='" + field + "']");
+    let ul = document.getElementById("file-list-" + field + "-" + id);
+    if(!input || !ul) return;
+    input.value = "";
+    ul.innerHTML = "";
 
-    function voirDossier(id) {
-      var d = allDossiers.find(function(x){ return x.id === id; });
-      if (!d) { alert("Dossier introuvable !"); return; }
-      var logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
-      var dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
-      var clientNom = String(d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-      var dateStr = "";
-      if (d.date) { var dt = new Date(d.date); if (!isNaN(dt)) { dateStr = dt.toISOString().slice(0,10); } }
-      var nomFichier = clientNom + (dateStr ? "_" + dateStr : "");
+    input.addEventListener("change", function() {
+      Array.from(input.files).forEach(f=>fileBuffers[id][field].push(f));
+      renderFileListBuffer(id, field);
+      input.value = "";
+    });
 
-      var fichiersDocs = [].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[]).filter(function(f){ return f && f.url; });
-      var used = {}; fichiersDocs = fichiersDocs.filter(function(f){ if (used[f.url]) return false; used[f.url]=1; return true; });
+    renderFileListBuffer(id, field);
+  });
+}
 
-      var detailHtml = '<html><head><meta charset="UTF-8"><title>'+nomFichier+'</title>' +
-        '<style>body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0;}.fiche-header{display:flex;align-items:center;gap:18px;margin-bottom:18px;}.fiche-header img{height:62px;border-radius:11px;box-shadow:0 2px 12px #0001;background:#fff;}.fiche-header .magasin-title{font-size:1.22em;font-weight:600;color:#17537a;}.fiche-date{margin-left:auto;font-size:1.08em;color:#444;font-weight:bold;}.fiche-table{max-width:760px;margin:30px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px 14px 24px;}.fiche-table table{width:100%;border-collapse:collapse;}.fiche-table th,.fiche-table td{text-align:left;padding:8px 10px;border:none;}.fiche-table th{color:#194e72;font-size:1.06em;text-align:left;width:220px;vertical-align:top;}.fiche-table tr{border-bottom:1px solid #f0f0f0;}.fiche-title{font-weight:bold;color:#006e90;padding-top:24px;font-size:1.08em;}.fiche-actions{text-align:right;margin-bottom:14px;}.print-btn{background:#006e90;color:#fff;border:none;padding:9px 22px;border-radius:7px;font-size:1.07em;font-weight:600;cursor:pointer;margin-left:7px;}.print-btn:hover{background:#1780b0;}.statut-chip{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:1em;}.statut-dot{display:inline-block;width:15px;height:15px;border-radius:50%;margin-right:2px;}.statut-dot.enregistre{background:#f8a900;border:2px solid #f7ce65;}.statut-dot.accepte{background:#16c11c;border:2px solid #a6ebba;}.statut-dot.refuse{background:#bb1810;border:2px solid #f49e9e;}.statut-dot.info{background:#1978d2;border:2px solid #93c7fa;}.statut-dot.attente-mo{background:#7d3cff;border:2px solid #cbb6ff;}.pj-img{max-width:180px;max-height:120px;display:block;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002;}@media print{.print-btn{display:none!important;}body{background:#fff;}.fiche-table{box-shadow:none;border:1px solid #888;}.fiche-header{padding-top:10px;}.hide-print{display:none!important;}.fiche-date{display:block!important;position:absolute;top:24px;right:40px;font-size:1.09em;}}</style></head><body>' +
-        '<div class="fiche-header"><img src="'+logoUrl+'" alt="Logo DSG"><span class="magasin-title">'+(d.magasin||"")+'</span><span class="fiche-date" style="margin-left:auto;">Créé le : '+dateCreation+'<br>Numéro de dossier : '+(d.numero_dossier||"")+'</span></div>' +
-        '<div class="fiche-table"><div class="fiche-actions"><button class="print-btn" onclick="renameAndPrint(\\''+nomFichier+'\\')">🖨️ Imprimer</button></div>' +
-        '<table>' +
-        '<tr><th>Nom du client</th><td>'+(d.nom||"")+'</td></tr>' +
-        '<tr><th>Email</th><td>'+(d.email||"")+'</td></tr>' +
-        '<tr><th>Magasin</th><td>'+(d.magasin||"")+'</td></tr>' +
-        '<tr class="hide-print"><td colspan="2" class="fiche-title">Produit</td></tr>' +
-        '<tr><th>Marque du produit</th><td>'+(d.marque_produit||"")+'</td></tr>' +
-        '<tr><th>Produit concerné</th><td>'+(d.produit_concerne||"")+'</td></tr>' +
-        '<tr><th>Référence de la pièce</th><td>'+(d.reference_piece||"")+'</td></tr>' +
-        '<tr><th>Quantité posée</th><td>'+(d.quantite_posee||"")+'</td></tr>' +
-        '<tr class="hide-print"><td colspan="2" class="fiche-title">Véhicule</td></tr>' +
-        '<tr><th>Immatriculation</th><td>'+(d.immatriculation||"")+'</td></tr>' +
-        '<tr><th>Marque</th><td>'+(d.marque_vehicule||"")+'</td></tr>' +
-        '<tr><th>Modèle</th><td>'+(d.modele_vehicule||"")+'</td></tr>' +
-        '<tr><th>Numéro de série</th><td>'+(d.num_serie||"")+'</td></tr>' +
-        '<tr><th>1ère immatriculation</th><td>'+formatDateFRshort(d.premiere_immat)+'</td></tr>' +
-        '<tr class="hide-print"><td colspan="2" class="fiche-title">Problème</td></tr>' +
-        '<tr><th>Date de pose</th><td>'+formatDateFRshort(d.date_pose)+'</td></tr>' +
-        '<tr><th>Date du constat</th><td>'+formatDateFRshort(d.date_constat)+'</td></tr>' +
-        '<tr><th>Kilométrage à la pose</th><td>'+(d.km_pose||"")+'</td></tr>' +
-        '<tr><th>Kilométrage au constat</th><td>'+(d.km_constat||"")+'</td></tr>' +
-        '<tr><th>N° BL 1ère Vente</th><td>'+(d.bl_pose||"")+'</td></tr>' +
-        '<tr><th>N° BL 2ème Vente</th><td>'+(d.bl_constat||"")+'</td></tr>' +
-        '<tr><th>Problème rencontré</th><td>'+(d.probleme_rencontre||"")+'</td></tr>' +
-        '<tr class="hide-print"><th>Statut</th><td>'+statutChip(d.statut)+'</td></tr>' +
-        '<tr><th>Réponse</th><td>'+(d.reponse ? String(d.reponse).replace(/\\n/g,"<br>") : "")+'</td></tr>' +
-        '<tr><th>Numéro d\\'avoir (interne)</th><td>'+(d.numero_avoir||"")+'</td></tr>' +
-        '<tr class="hide-print"><th>Documents ajoutés</th><td>' +
-        (fichiersDocs.length ? fichiersDocs.map(function(f){ var ext = String(f.original||"").split(".").pop().toLowerCase(); if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)!==-1){ return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/'+f.url+'\\', \\'"+String(f.original||"").replace(/'/g,"&#39;")+"\\')"><img src="/download/'+f.url+'" class="pj-img"></a>'; } else { return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/'+f.url+'\\', \\'"+String(f.original||"").replace(/'/g,"&#39;")+"\\')">'+(f.original||"")+'</a>'; } }).join("<br>") : "") +
-        '</td></tr></table></div>' +
-        '<script>function renameAndPrint(filename){var oldTitle=document.title;document.title=filename;window.print();setTimeout(function(){document.title=oldTitle;},1200);}window.onbeforeprint=function(){document.title="'+nomFichier+'";};window.onafterprint=function(){setTimeout(function(){document.title="'+nomFichier+'";},500);};<\/script>' +
-        '</body></html>';
+function renderFileListBuffer(id, field) {
+  let ul = document.getElementById("file-list-" + field + "-" + id);
+  if(!ul) return;
+  let arr = fileBuffers[id] && fileBuffers[id][field] ? fileBuffers[id][field] : [];
+  ul.innerHTML = "";
+  arr.forEach((file, i)=>{
+    let li = document.createElement("li");
+    li.innerHTML = '<span>' + file.name + '</span> <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer(\\'' + id + '\\',\\'' + field + '\\',' + i + ')">✕</button>';
+    ul.appendChild(li);
+  });
+}
+window.removeFileBuffer = function(id, field, idx) {
+  if(fileBuffers[id] && fileBuffers[id][field]) {
+    fileBuffers[id][field].splice(idx,1);
+    renderFileListBuffer(id, field);
+  }
+};
 
-      var win = window.open("", "_blank", "width=820,height=900");
-      win.document.write(detailHtml);
-      win.document.close();
-    }
+function afficherGlobal() {
+  ongletActif = "global";
+  afficherOnglets();
+  let dossiers = allDossiers.slice();
 
-    function completerDossier(id) {
-      var d = allDossiers.find(function(x){ return x.id === id; });
-      if (!d) { alert("Dossier introuvable !"); return; }
-      var options = MAGASINS.map(function(m){ return '<option value="'+m+'"'+(d.magasin===m?' selected':'')+'>'+m+'</option>'; }).join('');
-      var editHtml = '<html><head><meta charset="UTF-8"><title>Compléter Dossier</title>' +
-        '<style>body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0;padding:20px;}h2{color:#006e90;font-size:1.6em;margin-bottom:20px;}form{display:flex;flex-direction:column;gap:14px;}label{font-weight:600;color:#195e7c;margin-bottom:3px;}input,select,textarea{padding:8px;font-size:1em;border:1px solid #b4c8d8;border-radius:4px;width:100%;box-sizing:border-box;}textarea{resize:vertical;}.form-row{display:flex;gap:20px;flex-wrap:wrap;}.field{display:flex;flex-direction:column;flex:1;min-width:180px;}.buttons{display:flex;gap:20px;margin-top:20px;justify-content:center;}button{padding:8px 16px;font-size:1em;border:none;border-radius:6px;cursor:pointer;}button.validate{background:#006e90;color:#fff;}button.cancel{background:#ccc;color:#333;}</style>' +
-        '</head><body><h2>Compléter Dossier</h2><form id="completerForm">' +
-        '<div class="form-row"><div class="field"><label>Nom du client</label><input type="text" name="nom" value="'+(d.nom||'')+'"></div>' +
-        '<div class="field"><label>Email</label><input type="email" name="email" value="'+(d.email||'')+'"></div></div>' +
-        '<div class="form-row"><div class="field"><label>Magasin</label><select name="magasin">'+options+'</select></div>' +
-        '<div class="field"><label>Marque du produit</label><input type="text" name="marque_produit" value="'+(d.marque_produit||'')+'"></div>' +
-        '<div class="field"><label>Produit concerné</label><input type="text" name="produit_concerne" value="'+(d.produit_concerne||'')+'"></div></div>' +
-        '<div class="form-row"><div class="field"><label>Référence de la pièce</label><input type="text" name="reference_piece" value="'+(d.reference_piece||'')+'"></div>' +
-        '<div class="field"><label>Quantité posée</label><input type="number" name="quantite_posee" value="'+(d.quantite_posee||'')+'"></div>' +
-        '<div class="field"><label>Immatriculation</label><input type="text" name="immatriculation" value="'+(d.immatriculation||'')+'"></div></div>' +
-        '<div class="form-row"><div class="field"><label>Marque véhicule</label><input type="text" name="marque_vehicule" value="'+(d.marque_vehicule||'')+'"></div>' +
-        '<div class="field"><label>Modèle véhicule</label><input type="text" name="modele_vehicule" value="'+(d.modele_vehicule||'')+'"></div>' +
-        '<div class="field"><label>Numéro de série</label><input type="text" name="num_serie" value="'+(d.num_serie||'')+'"></div></div>' +
-        '<div class="form-row"><div class="field"><label>1ère immatriculation</label><input type="date" name="premiere_immat" value="'+(d.premiere_immat||'')+'"></div>' +
-        '<div class="field"><label>Date de pose</label><input type="date" name="date_pose" value="'+(d.date_pose||'')+'"></div>' +
-        '<div class="field"><label>Date du constat</label><input type="date" name="date_constat" value="'+(d.date_constat||'')+'"></div></div>' +
-        '<div class="form-row"><div class="field"><label>Kilométrage à la pose</label><input type="number" name="km_pose" value="'+(d.km_pose||'')+'"></div>' +
-        '<div class="field"><label>Kilométrage au constat</label><input type="number" name="km_constat" value="'+(d.km_constat||'')+'"></div>' +
-        '<div class="field"><label>N° BL 1ère Vente</label><input type="text" name="bl_pose" value="'+(d.bl_pose||'')+'"></div>' +
-        '<div class="field"><label>N° BL 2ème Vente</label><input type="text" name="bl_constat" value="'+(d.bl_constat||'')+'"></div></div>' +
-        '<div class="field" style="margin-top:10px;"><label>Problème rencontré</label><textarea name="probleme_rencontre" rows="4">'+(d.probleme_rencontre||'')+'</textarea></div>' +
-        '<div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="validate">Valider</button></div>' +
-        '</form><script>document.querySelector(".cancel").addEventListener("click",function(){window.close();});document.querySelector(".validate").addEventListener("click",function(){var f=document.getElementById("completerForm");var o={};(new FormData(f)).forEach(function(v,k){o[k]=v;});fetch("/api/admin/completer-dossier/'+id+'",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}).then(function(r){return r.json();}).then(function(j){if(j.success){if(window.opener&&window.opener.chargerDossiers){window.opener.chargerDossiers();}window.close();}else{alert("Erreur lors de la mise à jour");}});});<\/script></body></html>';
+  if(filtres.mois) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+    });
+  }
+  if(filtres.annee) {
+    dossiers = dossiers.filter(d=>{
+      let date = new Date(d.date);
+      return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+    });
+  }
+  if(rechercheClient && rechercheClient.trim().length > 0){
+    const rc = rechercheClient.trim().toLowerCase();
+    dossiers = dossiers.filter(d => (
+      String(d.marque_produit||"").toLowerCase().includes(rc) ||
+      String(d.produit_concerne||"").toLowerCase().includes(rc) ||
+      String(d.reference_piece||"").toLowerCase().includes(rc) ||
+      String(d.probleme_rencontre||"").toLowerCase().includes(rc)
+    ));
+  }
 
-      var win = window.open("", "_blank", "width=900,height=800");
-      win.document.open(); win.document.write(editHtml); win.document.close();
-    }
+  afficherFiltres(allDossiers, {statut: false});
+  document.getElementById("status-counters").innerHTML = "";
 
-    function ouvrirFournisseur(id) {
-      var d = allDossiers.find(function(x){ return x.id === id; });
-      if (!d) { alert("Dossier introuvable !"); return; }
-      var win = window.open("", "_blank", "width=700,height=600");
-      var titre = "Envoyer dossier au fournisseur";
-      var html = '<html><head><meta charset="UTF-8"><title>'+titre+'</title>' +
-        '<style>body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0;padding:20px;}h2{color:#006e90;font-size:1.6em;margin-bottom:20px;}form{display:flex;flex-direction:column;gap:14px;}label{font-weight:600;color:#195e7c;margin-bottom:3px;}select,textarea,input[type=file]{padding:8px;font-size:1em;border:1px solid #b4c8d8;border-radius:4px;}.info{font-size:1em;color:#234156;margin-bottom:8px;}.buttons{display:flex;gap:20px;margin-top:20px;justify-content:center;}.buttons button{padding:8px 16px;font-size:1em;border:none;border-radius:6px;cursor:pointer;}.buttons .send{background:#006e90;color:#fff;}.buttons .cancel{background:#ccc;color:#333;}.status-msg{text-align:center;font-size:0.98em;margin-top:10px;color:#195e7c;min-height:20px;}.send-form{background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer;}</style>' +
-        '</head><body><h2>'+titre+'</h2><div class="info"><strong>Produit concerné :</strong> '+(d.produit_concerne||'')+'<br><strong>Référence de la pièce :</strong> '+(d.reference_piece||'')+'<br><strong>Numéro de dossier :</strong> '+(d.numero_dossier||'')+'</div>' +
-        '<form id="fournisseurForm" enctype="multipart/form-data"><label for="fournisseur-select">Fournisseur</label>' +
-        '<select id="fournisseur-select" name="fournisseur">' +
-          '<option value="AUTOGAMMA">AUTOGAMMA</option><option value="BOSCH FREINAGE">BOSCH FREINAGE</option><option value="CORTECO">CORTECO</option><option value="DELPHI">DELPHI</option><option value="EFI">EFI</option><option value="FEBI">FEBI</option><option value="KYB">KYB</option><option value="MAGNETI">MAGNETI</option><option value="METELLI">METELLI</option><option value="MS MOTORS">MS MOTORS</option><option value="NGK">NGK</option><option value="NRF">NRF</option><option value="QH">QH</option><option value="RIAL">RIAL</option><option value="SCHAEFFLER">SCHAEFFLER</option><option value="SEIM">SEIM</option><option value="VERNET">VERNET-CALORSTAT</option>' +
-        '</select>' +
-        '<label for="message-input">Message (optionnel)</label><textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical;"></textarea>' +
-        '<label for="file-input">Ajouter des fichiers (optionnel)</label><input type="file" id="file-input" name="fichiers" multiple>' +
-        '<div style="margin-top:8px; display:flex; align-items:center; gap:12px;"><button type="button" class="send-form">Formulaire</button></div>' +
-        '<div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="send">Envoyer</button></div><div class="status-msg" id="status-msg"></div></form>' +
-        '<script>var cancelBtn=document.querySelector(".cancel");var sendBtn=document.querySelector(".send");var formBtn=document.querySelector(".send-form");var statusEl=document.getElementById("status-msg");var supplierSelect=document.getElementById("fournisseur-select");var HIDE_FORM_FOR={"BOSCH FREINAGE":1,"CORTECO":1,"KYB":1,"VERNET":1};function updateFormButtonVisibility(){if(!formBtn)return;var v=supplierSelect?supplierSelect.value:"";formBtn.style.display=HIDE_FORM_FOR[v]?"none":"inline-block";}if(supplierSelect){updateFormButtonVisibility();supplierSelect.addEventListener("change",updateFormButtonVisibility);}if(cancelBtn){cancelBtn.addEventListener("click",function(){window.close();});}if(formBtn){formBtn.addEventListener("click",function(){var supVal=supplierSelect?supplierSelect.value:"";var resMap={"FEBI":{type:"pdf",file:"FICHE_GARANTIE_FEBI.pdf"},"METELLI":{type:"pdf",file:"formulaire_garantie_metelli.pdf"},"EFI":{type:"pdf",file:"Formulaire_EFI.pdf"},"MAGNETI":{type:"pdf",file:"FORMULAIRE_MAGNETI.pdf"},"QH":{type:"pdf",file:"FORMULAIRE_QH.pdf"},"RIAL":{type:"pdf",file:"DEMANDE_RIAL.pdf"},"AUTOGAMMA":{type:"pdf",file:"Formulaire_ AUTOGAMMA.pdf"},"DELPHI":{type:"pdf",file:"Formulaire_delphi.pdf"},"MS MOTORS":{type:"pdf",file:"FORMULAIRE_ms.pdf"},"NGK":{type:"pdf",file:"Formulaire_ngk.pdf"},"NRF":{type:"pdf",file:"Formulaire_nrf.pdf"},"SEIM":{type:"pdf",file:"Formulaire_SEIM.pdf"},"SCHAEFFLER":{type:"url",link:"https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081"}};var res=resMap[supVal];if(!res)return;if(res.type==="pdf"){var pdfUrl="/templates/"+res.file;var w=window.open("","_blank","width=800,height=750");w.document.open();w.document.write('<html><head><meta charset="UTF-8"><title>Formulaire '+supVal+'</title></head><body style="margin:0;padding:0;"><embed src="'+pdfUrl+'" type="application/pdf" width="100%" height="100%"></body></html>');w.document.close();}else if(res.type==="url"){window.open(res.link,"_blank");}});}if(sendBtn){sendBtn.addEventListener("click",function(){var form=document.getElementById("fournisseurForm");var fd=new FormData(form);statusEl.textContent="Envoi en cours...";fetch("/api/admin/envoyer-fournisseur/'+id+'",{method:"POST",body:fd}).then(function(r){return r.json();}).then(function(j){if(j.success){statusEl.textContent="Dossier envoyé au fournisseur ✔";setTimeout(function(){window.close();},1200);}else{statusEl.textContent=(j.message||"Erreur lors de l\\'envoi");}}).catch(function(){statusEl.textContent="Erreur lors de l\\'envoi";});});}<\/script></body></html>';
-      win.document.open(); win.document.write(html); win.document.close();
-    }
-    window.ouvrirFournisseur = ouvrirFournisseur;
+  let html = '<table><tr>' +
+      '<th>Date</th>' +
+      '<th>Magasin</th>' +
+      '<th>Marque du produit</th>' +
+      '<th>Produit concerné</th>' +
+      '<th>Référence de la pièce</th>' +
+      '<th>Problème rencontré</th>' +
+    "</tr>";
+  dossiers.forEach(d=>{
+    html += '<tr>' +
+      '<td>' + (d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "") + '</td>' +
+      '<td>' + (d.magasin||"") + '</td>' +
+      '<td>' + (d.marque_produit||"") + '</td>' +
+      '<td>' + (d.produit_concerne||"") + '</td>' +
+      '<td>' + String(d.reference_piece||"").replace(/\\s*\\/\\s*/g, " /<wbr>") + '</td>' +
+      '<td>' + (d.probleme_rencontre||"") + '</td>' +
+    "</tr>";
+  });
+  html += "</table>";
+  document.getElementById("dossier-list").innerHTML = html;
+}
 
-    function ouvrirDocumentDansPopup(url, nomFichier) {
-      var ext = String(nomFichier||"").split(".").pop().toLowerCase();
-      var content = "";
-      if (ext === "pdf") { content = '<embed src="'+url+'" type="application/pdf" style="width:100%;height:95vh;border:none;">'; }
-      else if (["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)!==-1) { content = '<img src="'+url+'" style="max-width:100%;max-height:95vh;display:block;margin:auto;">'; }
-      else { content = '<iframe src="'+url+'" style="width:100%;height:95vh;border:none;"></iframe>'; }
-      var win = window.open("", "_blank", "width=900,height=900");
-      win.document.write('<html><head><meta charset="UTF-8"><title>'+nomFichier+'</title><style>body{background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0;}.close-btn{position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10;}.close-btn:hover{background:#d32121;}</style></head><body><div>'+content+'</div></body></html>');
-      win.document.close();
-    }
-    window.ouvrirDocumentDansPopup = ouvrirDocumentDansPopup;
+function fermerMiniForm(id){ document.getElementById("mini-row-"+id).style.display = "none"; }
 
-    // Initial focus on password
-    document.getElementById('admin-pass').addEventListener('keyup', function(e){ if (e.key === 'Enter') adminLogin(); });
-  </script>
+function supprimerDossier(id) {
+  if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+  fetch("/api/admin/dossier/" + id, {
+    method: "DELETE",
+    headers: {"x-superadmin": "1"}
+  }).then(r=>r.json()).then(json=>{
+    if(json.success) chargerDossiers();
+    else alert(json.message || "Erreur lors de la suppression");
+  });
+}
+
+function voirDossier(id) {
+  let d = allDossiers.find(x=>x.id===id);
+  if (!d) return alert("Dossier introuvable !");
+  let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+  let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+  let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+  let dateStr = "";
+  if (d.date) {
+    let dt = new Date(d.date);
+    if (!isNaN(dt)) dateStr = dt.toISOString().slice(0,10);
+  }
+  let nomFichier = clientNom + (dateStr ? "_" + dateStr : "");
+  let fichiersDocs = [].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[]).filter(f => f && f.url);
+  fichiersDocs = fichiersDocs.filter((f, i, arr) => arr.findIndex(x => x.url === f.url) === i);
+
+  let detailHtml = '<html><head><meta charset="UTF-8"><title>' + nomFichier + '</title>' +
+  '<style>body { font-family: \\'Segoe UI\\', Arial, sans-serif; background:#f9fafb; margin:0; }' +
+  '.fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }' +
+  '.fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}' +
+  '.fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }' +
+  '.fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}' +
+  '.fiche-table { max-width:760px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }' +
+  '.fiche-table table { width:100%; border-collapse:collapse; }' +
+  '.fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }' +
+  '.fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}' +
+  '.fiche-table tr { border-bottom:1px solid #f0f0f0;}' +
+  '.fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}' +
+  '.fiche-actions { text-align:right; margin-bottom:14px;}' +
+  '.print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}' +
+  '.print-btn:hover { background:#1780b0; }' +
+  '@media print { .print-btn { display:none !important; } body { background: #fff; } .fiche-table { box-shadow: none; border:1px solid #888;} .fiche-header { padding-top:10px; } .hide-print { display:none !important; } .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}}' +
+  '.statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em; }' +
+  '.statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }' +
+  '.statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }' +
+  '.statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }' +
+  '.statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }' +
+  '.statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }' +
+  '.pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }</style></head><body>' +
+
+  '<div class="fiche-header"><img src="' + logoUrl + '" alt="Logo DSG"><span class="magasin-title">' + (d.magasin||"") +
+  '</span><span class="fiche-date" style="margin-left:auto;">Créé le : ' + dateCreation + "<br>Numéro de dossier : " + (d.numero_dossier || "") + "</span></div>" +
+
+  '<div class="fiche-table"><div class="fiche-actions"><button class="print-btn" onclick="renameAndPrint(\\'' + nomFichier + '\\')">🖨️ Imprimer</button></div>' +
+  '<table>' +
+  '<tr><th>Nom du client</th><td>' + (d.nom||"") + "</td></tr>" +
+  '<tr><th>Email</th><td>' + (d.email||"") + "</td></tr>" +
+  '<tr><th>Magasin</th><td>' + (d.magasin||"") + "</td></tr>" +
+  '<tr class="hide-print"><td colspan="2" class="fiche-title">Produit</td></tr>' +
+  '<tr><th>Marque du produit</th><td>' + (d.marque_produit||"") + "</td></tr>" +
+  '<tr><th>Produit concerné</th><td>' + (d.produit_concerne||"") + "</td></tr>" +
+  '<tr><th>Référence de la pièce</th><td>' + (d.reference_piece||"") + "</td></tr>" +
+  '<tr><th>Quantité posée</th><td>' + (d.quantite_posee||"") + "</td></tr>" +
+  '<tr class="hide-print"><td colspan="2" class="fiche-title">Véhicule</td></tr>' +
+  '<tr><th>Immatriculation</th><td>' + (d.immatriculation||"") + "</td></tr>" +
+  '<tr><th>Marque</th><td>' + (d.marque_vehicule||"") + "</td></tr>" +
+  '<tr><th>Modèle</th><td>' + (d.modele_vehicule||"") + "</td></tr>" +
+  '<tr><th>Numéro de série</th><td>' + (d.num_serie||"") + "</td></tr>" +
+  '<tr><th>1ère immatriculation</th><td>' + formatDateFRshort(d.premiere_immat) + "</td></tr>" +
+  '<tr class="hide-print"><td colspan="2" class="fiche-title">Problème</td></tr>' +
+  '<tr><th>Date de pose</th><td>' + formatDateFRshort(d.date_pose) + "</td></tr>" +
+  '<tr><th>Date du constat</th><td>' + formatDateFRshort(d.date_constat) + "</td></tr>" +
+  '<tr><th>Kilométrage à la pose</th><td>' + (d.km_pose||"") + "</td></tr>" +
+  '<tr><th>Kilométrage au constat</th><td>' + (d.km_constat||"") + "</td></tr>" +
+  '<tr><th>N° BL 1ère Vente</th><td>' + (d.bl_pose||"") + "</td></tr>" +
+  '<tr><th>N° BL 2ème Vente</th><td>' + (d.bl_constat||"") + "</td></tr>" +
+  '<tr><th>Problème rencontré</th><td>' + (d.probleme_rencontre||"") + "</td></tr>" +
+  '<tr class="hide-print"><th>Statut</th><td>' + statutChip(String(d.statut)) + "</td></tr>" +
+  '<tr><th>Réponse</th><td>' + (d.reponse ? String(d.reponse).replace(/\\n/g,"<br>") : "") + "</td></tr>" +
+  '<tr><th>Numéro d\\'avoir (interne)</th><td>' + (d.numero_avoir||"") + "</td></tr>" +
+  '<tr class="hide-print"><th>Documents ajoutés</th><td>' +
+    (fichiersDocs.length ? fichiersDocs.map(f=>{
+      const ext = String(f.original||"").split(".").pop().toLowerCase();
+      if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+        return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/' + f.url + '\\',\\'' + (f.original||"") + '\\')"><img src="/download/' + f.url + '" class="pj-img"></a>';
+      } else {
+        return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/' + f.url + '\\',\\'' + (f.original||"") + '\\')">' + (f.original||"") + "</a>";
+      }
+    }).join("<br>") : "") +
+  "</td></tr></table></div>" +
+  '<script>function renameAndPrint(filename){var oldTitle=document.title;document.title=filename;window.print();setTimeout(function(){document.title=oldTitle;},800);}window.onbeforeprint=function(){document.title="' + nomFichier + '";};window.onafterprint=function(){setTimeout(function(){document.title="' + nomFichier + '";},300);};<\\/script>' +
+  "</body></html>";
+
+  let win = window.open("", "_blank", "width=820,height=900");
+  win.document.open();
+  win.document.write(detailHtml);
+  win.document.close();
+}
+
+function completerDossier(id) {
+  let d = allDossiers.find(x => x.id === id);
+  if (!d) { alert("Dossier introuvable !"); return; }
+  const options = MAGASINS.map(m => '<option value="' + m + '"' + (d.magasin === m ? " selected" : "") + ">" + m + "</option>").join("");
+  let editHtml = '<html><head><meta charset="UTF-8"><title>Compléter Dossier</title><style>' +
+  'body { font-family:\\'Segoe UI\\', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }' +
+  'h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }' +
+  'form { display:flex; flex-direction:column; gap:14px; }' +
+  'label { font-weight:600; color:#195e7c; margin-bottom:3px; }' +
+  'input, select, textarea { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; width:100%; box-sizing:border-box; }' +
+  'textarea { resize:vertical; }' +
+  '.form-row { display:flex; gap:20px; flex-wrap:wrap; }' +
+  '.field { display:flex; flex-direction:column; flex:1; min-width:180px; }' +
+  '.buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }' +
+  'button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }' +
+  'button.validate { background:#006e90; color:#fff; }' +
+  'button.cancel { background:#ccc; color:#333; }' +
+  '</style></head><body>' +
+  '<h2>Compléter Dossier</h2>' +
+  '<form id="completerForm">' +
+  '<div class="form-row">' +
+    '<div class="field"><label>Nom du client</label><input type="text" name="nom" value="' + (d.nom||"") + '"></div>' +
+    '<div class="field"><label>Email</label><input type="email" name="email" value="' + (d.email||"") + '"></div>' +
+  '</div>' +
+  '<div class="form-row">' +
+    '<div class="field"><label>Magasin</label><select name="magasin">' + options + '</select></div>' +
+    '<div class="field"><label>Marque du produit</label><input type="text" name="marque_produit" value="' + (d.marque_produit||"") + '"></div>' +
+    '<div class="field"><label>Produit concerné</label><input type="text" name="produit_concerne" value="' + (d.produit_concerne||"") + '"></div>' +
+  '</div>' +
+  '<div class="form-row">' +
+    '<div class="field"><label>Référence de la pièce</label><input type="text" name="reference_piece" value="' + (d.reference_piece||"") + '"></div>' +
+    '<div class="field"><label>Quantité posée</label><input type="number" name="quantite_posee" value="' + (d.quantite_posee||"") + '"></div>' +
+    '<div class="field"><label>Immatriculation</label><input type="text" name="immatriculation" value="' + (d.immatriculation||"") + '"></div>' +
+  '</div>' +
+  '<div class="form-row">' +
+    '<div class="field"><label>Marque véhicule</label><input type="text" name="marque_vehicule" value="' + (d.marque_vehicule||"") + '"></div>' +
+    '<div class="field"><label>Modèle véhicule</label><input type="text" name="modele_vehicule" value="' + (d.modele_vehicule||"") + '"></div>' +
+    '<div class="field"><label>Numéro de série</label><input type="text" name="num_serie" value="' + (d.num_serie||"") + '"></div>' +
+  '</div>' +
+  '<div class="form-row">' +
+    '<div class="field"><label>1ère immatriculation</label><input type="date" name="premiere_immat" value="' + (d.premiere_immat||"") + '"></div>' +
+    '<div class="field"><label>Date de pose</label><input type="date" name="date_pose" value="' + (d.date_pose||"") + '"></div>' +
+    '<div class="field"><label>Date du constat</label><input type="date" name="date_constat" value="' + (d.date_constat||"") + '"></div>' +
+  '</div>' +
+  '<div class="form-row">' +
+    '<div class="field"><label>Kilométrage à la pose</label><input type="number" name="km_pose" value="' + (d.km_pose||"") + '"></div>' +
+    '<div class="field"><label>Kilométrage au constat</label><input type="number" name="km_constat" value="' + (d.km_constat||"") + '"></div>' +
+    '<div class="field"><label>N° BL 1ère Vente</label><input type="text" name="bl_pose" value="' + (d.bl_pose||"") + '"></div>' +
+    '<div class="field"><label>N° BL 2ème Vente</label><input type="text" name="bl_constat" value="' + (d.bl_constat||"") + '"></div>' +
+  '</div>' +
+  '<div class="field" style="margin-top:10px;"><label>Problème rencontré</label><textarea name="probleme_rencontre" rows="4">' + (d.probleme_rencontre or "").replace("\\r","").replace("\\n","\\n") + '</textarea></div>' +
+  '<div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="validate">Valider</button></div>' +
+  '</form>' +
+  '<script>const cancelBtn=document.querySelector(\\'.cancel\\');cancelBtn.addEventListener(\\'click\\',()=>{window.close();});const validateBtn=document.querySelector(\\'.validate\\');validateBtn.addEventListener(\\'click\\',()=>{const form=document.getElementById(\\'completerForm\\');const data={};(new FormData(form)).forEach((v,k)=>{data[k]=v;});fetch(\\'/api/admin/completer-dossier/" + id + "\\',{method:\\'POST\\',headers:{\\'Content-Type\\':\\'application/json\\'},body:JSON.stringify(data)}).then(r=>r.json()).then(j=>{if(j.success){if(window.opener&&window.opener.chargerDossiers){window.opener.chargerDossiers();}window.close();}else{alert(\\'Erreur lors de la mise à jour\\');}});});<\\/script>' +
+  "</body></html>";
+
+  const win = window.open("", "_blank", "width=900,height=800");
+  win.document.open();
+  win.document.write(editHtml);
+  win.document.close();
+}
+
+function ouvrirFournisseur(id) {
+  const d = allDossiers.find(x => x.id === id);
+  if (!d) { alert("Dossier introuvable !"); return; }
+
+  const win = window.open("", "_blank", "width=700,height=600");
+  const titre = "Envoyer dossier au fournisseur";
+
+  const html = '<html><head><meta charset="UTF-8"><title>' + titre + '</title><style>' +
+  'body { font-family:\\'Segoe UI\\', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }' +
+  'h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }' +
+  'form { display:flex; flex-direction:column; gap:14px; }' +
+  'label { font-weight:600; color:#195e7c; margin-bottom:3px; }' +
+  'select, textarea, input[type=file] { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; }' +
+  '.info { font-size:1em; color:#234156; margin-bottom:8px; }' +
+  '.buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }' +
+  '.buttons button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }' +
+  '.buttons .send { background:#006e90; color:#fff; }' +
+  '.buttons .cancel { background:#ccc; color:#333; }' +
+  '.status-msg { text-align:center; font-size:0.98em; margin-top:10px; color:#195e7c; min-height:20px; }' +
+  '.send-form { background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer; }' +
+  '</style></head><body>' +
+  '<h2>' + titre + '</h2>' +
+  '<div class="info"><strong>Produit concerné :</strong> ' + (d.produit_concerne || "") + '<br><strong>Référence de la pièce :</strong> ' + (d.reference_piece || "") + '<br><strong>Numéro de dossier :</strong> ' + (d.numero_dossier || "") + "</div>" +
+  '<form id="fournisseurForm" enctype="multipart/form-data">' +
+  '<label for="fournisseur-select">Fournisseur</label>' +
+  '<select id="fournisseur-select" name="fournisseur">' +
+    '<option value="AUTOGAMMA">AUTOGAMMA</option>' +
+    '<option value="BOSCH FREINAGE">BOSCH FREINAGE</option>' +
+    '<option value="CORTECO">CORTECO</option>' +
+    '<option value="DELPHI">DELPHI</option>' +
+    '<option value="EFI">EFI</option>' +
+    '<option value="FEBI">FEBI</option>' +
+    '<option value="KYB">KYB</option>' +
+    '<option value="MAGNETI">MAGNETI</option>' +
+    '<option value="METELLI">METELLI</option>' +
+    '<option value="MS MOTORS">MS MOTORS</option>' +
+    '<option value="NGK">NGK</option>' +
+    '<option value="NRF">NRF</option>' +
+    '<option value="QH">QH</option>' +
+    '<option value="RIAL">RIAL</option>' +
+    '<option value="SCHAEFFLER">SCHAEFFLER</option>' +
+    '<option value="SEIM">SEIM</option>' +
+    '<option value="VERNET">VERNET-CALORSTAT</option>' +
+  "</select>" +
+
+  '<label for="message-input">Message (optionnel)</label>' +
+  '<textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical;"></textarea>' +
+  '<label for="file-input">Ajouter des fichiers (optionnel)</label>' +
+  '<input type="file" id="file-input" name="fichiers" multiple>' +
+  '<div style="margin-top:8px; display:flex; align-items:center; gap:12px;">' +
+    '<button type="button" class="send-form">Formulaire</button>' +
+  "</div>" +
+  '<div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="send">Envoyer</button></div>' +
+  '<div class="status-msg" id="status-msg"></div>' +
+  "</form></body></html>";
+
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+
+  const cancelBtn   = win.document.querySelector(".cancel");
+  const sendBtn     = win.document.querySelector(".send");
+  const formBtn     = win.document.querySelector(".send-form");
+  const statusEl    = win.document.getElementById("status-msg");
+  const supplierSelect = win.document.getElementById("fournisseur-select");
+
+  const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET"]);
+  function updateFormButtonVisibility() {
+    if (!formBtn) return;
+    const supVal = supplierSelect ? supplierSelect.value : "";
+    formBtn.style.display = HIDE_FORM_FOR.has(supVal) ? "none" : "inline-block";
+  }
+  if (supplierSelect) {
+    updateFormButtonVisibility();
+    supplierSelect.addEventListener("change", updateFormButtonVisibility);
+  }
+
+  if (cancelBtn) cancelBtn.addEventListener("click", () => win.close());
+
+  if (formBtn) {
+    formBtn.addEventListener("click", () => {
+      const supVal = supplierSelect ? supplierSelect.value : "";
+      const resourceMap = {
+        "FEBI":       { type: "pdf", file: "FICHE_GARANTIE_FEBI.pdf" },
+        "METELLI":    { type: "pdf", file: "formulaire_garantie_metelli.pdf" },
+        "EFI":        { type: "pdf", file: "Formulaire_EFI.pdf" },
+        "MAGNETI":    { type: "pdf", file: "FORMULAIRE_MAGNETI.pdf" },
+        "QH":         { type: "pdf", file: "FORMULAIRE_QH.pdf" },
+        "RIAL":       { type: "pdf", file: "DEMANDE_RIAL.pdf" },
+        "AUTOGAMMA":  { type: "pdf", file: "Formulaire_ AUTOGAMMA.pdf" },
+        "DELPHI":     { type: "pdf", file: "Formulaire_delphi.pdf" },
+        "MS MOTORS":  { type: "pdf", file: "FORMULAIRE_ms.pdf" },
+        "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
+        "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
+        "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
+        "SCHAEFFLER": { type: "url",
+          link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081" }
+      };
+      const res = resourceMap[supVal];
+      if (!res) return;
+      if (res.type === "pdf") {
+        const pdfUrl = "/templates/" + res.file;
+        const formWin = window.open("", "_blank", "width=800,height=750");
+        formWin.document.open();
+        formWin.document.write('<html><head><meta charset="UTF-8"><title>Formulaire ' + supVal + '</title></head><body style="margin:0;padding:0;"><embed src="' + pdfUrl + '" type="application/pdf" width="100%" height="100%"></body></html>');
+        formWin.document.close();
+      } else if (res.type === "url") {
+        window.open(res.link, "_blank");
+      }
+    });
+  }
+
+  if (sendBtn) {
+    sendBtn.addEventListener("click", async () => {
+      const form = win.document.getElementById("fournisseurForm");
+      const fd = new FormData(form);
+      if (statusEl) statusEl.textContent = "Envoi en cours...";
+      try {
+        const resp = await fetch("/api/admin/envoyer-fournisseur/" + id, { method: "POST", body: fd });
+        const json = await resp.json();
+        if (json.success) {
+          if (statusEl) statusEl.textContent = "Dossier envoyé au fournisseur ✔";
+          setTimeout(() => win.close(), 1200);
+        } else {
+          if (statusEl) statusEl.textContent = (json.message || "Erreur lors de l'envoi");
+        }
+      } catch (e) {
+        if (statusEl) statusEl.textContent = "Erreur lors de l'envoi";
+      }
+    });
+  }
+}
+window.ouvrirFournisseur = ouvrirFournisseur;
+
+function ouvrirDocumentDansPopup(url, nomFichier) {
+  const ext = String(nomFichier||"").split(".").pop().toLowerCase();
+  let content = "";
+  if (["pdf"].includes(ext)) {
+    content = '<embed src="' + url + '" type="application/pdf" style="width:100%;height:95vh;border:none;">';
+  } else if (["jpg","jpeg","png","gif","webp","bmp"].includes(ext)) {
+    content = '<img src="' + url + '" style="max-width:100%;max-height:95vh;display:block;margin:auto;">';
+  } else {
+    content = '<iframe src="' + url + '" style="width:100%;height:95vh;border:none;"></iframe>';
+  }
+  const win = window.open("", "_blank", "width=900,height=900");
+  win.document.write('<html><head><meta charset="UTF-8"><title>' + (nomFichier||"") + '</title>' +
+  '<style>body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; } .close-btn { position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10; } .close-btn:hover { background:#d32121; }</style>' +
+  '</head><body><div>' + content + "</div></body></html>");
+  win.document.close();
+}
+</script>
 </body>
 </html>
