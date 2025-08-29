@@ -189,7 +189,7 @@
           <option value="Attente MO">Attente MO</option>
           <option value="accepté">Accepté</option>
           <option value="refusé">Refusé</option>
-          <option value="en attente d'info">En attente d'info</option>
+          <option value="en attente d&#39;info">En attente d&#39;info</option>
         </select>
       </label>
     </div>
@@ -199,6 +199,11 @@
 
 <script>
 /* --------- Utilitaires --------- */
+function esc(s){
+  return (s==null? "" : String(s))
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
 function formatDateFRshort(val) {
   if (!val) return "";
   var d = (typeof val === "string") ? new Date(val) : val;
@@ -214,7 +219,6 @@ function formatDateFRshort(val) {
   }
   return val;
 }
-function esc(s){ return (s||"").toString().replace(/[&<>\"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[m]);}); }
 
 /* --------- État global --------- */
 var isSuperAdmin=false, isAdmin=false, magasinUnique=null;
@@ -233,7 +237,7 @@ function statutChip(statut){
   if(s==="enregistré") return '<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>';
   if(s==="accepté")    return '<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>';
   if(s==="refusé")     return '<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>';
-  if(s==="en attente d'info") return '<span class="statut-chip"><span class="statut-dot info"></span>En attente d\\'info</span>';
+  if(s==="en attente d'info") return '<span class="statut-chip"><span class="statut-dot info"></span>En attente d&#39;info</span>';
   if(s==="attente mo") return '<span class="statut-chip"><span class="statut-dot mo"></span>Attente MO</span>';
   return esc(statut||"");
 }
@@ -276,8 +280,8 @@ function chargerDossiers(){
     if(!allDossiers.length){
       document.getElementById("dossier-list").innerHTML =
         '<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;font-size:1.05em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">' +
-        '⚠️ <u>Aucun dossier n\\'est présent dans la base !</u><br>Il est probable que le serveur vient de redémarrer.<br>' +
-        '<span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d\\'utiliser l\\'outil !</span></div>';
+        '⚠️ <u>Aucun dossier n&#39;est présent dans la base !</u><br>Il est probable que le serveur vient de redémarrer.<br>' +
+        '<span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d&#39;utiliser l&#39;outil !</span></div>';
       return;
     }
     if(ongletActif==="global"){ afficherGlobal(); } else { afficherDossiers(currentMagasin,true); }
@@ -308,7 +312,7 @@ function afficherCompteurs(dossiers){
    {label:"En attente de traitement <span title='Enregistré'>⏳</span>", val:"enregistré", color:"orange"},
    {label:"Attente MO <span>🛠️</span>", val:"Attente MO", color:"purple"},
    {label:"Acceptés <span>👍</span>", val:"accepté", color:"green"},
-   {label:"En attente d'info<span>📝</span>", val:"en attente d'info", color:"blue"},
+   {label:"En attente d&#39;info<span>📝</span>", val:"en attente d&#39;info", color:"blue"},
    {label:"Refusés <span>👎</span>", val:"refusé", color:"red"}
   ];
   var html="";
@@ -354,6 +358,19 @@ document.getElementById('search-client').addEventListener('input',function(){
   if(ongletActif==="global"){ afficherGlobal(); } else { afficherDossiers(currentMagasin); }
 });
 
+function buildDocsHTML(files){
+  if(!files || !files.length) return "";
+  return files.map(function(f){
+    var url='/download/'+encodeURIComponent(f.url || "");
+    var original=esc(f.original || "");
+    var ext=original.split('.').pop().toLowerCase();
+    if(["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)>=0){
+      return '<a href="#" class="doc-link" data-url="'+url+'" data-name="'+original+'"><img src="'+url+'" class="pj-img" alt=""></a>';
+    }
+    return '<a href="#" class="doc-link" data-url="'+url+'" data-name="'+original+'">'+original+'</a>';
+  }).join("<br>");
+}
+
 function afficherDossiers(magasin){
   currentMagasin=magasin; ongletActif=null; afficherOnglets();
   var dossiers=allDossiers.filter(function(d){return d.magasin===magasin;});
@@ -389,118 +406,166 @@ function afficherDossiers(magasin){
   dossiers.forEach(function(d){
     var id=d.id;
     var fichiersDocs=[].concat(d.files||[], d.documentsAjoutes||[], d.reponseFiles||[])
-      .filter(function(f){return f&&f.url;})
+      .filter(function(f){return f && f.url;})
       .filter(function(f,i,arr){return arr.findIndex(function(x){return x.url===f.url;})===i;});
-    html+='<tr>'+
-      '<td>'+esc(d.numero_dossier||'')+'</td>'+
-      '<td>'+(d.date?new Date(d.date).toLocaleDateString("fr-FR"):"")+'</td>'+
-      '<td>'+esc(d.nom||'')+'</td>'+
-      '<td>'+esc(d.produit_concerne||'')+'</td>'+
-      '<td>'+esc((d.reference_piece||'').replace(/\\s*\\/\\s*/g,' /'))+'</td>'+
-      '<td>'+esc(d.marque_produit||'')+'</td>'+
-      '<td id="statut-'+id+'">'+statutChip(d.statut)+'</td>'+
-      '<td id="reponse-'+id+'">'+(d.reponse?esc(d.reponse).replace(/\\n/g,"<br>"):"")+'</td>'+
-      '<td id="pj-'+id+'"><div class="pj-documents">'+
-        (fichiersDocs.length?fichiersDocs.map(function(f){var ext=(f.original||'').split('.').pop().toLowerCase(); if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/'+encodeURIComponent(f.url)+'\\',\\''+esc(f.original)+'\\')"><img src="/download/'+encodeURIComponent(f.url)+'" class="pj-img"></a>';} else {return '<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup(\\'/download/'+encodeURIComponent(f.url)+'\\',\\''+esc(f.original)+'\\')">'+esc(f.original)+'</a>';}}).join("<br>"):"")+
-      '</div></td>'+
-      '<td class="action"><button class="maj-btn" data-id="'+id+'">Mettre à jour</button></td>'+
-      '<td class="action"><button class="voir-btn" onclick="voirDossier(\\''+id+'\\')">Voir</button></td>'+
-      '<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur(\\''+id+'\\')">Dossier</button></td>'+
-      (isSuperAdmin?'<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier(\\''+id+'\\')">Supprimer</button></td>':'')+
-    '</tr>'+
-    '<tr class="mini-form-row" id="mini-row-'+id+'" style="display:none;">'+
-      '<td colspan="'+(isSuperAdmin?13:12)+'">'+
-      '<form class="mini-form" id="form-'+id+'" data-id="'+id+'" enctype="multipart/form-data">'+
+    html+=
+      '<tr>'+
+        '<td>'+esc(d.numero_dossier||'')+'</td>'+
+        '<td>'+(d.date?new Date(d.date).toLocaleDateString("fr-FR"):"")+'</td>'+
+        '<td>'+esc(d.nom||'')+'</td>'+
+        '<td>'+esc(d.produit_concerne||'')+'</td>'+
+        '<td>'+esc((d.reference_piece||'').replace(/\\s*\\/\\s*/g,' /'))+'</td>'+
+        '<td>'+esc(d.marque_produit||'')+'</td>'+
+        '<td id="statut-'+id+'">'+statutChip(d.statut)+'</td>'+
+        '<td id="reponse-'+id+'">'+(d.reponse?esc(d.reponse).replace(/\\n/g,"<br>"):"")+'</td>'+
+        '<td id="pj-'+id+'"><div class="pj-documents">'+ buildDocsHTML(fichiersDocs) +'</div></td>'+
+        '<td class="action"><button class="maj-btn" data-id="'+id+'">Mettre à jour</button></td>'+
+        '<td class="action"><button class="voir-btn" data-id="'+id+'">Voir</button></td>'+
+        '<td class="action"><button class="fourn-btn" data-id="'+id+'">Dossier</button></td>'+
+        (isSuperAdmin?'<td class="action"><button class="suppr-btn bouton" data-id="'+id+'" style="background:#bb1810">Supprimer</button></td>':'')+
+      '</tr>'+
+      '<tr class="mini-form-row" id="mini-row-'+id+'" style="display:none;">'+
+        '<td colspan="'+(isSuperAdmin?13:12)+'">'+
+          '<form class="mini-form" id="form-'+id+'" data-id="'+id+'" enctype="multipart/form-data">'+
 
-      '<div class="mini-form-encadre" style="flex:1;">'+
-        '<div class="mini-form-avert"><span class="emoji">⚠️</span> TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT <span class="emoji">⚠️</span></div>'+
-        '<div class="mini-form-flex">'+
-          '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">'+
-            '<label style="font-weight:600;color:#195e7c;">Statut</label>'+
-            '<select class="statut-select" name="statut">'+
-              '<option value="enregistré"'+(d.statut==="enregistré"?' selected':'')+'>Enregistré</option>'+
-              '<option value="Attente MO"'+(d.statut==="Attente MO"?' selected':'')+'>Attente MO</option>'+
-              '<option value="accepté"'+(d.statut==="accepté"?' selected':'')+'>Accepté</option>'+
-              '<option value="refusé"'+(d.statut==="refusé"?' selected':'')+'>Refusé</option>'+
-              '<option value="en attente d\\'info"'+(d.statut==="en attente d\\'info"?' selected':'')+'>En attente d\\'info</option>'+
-            '</select>'+
-          '</div>'+
-          '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">'+
-            '<label style="font-weight:600;color:#195e7c;">Réponse (optionnel)</label>'+
-            '<textarea name="reponse" style="width:100%;min-height:29px;">'+esc(d.reponse||"")+'</textarea>'+
-          '</div>'+
-          '<div class="mini-side-col">'+
-            '<div class="mini-form-upload-block">'+
-              '<label style="font-weight:600;color:#195e7c;">Envoie document au client</label>'+
-              '<input type="file" name="reponseFiles" multiple>'+
-              '<ul class="file-list" id="file-list-reponseFiles-'+id+'"></ul>'+
+            '<div class="mini-form-encadre" style="flex:1;">'+
+              '<div class="mini-form-avert"><span class="emoji">⚠️</span> TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT <span class="emoji">⚠️</span></div>'+
+              '<div class="mini-form-flex">'+
+                '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">'+
+                  '<label style="font-weight:600;color:#195e7c;">Statut</label>'+
+                  '<select class="statut-select" name="statut">'+
+                    '<option value="enregistré"'+(d.statut==="enregistré"?' selected':'')+'>Enregistré</option>'+
+                    '<option value="Attente MO"'+(d.statut==="Attente MO"?' selected':'')+'>Attente MO</option>'+
+                    '<option value="accepté"'+(d.statut==="accepté"?' selected':'')+'>Accepté</option>'+
+                    '<option value="refusé"'+(d.statut==="refusé"?' selected':'')+'>Refusé</option>'+
+                    '<option value="en attente d&#39;info"'+(d.statut==="en attente d'info"?' selected':'')+'>En attente d&#39;info</option>'+
+                  '</select>'+
+                '</div>'+
+                '<div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">'+
+                  '<label style="font-weight:600;color:#195e7c;">Réponse (optionnel)</label>'+
+                  '<textarea name="reponse" style="width:100%;min-height:29px;">'+esc(d.reponse||"")+'</textarea>'+
+                '</div>'+
+                '<div class="mini-side-col">'+
+                  '<div class="mini-form-upload-block">'+
+                    '<label style="font-weight:600;color:#195e7c;">Envoie document au client</label>'+
+                    '<input type="file" name="reponseFiles" multiple>'+
+                    '<ul class="file-list" id="file-list-reponseFiles-'+id+'"></ul>'+
+                  '</div>'+
+                '</div>'+
+              '</div>'+
             '</div>'+
-          '</div>'+
-        '</div>'+
-      '</div>'+
 
-      '<div class="mini-side-col">'+
-        '<div class="mini-form-upload-block">'+
-          '<label style="font-weight:600;color:#195e7c;">Ajout document dans dossier</label>'+
-          '<input type="file" name="documentsAjoutes" multiple>'+
-          '<ul class="file-list" id="file-list-documentsAjoutes-'+id+'"></ul>'+
-        '</div>'+
-        '<div class="attente-mo-block">'+
-          '<label style="font-weight:600;color:#195e7c;display:block;margin:6px 0 6px 0;">Attente MO</label>'+
-          '<label class="switch"><input type="checkbox" name="attente_mo" '+(String(d.statut).toLowerCase()==='attente mo'?'checked':'')+'><span class="slider"></span></label>'+
-          '<div style="font-size:0.88em;color:#234156;margin-top:6px;max-width:260px;">Quand activé, le statut passe en "Attente MO" sans notifier le client.</div>'+
-        '</div>'+
-        '<div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; margin-top:12px;">'+
-          '<label style="font-weight:600;color:#195e7c;">Numéro d\\'avoir</label>'+
-          '<input type="text" name="numero_avoir" placeholder="Numéro d\\'avoir" value="'+esc(d.numero_avoir||"")+'" style="min-width:140px; width:180px;">'+
-          '<button type="button" class="bouton completer-btn" onclick="completerDossier(\\''+id+'\\')" style="align-self:flex-start;">Compléter Dossier</button>'+
-        '</div>'+
-        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-top:12px;">'+
-          '<button type="submit" class="bouton" style="font-size:1em;width:140px;">Mettre à jour</button>'+
-          '<button type="button" class="bouton" style="background:#ccc;color:#234;width:140px;" onclick="fermerMiniForm(\\''+id+'\\')">Annuler</button>'+
-          '<span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:140px;font-size:0.97em;text-align:center;"></span>'+
-        '</div>'+
-      '</div>'+
+            '<div class="mini-side-col">'+
+              '<div class="mini-form-upload-block">'+
+                '<label style="font-weight:600;color:#195e7c;">Ajout document dans dossier</label>'+
+                '<input type="file" name="documentsAjoutes" multiple>'+
+                '<ul class="file-list" id="file-list-documentsAjoutes-'+id+'"></ul>'+
+              '</div>'+
 
-      '</form>'+
-      '</td>'+
-    '</tr>';
+              '<div class="attente-mo-block">'+
+                '<label style="font-weight:600;color:#195e7c;display:block;margin:6px 0 6px 0;">Attente MO</label>'+
+                '<label class="switch"><input type="checkbox" name="attente_mo" '+(String(d.statut).toLowerCase()==='attente mo'?'checked':'')+'><span class="slider"></span></label>'+
+                '<div style="font-size:0.88em;color:#234156;margin-top:6px;max-width:260px;">Quand activé, le statut passe en "Attente MO" sans notifier le client.</div>'+
+              '</div>'+
+
+              '<div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; margin-top:12px;">'+
+                '<label style="font-weight:600;color:#195e7c;">Numéro d&#39;avoir</label>'+
+                '<input type="text" name="numero_avoir" placeholder="Numéro d&#39;avoir" value="'+esc(d.numero_avoir||"")+'" style="min-width:140px; width:180px;">'+
+                '<button type="button" class="bouton completer-btn" data-id="'+id+'" style="align-self:flex-start;">Compléter Dossier</button>'+
+              '</div>'+
+
+              '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-top:12px;">'+
+                '<button type="submit" class="bouton" style="font-size:1em;width:140px;">Mettre à jour</button>'+
+                '<button type="button" class="bouton annuler-btn" data-id="'+id+'" style="background:#ccc;color:#234;width:140px;">Annuler</button>'+
+                '<span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:140px;font-size:0.97em;text-align:center;"></span>'+
+              '</div>'+
+            '</div>'+
+
+          '</form>'+
+        '</td>'+
+      '</tr>';
   });
   html+='</table>';
-  document.getElementById('dossier-list').innerHTML=html;
+  var wrap=document.getElementById('dossier-list');
+  wrap.innerHTML=html;
 
+  // Boutons "Mettre à jour": ouverture de la mini-form
   Array.prototype.forEach.call(document.querySelectorAll('.maj-btn'), function(btn){
-    btn.onclick=function(){
+    btn.addEventListener('click', function(){
       Array.prototype.forEach.call(document.querySelectorAll('.mini-form-row'), function(f){ f.style.display="none"; });
       var id=btn.getAttribute('data-id');
       var row=document.getElementById('mini-row-'+id);
       if(row){ row.style.display="table-row"; row.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(function(){ initMiniFormBuffer(id); }, 20); }
-    };
+    });
   });
 
-  Array.prototype.forEach.call(document.querySelectorAll('.mini-form'), function(form){
-    form.onsubmit=function(e){
+  // Bouton Voir
+  Array.prototype.forEach.call(document.querySelectorAll('.voir-btn'), function(btn){
+    btn.addEventListener('click', function(){ voirDossier(btn.getAttribute('data-id')); });
+  });
+
+  // Bouton Fournisseur
+  Array.prototype.forEach.call(document.querySelectorAll('.fourn-btn'), function(btn){
+    btn.addEventListener('click', function(){ ouvrirFournisseur(btn.getAttribute('data-id')); });
+  });
+
+  // Bouton Supprimer
+  Array.prototype.forEach.call(document.querySelectorAll('.suppr-btn'), function(btn){
+    btn.addEventListener('click', function(){
+      var id=btn.getAttribute('data-id');
+      if(!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+      fetch('/api/admin/dossier/'+id,{method:"DELETE",headers:{'x-superadmin':'1'}})
+        .then(function(r){return r.json()})
+        .then(function(json){ if(json.success){ chargerDossiers(); } else { alert(json.message||"Erreur lors de la suppression"); } });
+    });
+  });
+
+  // Boutons Annuler
+  Array.prototype.forEach.call(document.querySelectorAll('.annuler-btn'), function(btn){
+    btn.addEventListener('click', function(){
+      var id=btn.getAttribute('data-id');
+      var r=document.getElementById('mini-row-'+id); if(r) r.style.display="none";
+    });
+  });
+
+  // Compléter Dossier
+  Array.prototype.forEach.call(document.querySelectorAll('.completer-btn'), function(btn){
+    btn.addEventListener('click', function(){ completerDossier(btn.getAttribute('data-id')); });
+  });
+
+  // Liens documents (ouverture popup)
+  Array.prototype.forEach.call(document.querySelectorAll('.doc-link'), function(a){
+    a.addEventListener('click', function(e){
       e.preventDefault();
-      var id=this.getAttribute('data-id');
-      var fd=new FormData(this);
+      ouvrirDocumentDansPopup(a.getAttribute('data-url'), a.getAttribute('data-name'));
+    });
+  });
+
+  // Soumission des mini-formulaires
+  Array.prototype.forEach.call(document.querySelectorAll('.mini-form'), function(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var id=form.getAttribute('data-id');
+      var fd=new FormData(form);
       ["reponseFiles","documentsAjoutes"].forEach(function(field){
         if(fileBuffers[id]&&fileBuffers[id][field]){
           fileBuffers[id][field].forEach(function(f){ fd.append(field,f); });
         }
       });
-      this.querySelector('.admin-msg').textContent="Envoi...";
+      var msg=form.querySelector('.admin-msg');
+      msg.textContent="Envoi...";
       fetch('/api/admin/dossier/'+id,{method:"POST",body:fd})
         .then(function(r){return r.json()})
         .then(function(json){
           if(json.success){
-            form.querySelector('.admin-msg').textContent="Mis à jour ✔";
+            msg.textContent="Mis à jour ✔";
             setTimeout(function(){ document.getElementById('mini-row-'+id).style.display="none"; chargerDossiers(); }, 1000);
           } else {
-            form.querySelector('.admin-msg').textContent="Erreur";
+            msg.textContent="Erreur";
           }
         })
-        .catch(function(){ form.querySelector('.admin-msg').textContent="Erreur réseau"; });
-    };
+        .catch(function(){ msg.textContent="Erreur réseau"; });
+    });
   });
 }
 
@@ -526,14 +591,14 @@ function renderFileListBuffer(id,field){
   ul.innerHTML="";
   arr.forEach(function(file,i){
     var li=document.createElement("li");
-    li.innerHTML='<span>'+esc(file.name)+'</span> <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer(\\''+id+'\\',\\''+field+'\\','+i+')">✕</button>';
+    li.innerHTML='<span>'+esc(file.name)+'</span> <button type="button" class="file-remove" title="Retirer">✕</button>';
+    li.querySelector('.file-remove').addEventListener('click', function(){
+      fileBuffers[id][field].splice(i,1);
+      renderFileListBuffer(id,field);
+    });
     ul.appendChild(li);
   });
 }
-function removeFileBuffer(id,field,idx){
-  if(fileBuffers[id]&&fileBuffers[id][field]){ fileBuffers[id][field].splice(idx,1); renderFileListBuffer(id,field); }
-}
-window.removeFileBuffer=removeFileBuffer;
 
 function afficherGlobal(){
   ongletActif="global"; afficherOnglets();
@@ -570,59 +635,168 @@ function afficherGlobal(){
   document.getElementById('dossier-list').innerHTML=html;
 }
 
-function fermerMiniForm(id){ var r=document.getElementById('mini-row-'+id); if(r) r.style.display="none"; }
-
-function supprimerDossier(id){
-  if(!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
-  fetch('/api/admin/dossier/'+id,{method:"DELETE",headers:{'x-superadmin':'1'}})
-    .then(function(r){return r.json()})
-    .then(function(json){ if(json.success){ chargerDossiers(); } else { alert(json.message||"Erreur lors de la suppression"); } });
-}
-
 function voirDossier(id){
   var d=allDossiers.find(function(x){return x.id===id;}); if(!d){ alert("Dossier introuvable !"); return; }
   var logoUrl="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   var dateCreation=d.date?new Date(d.date).toLocaleDateString("fr-FR"):"";
   var fichiersDocs=[].concat(d.files||[],d.documentsAjoutes||[],d.reponseFiles||[]).filter(function(f){return f&&f.url;});
   fichiersDocs=fichiersDocs.filter(function(f,i,arr){return arr.findIndex(function(x){return x.url===f.url;})===i;});
-  var w=window.open("","_blank","width=820,height=900");
-  var rows=''+
-    '<tr><th>Nom du client</th><td>'+esc(d.nom||"")+'</td></tr>'+
-    '<tr><th>Email</th><td>'+esc(d.email||"")+'</td></tr>'+
-    '<tr><th>Magasin</th><td>'+esc(d.magasin||"")+'</td></tr>'+
-    '<tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Produit</th></tr>'+
-    '<tr><th>Marque du produit</th><td>'+esc(d.marque_produit||"")+'</td></tr>'+
-    '<tr><th>Produit concerné</th><td>'+esc(d.produit_concerne||"")+'</td></tr>'+
-    '<tr><th>Référence de la pièce</th><td>'+esc(d.reference_piece||"")+'</td></tr>'+
-    '<tr><th>Quantité posée</th><td>'+esc(d.quantite_posee||"")+'</td></tr>'+
-    '<tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Véhicule</th></tr>'+
-    '<tr><th>Immatriculation</th><td>'+esc(d.immatriculation||"")+'</td></tr>'+
-    '<tr><th>Marque</th><td>'+esc(d.marque_vehicule||"")+'</td></tr>'+
-    '<tr><th>Modèle</th><td>'+esc(d.modele_vehicule||"")+'</td></tr>'+
-    '<tr><th>Numéro de série</th><td>'+esc(d.num_serie||"")+'</td></tr>'+
-    '<tr><th>1ère immatriculation</th><td>'+esc(formatDateFRshort(d.premiere_immat))+'</td></tr>'+
-    '<tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Problème</th></tr>'+
-    '<tr><th>Date de pose</th><td>'+esc(formatDateFRshort(d.date_pose))+'</td></tr>'+
-    '<tr><th>Date du constat</th><td>'+esc(formatDateFRshort(d.date_constat))+'</td></tr>'+
-    '<tr><th>Kilométrage à la pose</th><td>'+esc(d.km_pose||"")+'</td></tr>'+
-    '<tr><th>Kilométrage au constat</th><td>'+esc(d.km_constat||"")+'</td></tr>'+
-    '<tr><th>N° BL 1ère Vente</th><td>'+esc(d.bl_pose||"")+'</td></tr>'+
-    '<tr><th>N° BL 2ème Vente</th><td>'+esc(d.bl_constat||"")+'</td></tr>'+
-    '<tr><th>Problème rencontré</th><td>'+esc(d.probleme_rencontre||"")+'</td></tr>'+
-    '<tr class="hide-print"><th>Statut</th><td>'+statutChip(d.statut)+'</td></tr>'+
-    '<tr><th>Réponse</th><td>'+esc(d.reponse||"").replace(/\\n/g,"<br>")+'</td></tr>'+
-    '<tr><th>Numéro d\\'avoir (interne)</th><td>'+esc(d.numero_avoir||"")+'</td></tr>'+
-    '<tr class="hide-print"><th>Documents ajoutés</th><td>'+(fichiersDocs.length?fichiersDocs.map(function(f){var ext=(f.original||"").split(".").pop().toLowerCase(); if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/'+encodeURIComponent(f.url)+'\\',\\''+esc(f.original)+'\\')"><img src="/download/'+encodeURIComponent(f.url)+'" style="max-width:180px;max-height:120px;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002;"></a>';} else {return '<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup(\\'/download/'+encodeURIComponent(f.url)+'\\',\\''+esc(f.original)+'\\')">'+esc(f.original)+'</a>';}}).join("<br>"):"")+'</td></tr>';
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Dossier</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0} .fiche-header{display:flex;align-items:center;gap:18px;margin-bottom:18px} .fiche-header img{height:62px;border-radius:11px;box-shadow:0 2px 12px #0001;background:#fff} .fiche-header .magasin-title{font-size:1.05em;font-weight:600;color:#17537a} .fiche-date{margin-left:auto;font-size:1.0em;color:#444;font-weight:bold} .fiche-table{max-width:760px;margin:10px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px 14px 24px} .fiche-table table{width:100%;border-collapse:collapse} .fiche-table th,.fiche-table td{text-align:left;padding:8px 10px;border:none} .fiche-table th{color:#194e72;font-size:1.0em;text-align:left;width:220px;vertical-align:top} .fiche-table tr{border-bottom:1px solid #f0f0f0} .print-btn{background:#006e90;color:#fff;border:none;padding:9px 22px;border-radius:7px;font-size:1.0em;font-weight:600;cursor:pointer;margin-left:7px} @media print{.print-btn{display:none!important}body{background:#fff}.fiche-table{box-shadow:none;border:1px solid #888}.fiche-header{padding-top:10px}} </style></head><body>'+
-    '<div class="fiche-header"><img src="'+logoUrl+'" alt="Logo DSG"><span class="magasin-title">'+esc(d.magasin||"")+'</span><span class="fiche-date">Créé le : '+dateCreation+'<br>Numéro de dossier : '+esc(d.numero_dossier||"")+'</span></div>'+
-    '<div class="fiche-table"><div style="text-align:right;margin-bottom:14px;"><button class="print-btn" onclick="window.print()">🖨️ Imprimer</button></div><table>'+rows+'</table></div>'+
-    '</body></html>');
+  var imgs=fichiersDocs.map(function(f){
+    var original=esc(f.original||"");
+    var url='/download/'+encodeURIComponent(f.url||"");
+    var ext=(original.split('.').pop()||"").toLowerCase();
+    if(["jpg","jpeg","png","gif","webp","bmp"].indexOf(ext)>=0){
+      return '<a href="#" class="doc-link" data-url="'+url+'" data-name="'+original+'"><img src="'+url+'" style="max-width:180px;max-height:120px;margin-bottom:6px;border-radius:5px;box-shadow:0 2px 6px #0002;" alt=""></a>';
+    } else {
+      return '<a href="#" class="doc-link" data-url="'+url+'" data-name="'+original+'">'+original+'</a>';
+    }
+  }).join("<br>");
+  var rows=`
+    <tr><th>Nom du client</th><td>${esc(d.nom||"")}</td></tr>
+    <tr><th>Email</th><td>${esc(d.email||"")}</td></tr>
+    <tr><th>Magasin</th><td>${esc(d.magasin||"")}</td></tr>
+    <tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Produit</th></tr>
+    <tr><th>Marque du produit</th><td>${esc(d.marque_produit||"")}</td></tr>
+    <tr><th>Produit concerné</th><td>${esc(d.produit_concerne||"")}</td></tr>
+    <tr><th>Référence de la pièce</th><td>${esc(d.reference_piece||"")}</td></tr>
+    <tr><th>Quantité posée</th><td>${esc(d.quantite_posee||"")}</td></tr>
+    <tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Véhicule</th></tr>
+    <tr><th>Immatriculation</th><td>${esc(d.immatriculation||"")}</td></tr>
+    <tr><th>Marque</th><td>${esc(d.marque_vehicule||"")}</td></tr>
+    <tr><th>Modèle</th><td>${esc(d.modele_vehicule||"")}</td></tr>
+    <tr><th>Numéro de série</th><td>${esc(d.num_serie||"")}</td></tr>
+    <tr><th>1ère immatriculation</th><td>${esc(formatDateFRshort(d.premiere_immat))}</td></tr>
+    <tr><th class="hide-print" colspan="2" style="font-weight:bold;color:#006e90;padding-top:18px;">Problème</th></tr>
+    <tr><th>Date de pose</th><td>${esc(formatDateFRshort(d.date_pose))}</td></tr>
+    <tr><th>Date du constat</th><td>${esc(formatDateFRshort(d.date_constat))}</td></tr>
+    <tr><th>Kilométrage à la pose</th><td>${esc(d.km_pose||"")}</td></tr>
+    <tr><th>Kilométrage au constat</th><td>${esc(d.km_constat||"")}</td></tr>
+    <tr><th>N° BL 1ère Vente</th><td>${esc(d.bl_pose||"")}</td></tr>
+    <tr><th>N° BL 2ème Vente</th><td>${esc(d.bl_constat||"")}</td></tr>
+    <tr><th>Problème rencontré</th><td>${esc(d.probleme_rencontre||"")}</td></tr>
+    <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
+    <tr><th>Réponse</th><td>${esc(d.reponse||"").replace(/\\n/g,"<br>")}</td></tr>
+    <tr><th>Numéro d&#39;avoir (interne)</th><td>${esc(d.numero_avoir||"")}</td></tr>
+    <tr class="hide-print"><th>Documents ajoutés</th><td>${imgs}</td></tr>
+  `;
+  var w=window.open("","_blank","width=860,height=900");
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Dossier</title>
+  <style>
+  body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0}
+  .fiche-header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+  .fiche-header img{height:62px;border-radius:11px;box-shadow:0 2px 12px #0001;background:#fff}
+  .fiche-header .magasin-title{font-size:1.05em;font-weight:600;color:#17537a}
+  .fiche-date{margin-left:auto;font-size:1.0em;color:#444;font-weight:bold}
+  .fiche-table{max-width:760px;margin:10px auto;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:18px 24px 14px 24px}
+  .fiche-table table{width:100%;border-collapse:collapse}
+  .fiche-table th,.fiche-table td{text-align:left;padding:8px 10px;border:none}
+  .fiche-table th{color:#194e72;font-size:1.0em;text-align:left;width:220px;vertical-align:top}
+  .fiche-table tr{border-bottom:1px solid #f0f0f0}
+  .print-btn{background:#006e90;color:#fff;border:none;padding:9px 22px;border-radius:7px;font-size:1.0em;font-weight:600;cursor:pointer;margin-left:7px}
+  @media print{.print-btn{display:none!important}body{background:#fff}.fiche-table{box-shadow:none;border:1px solid #888}.fiche-header{padding-top:10px}}
+  </style></head><body>
+    <div class="fiche-header"><img src="${logoUrl}" alt="Logo DSG"><span class="magasin-title">${esc(d.magasin||"")}</span><span class="fiche-date">Créé le : ${dateCreation}<br>Numéro de dossier : ${esc(d.numero_dossier||"")}</span></div>
+    <div class="fiche-table"><div style="text-align:right;margin-bottom:14px;"><button class="print-btn" onclick="window.print()">🖨️ Imprimer</button></div><table>${rows}</table></div>
+    <script>
+      document.addEventListener('click', function(e){
+        var a=e.target.closest('a.doc-link'); if(!a) return;
+        e.preventDefault();
+        var u=a.getAttribute('data-url'), n=a.getAttribute('data-name');
+        var win=window.open('','_blank','width=900,height=900');
+        var ext=(n||'').split('.').pop().toLowerCase();
+        var content='';
+        if(ext==='pdf'){ content='<embed src="'+u+'" type="application/pdf" style="width:100%;height:95vh;border:none;">'; }
+        else if(['jpg','jpeg','png','gif','webp','bmp'].indexOf(ext)>=0){ content='<img src="'+u+'" style="max-width:100%;max-height:95vh;display:block;margin:auto;">';}
+        else { content='<iframe src="'+u+'" style="width:100%;height:95vh;border:none;"></iframe>'; }
+        win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+n+'</title></head><body>'+content+'</body></html>');
+        win.document.close();
+      });
+    <\/script>
+  </body></html>`);
   w.document.close();
+}
+
+function completerDossier(id){
+  var d=allDossiers.find(function(x){return x.id===id;});
+  if(!d){ alert("Dossier introuvable !"); return; }
+  var options = MAGASINS.map(function(m){ return '<option value="'+esc(m)+'"'+(d.magasin===m?' selected':'')+'>'+esc(m)+'</option>'; }).join('');
+  var html=`<!doctype html><html><head><meta charset="utf-8"><title>Compléter Dossier</title>
+  <style>
+    body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
+    h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
+    form { display:flex; flex-direction:column; gap:14px; }
+    label { font-weight:600; color:#195e7c; margin-bottom:3px; }
+    input, select, textarea { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; width:100%; box-sizing:border-box; }
+    textarea { resize:vertical; }
+    .form-row { display:flex; gap:20px; flex-wrap:wrap; }
+    .field { display:flex; flex-direction:column; flex:1; min-width:180px; }
+    .buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }
+    button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
+    button.validate { background:#006e90; color:#fff; }
+    button.cancel { background:#ccc; color:#333; }
+  </style></head><body>
+  <h2>Compléter Dossier</h2>
+  <form id="completerForm">
+    <div class="form-row">
+      <div class="field"><label>Nom du client</label><input type="text" name="nom" value="${esc(d.nom||'')}"></div>
+      <div class="field"><label>Email</label><input type="email" name="email" value="${esc(d.email||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Magasin</label><select name="magasin">${options}</select></div>
+      <div class="field"><label>Marque du produit</label><input type="text" name="marque_produit" value="${esc(d.marque_produit||'')}"></div>
+      <div class="field"><label>Produit concerné</label><input type="text" name="produit_concerne" value="${esc(d.produit_concerne||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Référence de la pièce</label><input type="text" name="reference_piece" value="${esc(d.reference_piece||'')}"></div>
+      <div class="field"><label>Quantité posée</label><input type="number" name="quantite_posee" value="${esc(d.quantite_posee||'')}"></div>
+      <div class="field"><label>Immatriculation</label><input type="text" name="immatriculation" value="${esc(d.immatriculation||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Marque véhicule</label><input type="text" name="marque_vehicule" value="${esc(d.marque_vehicule||'')}"></div>
+      <div class="field"><label>Modèle véhicule</label><input type="text" name="modele_vehicule" value="${esc(d.modele_vehicule||'')}"></div>
+      <div class="field"><label>Numéro de série</label><input type="text" name="num_serie" value="${esc(d.num_serie||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>1ère immatriculation</label><input type="date" name="premiere_immat" value="${esc(d.premiere_immat||'')}"></div>
+      <div class="field"><label>Date de pose</label><input type="date" name="date_pose" value="${esc(d.date_pose||'')}"></div>
+      <div class="field"><label>Date du constat</label><input type="date" name="date_constat" value="${esc(d.date_constat||'')}"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Kilométrage à la pose</label><input type="number" name="km_pose" value="${esc(d.km_pose||'')}"></div>
+      <div class="field"><label>Kilométrage au constat</label><input type="number" name="km_constat" value="${esc(d.km_constat||'')}"></div>
+      <div class="field"><label>N° BL 1ère Vente</label><input type="text" name="bl_pose" value="${esc(d.bl_pose||'')}"></div>
+      <div class="field"><label>N° BL 2ème Vente</label><input type="text" name="bl_constat" value="${esc(d.bl_constat||'')}"></div>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <label>Problème rencontré</label>
+      <textarea name="probleme_rencontre" rows="4">${esc(d.probleme_rencontre||'')}</textarea>
+    </div>
+    <div class="buttons">
+      <button type="button" class="cancel">Annuler</button>
+      <button type="button" class="validate">Valider</button>
+    </div>
+  </form>
+  <script>
+    document.querySelector('.cancel').addEventListener('click', function(){ window.close(); });
+    document.querySelector('.validate').addEventListener('click', function(){
+      var form=document.getElementById('completerForm');
+      var data={};
+      new FormData(form).forEach(function(value,key){ data[key]=value; });
+      fetch('/api/admin/completer-dossier/${id}',{
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+      }).then(function(r){return r.json()}).then(function(json){
+        if(json.success){ if(window.opener && window.opener.chargerDossiers){ window.opener.chargerDossiers(); } window.close(); }
+        else { alert('Erreur lors de la mise à jour'); }
+      });
+    });
+  <\/script>
+  </body></html>`;
+  var win = window.open('','_blank','width=900,height=800');
+  win.document.open(); win.document.write(html); win.document.close();
 }
 
 function ouvrirFournisseur(id){
   var d=allDossiers.find(function(x){return x.id===id;}); if(!d){ alert("Dossier introuvable !"); return; }
-  var win=window.open('','_blank','width=700,height=600');
   var titre='Envoyer dossier au fournisseur';
   var html='<!doctype html><html><head><meta charset="utf-8"><title>'+titre+'</title>'+
   '<style>body{font-family:Segoe UI,Arial,sans-serif;background:#f9fafb;margin:0;padding:20px}h2{color:#006e90;font-size:1.4em;margin-bottom:16px}form{display:flex;flex-direction:column;gap:12px}label{font-weight:600;color:#195e7c;margin-bottom:3px}select,textarea,input[type=file]{padding:8px;font-size:1em;border:1px solid #b4c8d8;border-radius:4px}.info{font-size:1em;color:#234156;margin-bottom:8px}.buttons{display:flex;gap:20px;margin-top:12px;justify-content:center}.buttons button{padding:8px 16px;font-size:1em;border:none;border-radius:6px;cursor:pointer}.buttons .send{background:#006e90;color:#fff}.buttons .cancel{background:#ccc;color:#333}.status-msg{text-align:center;font-size:0.98em;margin-top:10px;color:#195e7c;min-height:20px}.send-form{background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer}</style></head><body>'+
@@ -635,6 +809,7 @@ function ouvrirFournisseur(id){
   '<div style="margin-top:8px; display:flex; align-items:center; gap:12px;"><button type="button" class="send-form">Formulaire</button></div>'+
   '<div class="buttons"><button type="button" class="cancel">Annuler</button><button type="button" class="send">Envoyer</button></div><div class="status-msg" id="status-msg"></div></form>'+
   '</body></html>';
+  var win=window.open('','_blank','width=700,height=600');
   win.document.open(); win.document.write(html); win.document.close();
 
   var cancelBtn=win.document.querySelector('.cancel');
@@ -689,13 +864,12 @@ function ouvrirFournisseur(id){
         .then(function(r){return r.json()})
         .then(function(json){
           if(json.success){ if(statusEl) statusEl.textContent='Dossier envoyé au fournisseur ✔'; setTimeout(function(){ win.close(); }, 1200); }
-          else { if(statusEl) statusEl.textContent=(json.message||"Erreur lors de l\\'envoi"); }
+          else { if(statusEl) statusEl.textContent=(json.message||"Erreur lors de l&#39;envoi"); }
         })
-        .catch(function(){ if(statusEl) statusEl.textContent='Erreur lors de l\\'envoi'; });
+        .catch(function(){ if(statusEl) statusEl.textContent='Erreur lors de l&#39;envoi'; });
     });
   }
 }
-window.ouvrirFournisseur=ouvrirFournisseur;
 
 function ouvrirDocumentDansPopup(url, nomFichier){
   var ext=(nomFichier||'').split('.').pop().toLowerCase();
