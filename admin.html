@@ -33,6 +33,8 @@
     .counter-card .counter-value.green { color: #168b3e; }
     .counter-card .counter-value.red { color: #bb1810; }
 	.counter-card .counter-value.blue { color: #1978d2; }
+	.counter-card .counter-label.purple { color: #7d3cff; }
+	.counter-card .counter-value.purple { color: #7d3cff; }
     table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
     th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
 	td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
@@ -59,6 +61,7 @@
     .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+    .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
     #dossier-list td[id^="pj-"] a {
       word-break: break-all;
       white-space: normal;
@@ -243,6 +246,15 @@
   vertical-align: middle;
   white-space: nowrap;
 }
+  
+    /* Switch Attente MO */
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
   </style>
 </head>
 <body>
@@ -273,6 +285,7 @@
           <option value="accepté">Accepté</option>
           <option value="refusé">Refusé</option>
           <option value="en attente d'info">En attente d'info</option>
+          <option value="Attente MO">Attente MO</option>
         </select>
       </label>
     </div>
@@ -314,8 +327,10 @@ function statutChip(statut) {
   if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
   if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
   if (s==="en attente d'info") return `<span class="statut-chip"><span class="statut-dot info"></span>En attente d'info</span>`;
+  if (s==="attente mo") return `<span class="statut-chip"><span class="statut-dot attente-mo"></span>Attente MO</span>`;
   return statut||"";
 }
+
 
 function toggleSuperAdminUI() {
   document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
@@ -400,10 +415,10 @@ function afficherOnglets() {
   }
 }
 
-function afficherCompteurs(dossiers) {
-  const stats = [
+function afficherCompteurs(dossiers) {  const stats = [
     { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
     { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
+    { label: "Attente MO <span>🛠️</span>", val: "Attente MO", color:"purple" },
     { label: "En attente d'info<span>📝</span>", val: "en attente d'info", color:"blue" },
     { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
   ];
@@ -585,6 +600,7 @@ function afficherDossiers(magasin, forceFiltres=false) {
               <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
               <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
               <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+              <option value="Attente MO"${d.statut==="Attente MO"?" selected":""}>Attente MO</option>
             </select>
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
@@ -603,6 +619,14 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <input type="file" name="documentsAjoutes" multiple>
   <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
 </div>
+      <div class="attente-mo-toggle" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; margin-bottom:40px;">
+        <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
+        <label class="switch" style="margin-left:13px;">
+          <input type="checkbox" name="attente_mo" ${ (d.statut==="Attente MO" || d.attente_mo) ? "checked" : "" }>
+          <span class="slider"></span>
+        </label>
+        <small style="color:#555;margin-left:13px;max-width:240px;">Quand activé, le statut passe en "Attente MO" sans notifier le client.</small>
+      </div>
         <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
   <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
   <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
@@ -636,6 +660,22 @@ function afficherDossiers(magasin, forceFiltres=false) {
   });
 
   document.querySelectorAll('.mini-form').forEach(form => {
+    // Sync Attente MO toggle with statut select
+    const attToggle = form.querySelector("input[name='attente_mo']");
+    const statutSelIn = form.querySelector("select[name='statut']");
+    if (attToggle && statutSelIn) {
+      attToggle.addEventListener('change', ()=>{
+        if (attToggle.checked) {
+          statutSelIn.value = 'Attente MO';
+        } else {
+          if (statutSelIn.value === 'Attente MO') statutSelIn.value = 'enregistré';
+        }
+      });
+      statutSelIn.addEventListener('change', ()=>{
+        if (statutSelIn.value === 'accepté') attToggle.checked = false;
+        if (statutSelIn.value === 'Attente MO') attToggle.checked = true;
+      });
+    }
     form.onsubmit = async function(e) {
       e.preventDefault();
       let id = this.getAttribute('data-id');
@@ -830,8 +870,18 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
       .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
       .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
       .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+    .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
       .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
-    </style>
+    
+    /* Switch Attente MO */
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  </style>
     </head><body>
     <div class="fiche-header">
       <img src="${logoUrl}" alt="Logo DSG">
@@ -931,7 +981,16 @@ function completerDossier(id) {
       button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
       button.validate { background:#006e90; color:#fff; }
       button.cancel { background:#ccc; color:#333; }
-    </style>
+    
+    /* Switch Attente MO */
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  </style>
     </head><body>
     <h2>Compléter Dossier</h2>
     <form id="completerForm">
@@ -1087,7 +1146,16 @@ function ouvrirFournisseur(id) {
         .buttons .cancel { background:#ccc; color:#333; }
         .status-msg { text-align:center; font-size:0.98em; margin-top:10px; color:#195e7c; min-height:20px; }
         .send-form { background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer; }
-      </style>
+      
+    /* Switch Attente MO */
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  </style>
     </head><body>
       <h2>${titre}</h2>
       <div class="info">
@@ -1250,7 +1318,16 @@ function ouvrirDocumentDansPopup(url, nomFichier) {
         body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; }
         .close-btn { position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10; }
         .close-btn:hover { background:#d32121; }
-      </style>
+      
+    /* Switch Attente MO */
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+
+  </style>
     </head>
     <body>
       <div>${content}</div>
