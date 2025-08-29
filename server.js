@@ -16,14 +16,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const STATUTS = {
-  ENREGISTRE: "enregistré",
-  ACCEPTE: "accepté",
-  REFUSE: "refusé",
-  ATTENTE_INFO: "en attente d'info",
-  ATTENTE_MO: "Attente MO",
-};
-
 const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex",
   "Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
@@ -102,8 +94,6 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
-
-app.use(express.urlencoded({ extended: true }));
 
 async function getFTPClient() {
   const client = new ftp.Client();
@@ -228,7 +218,6 @@ function formatDateJJMMAAAA(input) {
   const yyyy = String(y);
   return `${dd}/${mm}/${yyyy}`;
 }
-
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -251,7 +240,6 @@ async function creerPDFDemande(d, nomFichier) {
       const numero = d.numero_dossier ? d.numero_dossier : "";
       doc.text("Créé le : " + dateStrFr, PAGE_W - 150, y0 + 6, { align: "left", width: 120 });
       doc.text("Numéro de dossier : " + numero, PAGE_W - 150, y0 + 20, { align: "left", width: 120 });
-
       let y = y0 + logoH + 32;
       const tableW = PAGE_W - 2 * x0;
       const colLabelW = 155;
@@ -272,15 +260,14 @@ async function creerPDFDemande(d, nomFichier) {
         ["Modèle", d.modele_vehicule || ""],
         ["Numéro de série", d.num_serie || ""],
         ["1ère immatriculation", formatDateJJMMAAAA(d.premiere_immat) || "", "rowline"],
-        ["Date de pose", formatDateJJMMAAAA(d.date_pose) || ""],
-        ["Date du constat", formatDateJJMMAAAA(d.date_constat) || ""],
+		["Date de pose", formatDateJJMMAAAA(d.date_pose)       || ""],
+		["Date du constat", formatDateJJMMAAAA(d.date_constat)    || ""],
         ["Kilométrage à la pose", d.km_pose || ""],
         ["Kilométrage au constat", d.km_constat || ""],
         ["N° BL 1ère Vente", d.bl_pose || ""],
         ["N° BL 2ème Vente", d.bl_constat || "", "rowline"],
         ["Problème rencontré", (d.probleme_rencontre||"").replace(/\r\n/g,"\n").replace(/\r/g,"\n"), "multiline"]
       ];
-
       const sidePad = 16;
       const cornerRad = 14;
       function cellHeightFor(row) {
@@ -320,8 +307,7 @@ async function creerPDFDemande(d, nomFichier) {
           doc.moveTo(x0 + 8, yCursor + cellHeight).lineTo(x0 + tableW - 8, yCursor + cellHeight).strokeColor("#b3c5df").lineWidth(1).stroke();
         }
         yCursor += cellHeight;
-      }
-      doc.end();
+      }doc.end();
     } catch (e) { reject(e); }
   });
 }
@@ -342,8 +328,7 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const nextNum = String(maxNum + 1).padStart(4, "0");
     d.numero_dossier = nextNum;
 
-    d.statut = STATUTS.ENREGISTRE;
-    d.attente_mo = false;
+    d.statut = "enregistré";
     d.files = [];
     for (const f of req.files || []) {
       const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
@@ -356,7 +341,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     d.documentsAjoutes = [];
     data.push(d);
     await writeDataFTP(data);
-
     let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
     let dateStr = "";
     if (d.date) {
@@ -385,7 +369,6 @@ L'équipe Durand Services Garantie.
         ]
       });
     }
-
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       const attachments = await fetchFilesFromFTP(d.files);
@@ -421,19 +404,9 @@ app.post("/api/admin/dossier/:id", upload.fields([
   const oldReponse = dossier.reponse;
   const oldFilesLength = (dossier.reponseFiles||[]).length;
 
-  const statutRecu = typeof req.body.statut === "string" ? req.body.statut.trim() : undefined;
-  const repRecue = req.body.reponse;
-  const nbAvoir = req.body.numero_avoir;
-
-  let attenteFlagProvided = Object.prototype.hasOwnProperty.call(req.body, "attente_mo");
-  let attenteFlag = false;
-  if (attenteFlagProvided) {
-    const v = String(req.body.attente_mo).toLowerCase();
-    attenteFlag = (v === "on" || v === "true" || v === "1");
-  }
-
-  if (repRecue !== undefined) dossier.reponse = repRecue;
-  if (nbAvoir !== undefined) dossier.numero_avoir = nbAvoir;
+  if (req.body.statut !== undefined) dossier.statut = req.body.statut;
+  if (req.body.reponse !== undefined) dossier.reponse = req.body.reponse;
+  if (req.body.numero_avoir !== undefined) dossier.numero_avoir = req.body.numero_avoir;
 
   dossier.reponseFiles = dossier.reponseFiles || [];
   dossier.documentsAjoutes = dossier.documentsAjoutes || [];
@@ -456,50 +429,15 @@ app.post("/api/admin/dossier/:id", upload.fields([
     }
   }
 
-  let suppressNotif = false;
-
-  if (attenteFlagProvided) {
-    dossier.attente_mo = attenteFlag;
-  } else if (typeof dossier.attente_mo !== "boolean") {
-    dossier.attente_mo = false;
-  }
-
-  if (attenteFlagProvided && attenteFlag) {
-    dossier.statut = STATUTS.ATTENTE_MO;
-    suppressNotif = true;
-  } else if (statutRecu) {
-    const s = statutRecu.toLowerCase();
-    if (s === STATUTS.ACCEPTE) {
-      dossier.statut = STATUTS.ACCEPTE;
-      dossier.attente_mo = false;
-    } else if (s === STATUTS.REFUSE) {
-      dossier.statut = STATUTS.REFUSE;
-    } else if (s === STATUTS.ENREGISTRE) {
-      dossier.statut = STATUTS.ENREGISTRE;
-    } else if (s === STATUTS.ATTENTE_INFO) {
-      dossier.statut = STATUTS.ATTENTE_INFO;
-    } else if (s === STATUTS.ATTENTE_MO.toLowerCase()) {
-      dossier.statut = STATUTS.ATTENTE_MO;
-    }
-    if (dossier.statut === STATUTS.ATTENTE_MO) suppressNotif = true;
-  }
-
   await writeDataFTP(data);
 
   let mailDoitEtreEnvoye = false;
   let changes = [];
-
-  if (dossier.statut !== oldStatut) {
-    if (!suppressNotif) {
-      changes.push("statut");
-      mailDoitEtreEnvoye = true;
-    }
-  }
-  if (repRecue !== undefined && repRecue !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
+  if (req.body.statut && req.body.statut !== oldStatut) { changes.push("statut"); mailDoitEtreEnvoye = true; }
+  if (req.body.reponse && req.body.reponse !== oldReponse) { changes.push("réponse"); mailDoitEtreEnvoye = true; }
   if (req.files && req.files.reponseFiles && req.files.reponseFiles.length > 0 && (dossier.reponseFiles.length !== oldFilesLength)) {
     changes.push("pièce jointe"); mailDoitEtreEnvoye = true;
   }
-
   if (mailDoitEtreEnvoye && dossier.email) {
     const attachments = await fetchFilesFromFTP(dossier.reponseFiles);
     let html = `<div style="font-family:sans-serif;">
@@ -523,7 +461,6 @@ app.post("/api/admin/dossier/:id", upload.fields([
     });
     cleanupFiles(attachments);
   }
-
   res.json({success:true});
 });
 
@@ -579,7 +516,7 @@ app.post("/api/admin/envoyer-fournisseur/:id", upload.fields([{ name: 'fichiers'
     await mailer.sendMail({
       from: "Garantie Durand Services <" + process.env.GMAIL_USER + ">",
       to: emailDest,
-      replyTo: magasinEmail,
+	  replyTo: magasinEmail,
       subject: `Dossier de garantie ${dossier.numero_dossier || ''} - ${dossier.produit_concerne || ''}`,
       html,
       attachments
@@ -640,7 +577,7 @@ app.get("/templates/:name", (req, res) => {
     "FORMULAIRE_ms.pdf": path.join(__dirname, "formulaire", "FORMULAIRE_ms.pdf"),
     "Formulaire_ngk.pdf": path.join(__dirname, "formulaire", "Formulaire_ngk.pdf"),
     "Formulaire_nrf.pdf": path.join(__dirname, "formulaire", "Formulaire_nrf.pdf"),
-    "Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
+	"Formulaire_SEIM.pdf": path.join(__dirname, "formulaire", "Formulaire_SEIM.pdf"),
   };
   const filePath = allowed[req.params.name];
   if (!filePath) {
