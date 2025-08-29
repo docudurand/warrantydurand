@@ -103,6 +103,8 @@ app.use(cookieParser());
 app.use(express.json());
 const upload = multer({ dest: "temp_uploads/" });
 
+app.use(express.urlencoded({ extended: true }));
+
 async function getFTPClient() {
   const client = new ftp.Client();
   await client.access({
