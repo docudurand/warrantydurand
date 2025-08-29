@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<title>DSG</title>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<link href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" rel="icon" type="image/png"/>
-<style>
+  <meta charset="UTF-8">
+  <title>DSG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
+  <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
     .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
@@ -259,40 +258,40 @@
   </style>
 </head>
 <body>
-<img alt="Bannière Garantie Durand Services" class="banniere" src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png"/>
-<div class="top-tools" id="top-tools" style="display:none;">
-<button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
-</div>
-<div id="login">
-<h2>Connexion admin</h2>
-<input id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;" type="password"/><br/>
-<button class="bouton" onclick="adminLogin()">Connexion</button>
-<div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
-</div>
-<div id="admin-content">
-<h2>Gestion des dossiers - Garantie Durand Services</h2>
-<div class="tabs" id="tabs"></div>
-<div id="status-counters"></div>
-<div class="filters-row" id="filters-row" style="display:none;">
-<div class="search-container">
-<input autocomplete="off" id="search-client" placeholder="🔎 Recherche ..." type="text"/>
-</div>
-<label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
-<label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
-<label id="statut-filter-label">Statut :
+  <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
+  <div class="top-tools" id="top-tools" style="display:none;">
+    <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
+  </div>
+  <div id="login">
+    <h2>Connexion admin</h2>
+    <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
+    <button class="bouton" onclick="adminLogin()">Connexion</button>
+    <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
+  </div>
+  <div id="admin-content">
+    <h2>Gestion des dossiers - Garantie Durand Services</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="status-counters"></div>
+    <div class="filters-row" id="filters-row" style="display:none;">
+      <div class="search-container">
+        <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
+      </div>
+      <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
+      <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
+      <label id="statut-filter-label">Statut :
         <select id="statut-filter">
-<option value="">Tous</option>
-<option value="enregistré">Enregistré</option>
-<option value="accepté">Accepté</option>
-<option value="refusé">Refusé</option>
-<option value="en attente d'info">En attente d'info</option>
-<option value="Attente MO">Attente MO</option>
-</select>
-</label>
-</div>
-<div id="dossier-list"></div>
-</div>
-<script>
+          <option value="">Tous</option>
+          <option value="enregistré">Enregistré</option>
+          <option value="accepté">Accepté</option>
+          <option value="refusé">Refusé</option>
+          <option value="en attente d'info">En attente d'info</option>
+          <option value="Attente MO">Attente MO</option>
+        </select>
+      </label>
+    </div>
+    <div id="dossier-list"></div>
+  </div>
+  <script>
   function formatDateFRshort(val) {
   if (!val) return "";
   let d = typeof val === "string" ? new Date(val) : val;
@@ -619,15 +618,12 @@ function afficherDossiers(magasin, forceFiltres=false) {
   <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
   <input type="file" name="documentsAjoutes" multiple>
   <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
-</div>
-      <div class="attente-mo-toggle" style="display:flex; flex-direction:column; align-items:flex-start; gap:6px; margin-bottom:40px;">
-        <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
+  <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
         <label class="switch" style="margin-left:13px;">
           <input type="checkbox" name="attente_mo" ${ (d.statut==="Attente MO" || d.attente_mo) ? "checked" : "" }>
           <span class="slider"></span>
         </label>
-        <small style="color:#555;margin-left:13px;max-width:240px;">Quand activé, le statut passe en "Attente MO" sans notifier le client.</small>
-      </div>
+</div>
         <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
   <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
   <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
