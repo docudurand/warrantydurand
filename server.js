@@ -81,9 +81,10 @@ const FOURNISSEUR_PDFS = {
 };
 
 const FTP_HOST = process.env.FTP_HOST;
-const FTP_PORT = process.env.FTP_PORT;
+const FTP_PORT = Number(process.env.FTP_PORT || 21);
 const FTP_USER = process.env.FTP_USER;
 const FTP_PASS = process.env.FTP_PASS;
+
 const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegardegarantie";
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
 const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
@@ -92,16 +93,16 @@ const mailer = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS
-  }
+  auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
 });
 
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
-const upload = multer({ dest: "temp_uploads/" });
+
+const TEMP_UPLOAD_DIR = path.join(__dirname, "temp_uploads");
+try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
+const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
 async function getFTPClient() {
   const client = new ftp.Client();
@@ -123,7 +124,7 @@ async function readDataFTP() {
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
     json = JSON.parse(fs.readFileSync(tmp, "utf8"));
-    fs.unlinkSync(tmp);
+    try { fs.unlinkSync(tmp); } catch {}
   } catch {
     json = [];
   }
@@ -137,7 +138,7 @@ async function writeDataFTP(data) {
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
   await client.ensureDir(FTP_BACKUP_FOLDER);
   await client.uploadFrom(tmp, JSON_FILE_FTP);
-  fs.unlinkSync(tmp);
+  try { fs.unlinkSync(tmp); } catch {}
   client.close();
   console.log(`[SAVE] demandes.json mis à jour (${data.length} dossiers)`);
 }
@@ -157,27 +158,27 @@ async function deleteFileFromFTP(remoteFileName) {
   client.close();
 }
 
-async function streamFTPFileToRes(res, remotePath, fileName, mimeType) {
+async function streamFTPFileToRes(res, remotePath, fileName) {
   const client = await getFTPClient();
-  const tempPath = path.join(__dirname, "tempdl_" + fileName);
-  await client.downloadTo(tempPath, remotePath).catch(()=>{});
-  client.close();
+  try {
+    let size = 0;
+    try {
+      size = await client.size(remotePath);
+    } catch {}
 
-  if (!fs.existsSync(tempPath)) {
-    return res.status(404).send("Not found");
+    const ctype = mime.lookup(fileName) || "application/octet-stream";
+    res.setHeader("Content-Type", ctype);
+    if (size > 0) res.setHeader("Content-Length", String(size));
+
+    const ext = (fileName || "").split(".").pop().toLowerCase();
+    const inlineTypes = ["pdf","jpg","jpeg","png","gif","webp","bmp"];
+    const disp = inlineTypes.includes(ext) ? "inline" : "attachment";
+    res.setHeader("Content-Disposition", `${disp}; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+
+    await client.downloadTo(res, remotePath);
+  } finally {
+    client.close();
   }
-
-  const ext = (fileName || "").split(".").pop().toLowerCase();
-  if (["pdf","jpg","jpeg","png","gif","webp","bmp"].includes(ext)) {
-    res.setHeader("Content-Disposition", `inline; filename="${fileName}"`);
-  } else {
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-  }
-  if (mimeType) res.setHeader("Content-Type", mimeType);
-
-  const s = fs.createReadStream(tempPath);
-  s.pipe(res);
-  s.on("end", () => { try { fs.unlinkSync(tempPath); } catch {} });
 }
 
 async function fetchFilesFromFTP(fileObjs) {
@@ -186,7 +187,8 @@ async function fetchFilesFromFTP(fileObjs) {
   const files = [];
   for (const f of fileObjs) {
     const remote = path.posix.join(UPLOADS_FTP, f.url);
-    const tempPath = path.join(__dirname, "att_" + f.url.replace(/[^\w.]/g,""));
+    const safeLocal = "att_" + f.url.replace(/[^\w.\-]/g,"_");
+    const tempPath = path.join(__dirname, safeLocal);
     await client.downloadTo(tempPath, remote).catch(()=>{});
     files.push({ filename: f.original, path: tempPath });
   }
@@ -218,9 +220,7 @@ function formatDateJJMMAAAA(input) {
   else {
     const dt = new Date(s);
     if (isNaN(dt)) return s;
-    y = dt.getFullYear();
-    mo = dt.getMonth() + 1;
-    d = dt.getDate();
+    y = dt.getFullYear(); mo = dt.getMonth() + 1; d = dt.getDate();
   }
   return `${String(d).padStart(2,"0")}/${String(mo).padStart(2,"0")}/${String(y)}`;
 }
@@ -347,7 +347,8 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
 
     d.files = [];
     for (const f of req.files || []) {
-      const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+      const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+      const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
       await uploadFileToFTP(f.path, "uploads", remoteName);
       d.files.push({ url: remoteName, original: f.originalname });
       try { fs.unlinkSync(f.path); } catch {}
@@ -437,7 +438,8 @@ app.post("/api/admin/dossier/:id",
 
       if (req.files && req.files.reponseFiles) {
         for (const f of req.files.reponseFiles) {
-          const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
           await uploadFileToFTP(f.path, "uploads", remoteName);
           dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
           dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
@@ -446,7 +448,8 @@ app.post("/api/admin/dossier/:id",
       }
       if (req.files && req.files.documentsAjoutes) {
         for (const f of req.files.documentsAjoutes) {
-          const remoteName = Date.now() + "-" + Math.round(Math.random() * 1e8) + "-" + f.originalname.replace(/\s/g, "_");
+          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
           await uploadFileToFTP(f.path, "uploads", remoteName);
           dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
           try { fs.unlinkSync(f.path); } catch {}
@@ -556,14 +559,11 @@ app.post("/api/admin/envoyer-fournisseur/:id",
       const attachments = [];
       attachments.push({ filename: nomFichier + ".pdf", content: pdfBuffer, contentType: "application/pdf" });
 
-      const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || []) ]);
-      for (const f of docs) {
-        attachments.push({ filename: f.filename, path: f.path });
-      }
+      const docs = await fetchFilesFromFTP([ ...(dossier.files || []), ...(dossier.documentsAjoutes || []), ...(dossier.reponseFiles || [] ) ]);
+      for (const f of docs) attachments.push({ filename: f.filename, path: f.path });
+
       if (req.files && req.files.fichiers) {
-        for (const f of req.files.fichiers) {
-          attachments.push({ filename: f.originalname, path: f.path });
-        }
+        for (const f of req.files.fichiers) attachments.push({ filename: f.originalname, path: f.path });
       }
       if (req.files && req.files.formulaire && req.files.formulaire[0]) {
         const f = req.files.formulaire[0];
@@ -669,10 +669,13 @@ app.get("/api/mes-dossiers", async (req, res) => {
 });
 
 app.get("/download/:file", async (req, res) => {
-  const file = req.params.file.replace(/[^a-zA-Z0-9\-_.]/g,"");
-  const remotePath = path.posix.join(UPLOADS_FTP, file);
-  const mimeType = mime.lookup(file) || undefined;
-  await streamFTPFileToRes(res, remotePath, file, mimeType);
+  const raw = req.params.file;
+  const fileParam = decodeURIComponent(raw || "");
+  if (!fileParam || fileParam.includes("/") || fileParam.includes("\\") || fileParam.includes("..") || fileParam.includes("\0")) {
+    return res.status(400).send("Bad filename");
+  }
+  const remotePath = path.posix.join(UPLOADS_FTP, fileParam);
+  await streamFTPFileToRes(res, remotePath, fileParam);
 });
 
 app.post("/api/admin/login", (req, res) => {
