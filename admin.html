@@ -257,7 +257,7 @@
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { font-size: 1.12em; border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
 </head>
@@ -287,6 +287,7 @@
         <button type="button" class="year-tab" data-year="2026">2026</button>
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
+      <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
       <label id="statut-filter-label">Statut :
         <select id="statut-filter">
           <option value="">Tous</option>
@@ -323,9 +324,8 @@ const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
 ];
 let allDossiers = [];
-const CURRENT_YEAR = new Date().getFullYear().toString();
 let currentMagasin = null;
-let filtres = { mois: "", annee: CURRENT_YEAR, statut: "" };
+let filtres = { mois: "", annee: "", statut: "" };
 let rechercheClient = "";
 let ongletActif = null;
 
@@ -380,7 +380,6 @@ function adminLogin() {
         document.getElementById('login').style.display = "none";
         document.getElementById('admin-content').style.display = "block";
         toggleSuperAdminUI();
-        filtres.annee = CURRENT_YEAR;
         chargerDossiers();
       } else {
         if (loginMsg) loginMsg.textContent = json.message || "Erreur";
@@ -490,7 +489,8 @@ function renderYearTabs() {
         filtres.annee = clickedYear;
       }
       // Synchronize the select
-      
+      const anneeSel = document.getElementById("annee-filter");
+      if (anneeSel) anneeSel.value = filtres.annee;
       // Re-render the current view without changing any sort order
       if (ongletActif === "global") {
         afficherGlobal();
@@ -503,6 +503,7 @@ function renderYearTabs() {
 
 function afficherFiltres(dossiers, options={}) {
   let moisSel = document.getElementById("mois-filter");
+  let anneeSel = document.getElementById("annee-filter");
   let statutSel = document.getElementById("statut-filter");
   let moisSet = new Set(), anneeSet = new Set();
 
@@ -520,19 +521,22 @@ function afficherFiltres(dossiers, options={}) {
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
   moisSel.innerHTML = `<option value="">Tous</option>`;
   moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-   });
+  anneeSel.innerHTML = `<option value="">Toutes</option>`;
+  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
   document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
   moisSel.value = filtres.mois;
+  anneeSel.value = filtres.annee;
   statutSel.value = filtres.statut;
 
   // Met à jour l’état visuel des onglets année
   renderYearTabs();
 
-  moisSel.onchange = statutSel.onchange = function(){
+  moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
     filtres.mois = moisSel.value;
+    filtres.annee = anneeSel.value;
     filtres.statut = statutSel.value;
     if(ongletActif === "global"){
       afficherGlobal();
@@ -945,7 +949,7 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { font-size: 1.12em; border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
@@ -1058,7 +1062,7 @@ function completerDossier(id) {
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { font-size: 1.12em; border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
@@ -1227,7 +1231,7 @@ function ouvrirFournisseur(id) {
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { font-size: 1.12em; border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
@@ -1403,7 +1407,7 @@ function ouvrirDocumentDansPopup(url, nomFichier) {
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { font-size: 1.12em; border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head>
