@@ -289,7 +289,6 @@
         <button type="button" class="year-tab" data-year="2026">2026</button>
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
-      <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
       <label id="statut-filter-label">Statut :
         <select id="statut-filter">
           <option value="">Tous</option>
@@ -492,9 +491,7 @@ function renderYearTabs() {
         filtres.annee = clickedYear;
       }
       // Synchronize the select
-      const anneeSel = document.getElementById("annee-filter");
-      if (anneeSel) anneeSel.value = filtres.annee;
-      // Re-render the current view without changing any sort order
+// Re-render the current view without changing any sort order
       if (ongletActif === "global") {
         afficherGlobal();
       } else {
@@ -506,8 +503,7 @@ function renderYearTabs() {
 
 function afficherFiltres(dossiers, options={}) {
   let moisSel = document.getElementById("mois-filter");
-  let anneeSel = document.getElementById("annee-filter");
-  let statutSel = document.getElementById("statut-filter");
+let statutSel = document.getElementById("statut-filter");
   let moisSet = new Set(), anneeSet = new Set();
 
   dossiers.forEach(d => {
@@ -524,23 +520,19 @@ function afficherFiltres(dossiers, options={}) {
   const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
   moisSel.innerHTML = `<option value="">Tous</option>`;
   moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-  anneeSel.innerHTML = `<option value="">Toutes</option>`;
-  Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
   document.getElementById("filters-row").style.display = "flex";
   document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
   moisSel.value = filtres.mois;
-  anneeSel.value = filtres.annee;
-  statutSel.value = filtres.statut;
+statutSel.value = filtres.statut;
 
   // Met à jour l’état visuel des onglets année
   renderYearTabs();
 
-  moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
+  moisSel.onchange = statutSel.onchange = function(){
     filtres.mois = moisSel.value;
-    filtres.annee = anneeSel.value;
-    filtres.statut = statutSel.value;
+filtres.statut = statutSel.value;
     if(ongletActif === "global"){
       afficherGlobal();
     } else {
