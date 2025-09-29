@@ -255,6 +255,10 @@
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+  /* Year tabs */
+.year-tabs { display:flex; gap:8px; align-items:center; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab.active { background:#006e90; color:#fff; }
   </style>
 </head>
 <body>
@@ -275,6 +279,12 @@
     <div class="filters-row" id="filters-row" style="display:none;">
       <div class="search-container">
         <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
+      </div>
+
+      <!-- Onglets année (2025 / 2026) -->
+      <div class="year-tabs" id="year-tabs" aria-label="Filtre rapide par année">
+        <button type="button" class="year-tab" data-year="2025">2025</button>
+        <button type="button" class="year-tab" data-year="2026">2026</button>
       </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
       <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
@@ -340,30 +350,54 @@ document.getElementById("btn-export-excel").onclick = function(){
   window.open('/api/admin/export-excel', '_blank');
 };
 
+
 function adminLogin() {
   let pw = document.getElementById('admin-pass').value;
-  fetch('/api/admin/login', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({password: pw})
-  })
-  .then(resp=>resp.json())
-  .then(json=>{
-    if(json.success){
-      isSuperAdmin = !!json.isSuper;
-      isAdmin = !!json.isAdmin;
-      magasinUnique = json.magasin || null;
-      currentMagasin = magasinUnique || MAGASINS[0];
-      document.getElementById('login').style.display = "none";
-      document.getElementById('admin-content').style.display = "block";
-      toggleSuperAdminUI();
-      chargerDossiers();
-    } else {
-      document.getElementById('login-msg').textContent = json.message || "Erreur";
+  const loginMsg = document.getElementById('login-msg');
+  const url = '/api/admin/login';
+  (async () => {
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({password: pw})
+      });
+      if (!resp.ok) {
+        let msg = 'Erreur de connexion (' + resp.status + ').';
+        try {
+          const j = await resp.json();
+          if (j && j.message) msg = j.message;
+        } catch(e) {}
+        if (loginMsg) loginMsg.textContent = msg;
+        return;
+      }
+      const json = await resp.json();
+      if(json.success){
+        isSuperAdmin = !!json.isSuper;
+        isAdmin = !!json.isAdmin;
+        magasinUnique = json.magasin || null;
+        currentMagasin = magasinUnique || MAGASINS[0];
+        document.getElementById('login').style.display = "none";
+        document.getElementById('admin-content').style.display = "block";
+        toggleSuperAdminUI();
+        chargerDossiers();
+      } else {
+        if (loginMsg) loginMsg.textContent = json.message || "Erreur";
+      }
+    } catch (err) {
+      // Network/CORS/Origin issues
+      let extra = '';
+      try {
+        if (window.location.protocol === 'file:') {
+          extra = " Ouvrez cette page depuis votre site (https) afin d'accéder à l'API.";
+        }
+      } catch(e) {}
+      if (loginMsg) loginMsg.textContent = "Connexion impossible (réseau/API). " + extra;
     }
-  });
+  })();
 }
 window.adminLogin = adminLogin;
+
 
 function chargerDossiers() {
   fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
@@ -435,6 +469,38 @@ function afficherCompteurs(dossiers) {  const stats = [
   document.getElementById("status-counters").innerHTML = html;
 }
 
+function renderYearTabs() {
+  const container = document.getElementById("year-tabs");
+  if (!container) return;
+  const buttons = container.querySelectorAll(".year-tab");
+  buttons.forEach(btn => {
+    const y = btn.getAttribute("data-year");
+    if (filtres.annee && filtres.annee === y) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+    btn.onclick = () => {
+      // Toggle behavior: click again clears the year filter
+      const clickedYear = btn.getAttribute("data-year");
+      if (filtres.annee === clickedYear) {
+        filtres.annee = "";
+      } else {
+        filtres.annee = clickedYear;
+      }
+      // Synchronize the select
+      const anneeSel = document.getElementById("annee-filter");
+      if (anneeSel) anneeSel.value = filtres.annee;
+      // Re-render the current view without changing any sort order
+      if (ongletActif === "global") {
+        afficherGlobal();
+      } else {
+        afficherDossiers(currentMagasin);
+      }
+    };
+  });
+}
+
 function afficherFiltres(dossiers, options={}) {
   let moisSel = document.getElementById("mois-filter");
   let anneeSel = document.getElementById("annee-filter");
@@ -464,6 +530,9 @@ function afficherFiltres(dossiers, options={}) {
   moisSel.value = filtres.mois;
   anneeSel.value = filtres.annee;
   statutSel.value = filtres.statut;
+
+  // Met à jour l’état visuel des onglets année
+  renderYearTabs();
 
   moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
     filtres.mois = moisSel.value;
@@ -878,6 +947,10 @@ fichiersDocs = fichiersDocs.filter((f, i, arr) =>
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+  /* Year tabs */
+.year-tabs { display:flex; gap:8px; align-items:center; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
     <div class="fiche-header">
@@ -987,6 +1060,10 @@ function completerDossier(id) {
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+  /* Year tabs */
+.year-tabs { display:flex; gap:8px; align-items:center; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
     <h2>Compléter Dossier</h2>
@@ -1152,6 +1229,10 @@ function ouvrirFournisseur(id) {
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+  /* Year tabs */
+.year-tabs { display:flex; gap:8px; align-items:center; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head><body>
       <h2>${titre}</h2>
@@ -1324,6 +1405,10 @@ function ouvrirDocumentDansPopup(url, nomFichier) {
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+  /* Year tabs */
+.year-tabs { display:flex; gap:8px; align-items:center; }
+.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab.active { background:#006e90; color:#fff; }
   </style>
     </head>
     <body>
