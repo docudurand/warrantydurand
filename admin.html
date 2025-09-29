@@ -257,7 +257,9 @@
 
   /* Year tabs */
 .year-tabs { display:flex; gap:8px; align-items:center; }
-.year-tab { border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding:6px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+.year-tab {border:1px solid #cbe7f6; background:#f0f6f9; color:#146083; padding: 10px 20px; border-radius:8px; cursor:pointer; font-weight: 700;
+  font-size: 1.12em;
+}
 .year-tab.active { background:#006e90; color:#fff; }
   </style>
 </head>
@@ -324,8 +326,9 @@ const MAGASINS = [
   "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
 ];
 let allDossiers = [];
+const CURRENT_YEAR = new Date().getFullYear().toString();
 let currentMagasin = null;
-let filtres = { mois: "", annee: "", statut: "" };
+let filtres = { mois: "", annee: CURRENT_YEAR, statut: "" };
 let rechercheClient = "";
 let ongletActif = null;
 
