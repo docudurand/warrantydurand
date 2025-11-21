@@ -18,93 +18,6 @@
     .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
     .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
     .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
-
-    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
-    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
-    td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
-    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
-    tr:nth-child(even) td { background:#f4fafd;}
-    td.action, th.action { min-width: 215px; max-width: 330px; }
-
-    /* TABLEAU RESPONSIVE (tablette/mobile) */
-    .responsive-table { width:100%; border-collapse: collapse; }
-    @media (max-width: 1024px) {
-      #admin-content { padding: 24px 12px 24px 12px; border-radius: 0; box-shadow:none; }
-      h2 { font-size: 1.6em; }
-
-      .responsive-table,
-      .responsive-table tbody,
-      .responsive-table tr,
-      .responsive-table td {
-        display:block;
-        width:100%;
-      }
-
-      .responsive-table tr {
-        margin-bottom: 14px;
-        border:1px solid #e6edf1;
-        border-radius:10px;
-        overflow:hidden;
-        box-shadow:0 2px 6px #0001;
-        background:#fff;
-      }
-
-      .responsive-table tr:nth-child(even) td {
-        background:#fff;
-      }
-
-      .responsive-table th {
-        display:none;
-      }
-
-      .responsive-table td {
-        text-align:left;
-        border:none;
-        border-bottom:1px solid #eef3f6;
-        padding:9px 12px;
-        font-size:0.98em;
-        box-sizing:border-box;
-      }
-
-      .responsive-table td:last-child {
-        border-bottom:none;
-      }
-
-      .responsive-table td::before {
-        content: attr(data-label);
-        font-weight:600;
-        color:#195e7c;
-        display:inline-block;
-        min-width:140px;
-        margin-right:10px;
-        vertical-align:top;
-      }
-
-      .responsive-table td.action {
-        text-align:right;
-      }
-
-      .responsive-table td.action::before {
-        min-width: auto;
-        margin-right:10px;
-      }
-
-      /* La mini-form reste un bloc unique sans label devant */
-      .mini-form-row td {
-        border:none;
-      }
-      .mini-form-row td::before {
-        content:"";
-        display:none;
-      }
-
-      /* Réduire un peu la taille des boutons sur tablette */
-      .bouton, .voir-btn, .maj-btn {
-        font-size:0.95em;
-        padding:7px 14px;
-      }
-    }
-
     .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
     .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
     .tab.active { background: #006e90; color: #fff; z-index: 1; }
@@ -122,6 +35,13 @@
     .counter-card .counter-value.blue { color: #1978d2; }
     .counter-card .counter-label.purple { color: #7d3cff; }
     .counter-card .counter-value.purple { color: #7d3cff; }
+
+    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
+    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
+    td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
+    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
+    tr:nth-child(even) td { background:#f4fafd;}
+    td.action, th.action { min-width: 215px; max-width: 330px; }
 
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
     .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
@@ -144,6 +64,7 @@
     .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
     .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
     .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
+
     #dossier-list td[id^="pj-"] a {
       word-break: break-all;
       white-space: normal;
@@ -244,6 +165,48 @@
     .file-remove:hover {
       background: #a11610;
     }
+
+    /* *** ADAPTATION TABLETTES PAYSAGE (iPad ~1024px) *** */
+    @media (max-width:1200px) {
+      #admin-content {
+        padding: 32px 16px 32px 16px;
+      }
+      h2 {
+        font-size: 1.8em;
+      }
+      table {
+        table-layout: auto;   /* le tableau se resserre au lieu de dépasser */
+      }
+      th, td {
+        padding: 8px 4px;
+        font-size: 0.95em;
+      }
+      th {
+        font-size: 0.98em;
+      }
+      td:nth-child(5), th:nth-child(5) {
+        max-width: 90px;
+      }
+      td.action, th.action {
+        min-width: 120px;
+        max-width: 160px;
+      }
+      .bouton, .voir-btn, .maj-btn {
+        padding: 4px 8px;
+        font-size: 0.85em;
+        min-height: 32px;
+        min-width: 80px;
+        white-space: nowrap; /* le texte reste sur une ligne */
+      }
+      .statut-chip {
+        font-size: 0.9em;
+      }
+      .pj-img {
+        max-width: 55px;
+        max-height: 45px;
+      }
+    }
+
     @media (max-width:1050px) {
       #admin-content { padding: 10px 2vw 10px 2vw;}
       .counter-card { padding:18px 7vw;}
@@ -264,6 +227,7 @@
       .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
       .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
     }
+
     .mini-form-flex label[style*="flex-direction:column"] b {
       font-size: 1em;
       font-weight: 500;
@@ -287,6 +251,7 @@
       font-size: 0.96em;
       padding: 5px 9px;
     }
+
     .mini-form-upload-block {
       display: flex;
       flex-direction: column;
@@ -328,7 +293,7 @@
       vertical-align: middle;
       white-space: nowrap;
     }
-
+  
     /* Switch Attente MO */
     .switch { position:relative; display:inline-block; width:46px; height:24px; }
     .switch input { opacity:0; width:0; height:0; }
@@ -337,6 +302,19 @@
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
 
+    /* Year tabs */
+    .year-tabs { display:flex; gap:8px; align-items:center; }
+    .year-tab {
+      border:1px solid #cbe7f6;
+      background:#f0f6f9;
+      color:#146083;
+      padding: 10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight: 700;
+      font-size: 1.12em;
+    }
+    .year-tab.active { background:#006e90; color:#fff; }
   </style>
 </head>
 <body>
@@ -358,8 +336,13 @@
       <div class="search-container">
         <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
       </div>
+
+      <!-- Onglets année (2025 / 2026) -->
+      <div class="year-tabs" id="year-tabs" aria-label="Filtre rapide par année">
+        <button type="button" class="year-tab" data-year="2025">2025</button>
+        <button type="button" class="year-tab" data-year="2026">2026</button>
+      </div>
       <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
-      <label>Année : <select id="annee-filter"><option value="">Toutes</option></select></label>
       <label id="statut-filter-label">Statut :
         <select id="statut-filter">
           <option value="">Tous</option>
@@ -373,6 +356,7 @@
     </div>
     <div id="dossier-list"></div>
   </div>
+
   <script>
   function formatDateFRshort(val) {
     if (!val) return "";
@@ -389,15 +373,19 @@
     }
     return val;
   }
+
   let isSuperAdmin = false;
   let isAdmin = false;
   let magasinUnique = null;
   const MAGASINS = [
-    "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize","La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve","Saint-Jean-Bonnefonds","Saint-martin-d'heres","Seynod"
+    "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize",
+    "La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve",
+    "Saint-Jean-Bonnefonds","Seynod","Disponible"
   ];
   let allDossiers = [];
+  const CURRENT_YEAR = new Date().getFullYear().toString();
   let currentMagasin = null;
-  let filtres = { mois: "", annee: "", statut: "" };
+  let filtres = { mois: "", annee: CURRENT_YEAR, statut: "" };
   let rechercheClient = "";
   let ongletActif = null;
 
@@ -423,26 +411,47 @@
 
   function adminLogin() {
     let pw = document.getElementById('admin-pass').value;
-    fetch('/api/admin/login', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({password: pw})
-    })
-    .then(resp=>resp.json())
-    .then(json=>{
-      if(json.success){
-        isSuperAdmin = !!json.isSuper;
-        isAdmin = !!json.isAdmin;
-        magasinUnique = json.magasin || null;
-        currentMagasin = magasinUnique || MAGASINS[0];
-        document.getElementById('login').style.display = "none";
-        document.getElementById('admin-content').style.display = "block";
-        toggleSuperAdminUI();
-        chargerDossiers();
-      } else {
-        document.getElementById('login-msg').textContent = json.message || "Erreur";
+    const loginMsg = document.getElementById('login-msg');
+    const url = '/api/admin/login';
+    (async () => {
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({password: pw})
+        });
+        if (!resp.ok) {
+          let msg = 'Erreur de connexion (' + resp.status + ').';
+          try {
+            const j = await resp.json();
+            if (j && j.message) msg = j.message;
+          } catch(e) {}
+          if (loginMsg) loginMsg.textContent = msg;
+          return;
+        }
+        const json = await resp.json();
+        if(json.success){
+          isSuperAdmin = !!json.isSuper;
+          isAdmin = !!json.isAdmin;
+          magasinUnique = json.magasin || null;
+          currentMagasin = magasinUnique || MAGASINS[0];
+          document.getElementById('login').style.display = "none";
+          document.getElementById('admin-content').style.display = "block";
+          toggleSuperAdminUI();
+          chargerDossiers();
+        } else {
+          if (loginMsg) loginMsg.textContent = json.message || "Erreur";
+        }
+      } catch (err) {
+        let extra = '';
+        try {
+          if (window.location.protocol === 'file:') {
+            extra = " Ouvrez cette page depuis votre site (https) afin d'accéder à l'API.";
+          }
+        } catch(e) {}
+        if (loginMsg) loginMsg.textContent = "Connexion impossible (réseau/API). " + extra;
       }
-    });
+    })();
   }
   window.adminLogin = adminLogin;
 
@@ -517,9 +526,35 @@
     document.getElementById("status-counters").innerHTML = html;
   }
 
+  function renderYearTabs() {
+    const container = document.getElementById("year-tabs");
+    if (!container) return;
+    const buttons = container.querySelectorAll(".year-tab");
+    buttons.forEach(btn => {
+      const y = btn.getAttribute("data-year");
+      if (filtres.annee && filtres.annee === y) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+      btn.onclick = () => {
+        const clickedYear = btn.getAttribute("data-year");
+        if (filtres.annee === clickedYear) {
+          filtres.annee = "";
+        } else {
+          filtres.annee = clickedYear;
+        }
+        if (ongletActif === "global") {
+          afficherGlobal();
+        } else {
+          afficherDossiers(currentMagasin);
+        }
+      };
+    });
+  }
+
   function afficherFiltres(dossiers, options={}) {
     let moisSel = document.getElementById("mois-filter");
-    let anneeSel = document.getElementById("annee-filter");
     let statutSel = document.getElementById("statut-filter");
     let moisSet = new Set(), anneeSet = new Set();
 
@@ -537,19 +572,17 @@
     const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
     moisSel.innerHTML = `<option value="">Tous</option>`;
     moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
-    anneeSel.innerHTML = `<option value="">Toutes</option>`;
-    Array.from(anneeSet).sort().forEach(a=>{ anneeSel.innerHTML += `<option value="${a}">${a}</option>`; });
 
     document.getElementById("filters-row").style.display = "flex";
     document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
 
     moisSel.value = filtres.mois;
-    anneeSel.value = filtres.annee;
     statutSel.value = filtres.statut;
 
-    moisSel.onchange = anneeSel.onchange = statutSel.onchange = function(){
+    renderYearTabs();
+
+    moisSel.onchange = statutSel.onchange = function(){
       filtres.mois = moisSel.value;
-      filtres.annee = anneeSel.value;
       filtres.statut = statutSel.value;
       if(ongletActif === "global"){
         afficherGlobal();
@@ -607,7 +640,7 @@
       dossiers = dossiers.filter(d=>d.statut===filtres.statut);
     }
 
-    let html = `<table class="responsive-table dossier-table">
+    let html = `<table>
       <tr>
         <th style="width: 90px;">Numéro de dossier</th>
         <th>Date</th>
@@ -636,90 +669,90 @@
       );
 
       html += `<tr>
-        <td data-label="Numéro de dossier">${d.numero_dossier || ''}</td>
-        <td data-label="Date">${new Date(d.date).toLocaleDateString("fr-FR")}</td>
-        <td data-label="Client">${d.nom||''}</td>
-        <td data-label="Produit">${d.produit_concerne||''}</td>
-        <td data-label="Référence de la pièce">${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
-        <td data-label="Marque du produit">${d.marque_produit||''}</td>
-        <td data-label="Statut" id="statut-${id}">${statutChip(d.statut)}</td>
-        <td data-label="Réponse" id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
-        <td data-label="Documents ajoutés" id="pj-${id}">
-          <div class="pj-documents">
-            ${
-              fichiersDocs.length
-                ? fichiersDocs.map(f=>{
-                    let ext = f.original.split('.').pop().toLowerCase();
-                    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
-                      return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
-                    } else {
-                      return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
-                    }
-                  }).join("<br>")
-                : ""
-            }
-          </div>
+        <td>${d.numero_dossier || ''}</td>
+        <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
+        <td>${d.nom||''}</td>
+        <td>${d.produit_concerne||''}</td>
+        <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+        <td>${d.marque_produit||''}</td>
+        <td id="statut-${id}">${statutChip(d.statut)}</td>
+        <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
+        <td id="pj-${id}">
+        <div class="pj-documents">
+          ${
+            fichiersDocs.length
+              ? fichiersDocs.map(f=>{
+                  let ext = f.original.split('.').pop().toLowerCase();
+                  if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                    return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+                  } else {
+                    return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
+                  }
+                }).join("<br>")
+              : ""
+          }
+        </div>
         </td>
-        <td data-label="Mettre à jour" class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
-        <td data-label="Voir" class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-        <td data-label="Fournisseur" class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>
-        ${isSuperAdmin ? `<td data-label="Supprimer" class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
+        <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
+        <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+        <td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>
+        ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
       </tr>
-<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-  <td colspan="${isSuperAdmin ? 13 : 12}">
-    <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
-      <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
-        <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
-          <span class="emoji">⚠️</span>
-          TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
-          <span class="emoji">⚠️</span>
+  <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+    <td colspan="${isSuperAdmin ? 13 : 12}">
+      <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
+        <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
+          <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
+            <span class="emoji">⚠️</span>
+            TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
+            <span class="emoji">⚠️</span>
+          </div>
+          <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
+              <select class="statut-select" name="statut">
+                <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+                <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+                <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+                <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
+                <option value="Attente MO"${d.statut==="Attente MO"?" selected":""}>Attente MO</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
+              <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
+            </div>
+            <div class="mini-form-upload-block">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>
+              <input type="file" name="reponseFiles" multiple>
+              <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
+            </div>
+          </div>
         </div>
-        <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
-            <select class="statut-select" name="statut">
-              <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
-              <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
-              <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
-              <option value="en attente d'info"${d.statut==="en attente d'info"?" selected":""}>En attente d'info</option>
-              <option value="Attente MO"${d.statut==="Attente MO"?" selected":""}>Attente MO</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
-            <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
-          </div>
-          <div class="mini-form-upload-block">
-            <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>
-            <input type="file" name="reponseFiles" multiple>
-            <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
-          </div>
+        <div class="mini-form-upload-block">
+          <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+          <input type="file" name="documentsAjoutes" multiple>
+          <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+          <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
+          <label class="switch" style="margin-left:13px;">
+            <input type="checkbox" name="attente_mo" ${ (d.statut==="Attente MO" || d.attente_mo) ? "checked" : "" }>
+            <span class="slider"></span>
+          </label>
         </div>
-      </div>
-      <div class="mini-form-upload-block">
-        <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
-        <input type="file" name="documentsAjoutes" multiple>
-        <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
-        <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
-        <label class="switch" style="margin-left:13px;">
-          <input type="checkbox" name="attente_mo" ${ (d.statut==="Attente MO" || d.attente_mo) ? "checked" : "" }>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
-        <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
-        <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
-        <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:9px; margin-left:14px; align-self:flex-start;">Compléter Dossier</button>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
-        <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
-        <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
-        <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
-      </div>
-    </form>
-  </td>
-</tr>
-`;
+        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
+          <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
+          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
+          <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:9px; margin-left:14px; align-self:flex-start;">Compléter Dossier</button>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
+          <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
+          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
+          <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
+        </div>
+      </form>
+    </td>
+  </tr>
+  `;
     });
     html += `</table>`;
     document.getElementById('dossier-list').innerHTML = html;
@@ -738,7 +771,6 @@
     });
 
     document.querySelectorAll('.mini-form').forEach(form => {
-      // Sync Attente MO toggle with statut select
       const attToggle = form.querySelector("input[name='attente_mo']");
       const statutSelIn = form.querySelector("select[name='statut']");
       if (attToggle && statutSelIn) {
@@ -802,6 +834,7 @@
       renderFileListBuffer(id, field);
     });
   }
+
   function renderFileListBuffer(id, field) {
     let ul = document.getElementById(`file-list-${field}-${id}`);
     if(!ul) return;
@@ -814,6 +847,7 @@
       ul.appendChild(li);
     });
   }
+
   window.removeFileBuffer = function(id, field, idx) {
     if(fileBuffers[id] && fileBuffers[id][field]) {
       fileBuffers[id][field].splice(idx,1);
@@ -851,7 +885,7 @@
     afficherFiltres(allDossiers, {statut: false});
     document.getElementById("status-counters").innerHTML = "";
 
-    let html = `<table class="responsive-table global-table">
+    let html = `<table>
       <tr>
         <th>Date</th>
         <th>Magasin</th>
@@ -862,12 +896,12 @@
       </tr>`;
     dossiers.forEach(d=>{
       html += `<tr>
-        <td data-label="Date">${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
-        <td data-label="Magasin">${d.magasin||''}</td>
-        <td data-label="Marque du produit">${d.marque_produit||''}</td>
-        <td data-label="Produit concerné">${d.produit_concerne||''}</td>
-        <td data-label="Référence de la pièce">${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
-        <td data-label="Problème rencontré">${d.probleme_rencontre||''}</td>
+        <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+        <td>${d.magasin||''}</td>
+        <td>${d.marque_produit||''}</td>
+        <td>${d.produit_concerne||''}</td>
+        <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+        <td>${d.probleme_rencontre||''}</td>
       </tr>`;
     });
     html += `</table>`;
@@ -950,15 +984,6 @@
         .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
         .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
         .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
-
-        /* Switch Attente MO */
-        .switch { position:relative; display:inline-block; width:46px; height:24px; }
-        .switch input { opacity:0; width:0; height:0; }
-        .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
-        .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
-        .switch input:checked + .slider { background:#7d3cff; }
-        .switch input:checked + .slider:before { transform: translateX(22px); }
-
       </style>
       </head><body>
       <div class="fiche-header">
@@ -1059,15 +1084,6 @@
         button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
         button.validate { background:#006e90; color:#fff; }
         button.cancel { background:#ccc; color:#333; }
-
-        /* Switch Attente MO */
-        .switch { position:relative; display:inline-block; width:46px; height:24px; }
-        .switch input { opacity:0; width:0; height:0; }
-        .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
-        .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
-        .switch input:checked + .slider { background:#7d3cff; }
-        .switch input:checked + .slider:before { transform: translateX(22px); }
-
       </style>
       </head><body>
       <h2>Compléter Dossier</h2>
@@ -1224,17 +1240,8 @@
           .buttons .cancel { background:#ccc; color:#333; }
           .status-msg { text-align:center; font-size:0.98em; margin-top:10px; color:#195e7c; min-height:20px; }
           .send-form { background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer; }
-
-          /* Switch Attente MO */
-          .switch { position:relative; display:inline-block; width:46px; height:24px; }
-          .switch input { opacity:0; width:0; height:0; }
-          .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
-          .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
-          .switch input:checked + .slider { background:#7d3cff; }
-          .switch input:checked + .slider:before { transform: translateX(22px); }
-
         </style>
-      </head><body>
+        </head><body>
         <h2>${titre}</h2>
         <div class="info">
           <strong>Produit concerné :</strong> ${d.produit_concerne || ''}<br>
@@ -1324,7 +1331,7 @@
           "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
           "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
 
-          "SCHAEFFLER": {
+          "SCHAEFFLER": { 
             type: "url",
             link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081"
           }
@@ -1394,17 +1401,6 @@
         <title>${nomFichier}</title>
         <style>
           body { background:#f9fafb;font-family:Segoe UI,Arial,sans-serif;margin:0;padding:0; }
-          .close-btn { position:fixed;top:20px;right:30px;padding:10px 20px;font-size:1.1em;background:#bb1810;color:#fff;border:none;border-radius:8px;cursor:pointer;z-index:10; }
-          .close-btn:hover { background:#d32121; }
-
-          /* Switch Attente MO */
-          .switch { position:relative; display:inline-block; width:46px; height:24px; }
-          .switch input { opacity:0; width:0; height:0; }
-          .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
-          .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
-          .switch input:checked + .slider { background:#7d3cff; }
-          .switch input:checked + .slider:before { transform: translateX(22px); }
-
         </style>
       </head>
       <body>
