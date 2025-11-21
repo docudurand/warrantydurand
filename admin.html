@@ -166,7 +166,6 @@
       background: #a11610;
     }
 
-    /* *** ADAPTATION TABLETTES PAYSAGE (iPad ~1024px) *** */
     @media (max-width:1200px) {
       #admin-content {
         padding: 32px 16px 32px 16px;
@@ -175,7 +174,7 @@
         font-size: 1.8em;
       }
       table {
-        table-layout: auto;   /* le tableau se resserre au lieu de dépasser */
+        table-layout: auto;
       }
       th, td {
         padding: 8px 4px;
@@ -196,7 +195,7 @@
         font-size: 0.85em;
         min-height: 32px;
         min-width: 80px;
-        white-space: nowrap; /* le texte reste sur une ligne */
+        white-space: nowrap;
       }
       .statut-chip {
         font-size: 0.9em;
@@ -294,15 +293,12 @@
       white-space: nowrap;
     }
   
-    /* Switch Attente MO */
     .switch { position:relative; display:inline-block; width:46px; height:24px; }
     .switch input { opacity:0; width:0; height:0; }
     .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
     .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
     .switch input:checked + .slider { background:#7d3cff; }
     .switch input:checked + .slider:before { transform: translateX(22px); }
-
-    /* Year tabs */
     .year-tabs { display:flex; gap:8px; align-items:center; }
     .year-tab {
       border:1px solid #cbe7f6;
