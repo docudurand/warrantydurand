@@ -649,7 +649,7 @@
         <th>Documents ajoutés</th>
         <th class="action">Mettre à jour</th>
         <th class="action">Voir</th>
-        <th class="action">Fournisseur</th>
+        ${isSuperAdmin ? '<th class="action">Fournisseur</th>' : ''}
         ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
       </tr>`;
     dossiers.forEach(d=>{
@@ -690,12 +690,12 @@
         </div>
         </td>
         <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
-        <td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
-        <td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>
-        ${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
-      </tr>
-  <tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
-    <td colspan="${isSuperAdmin ? 13 : 12}">
+<td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+${isSuperAdmin ? `<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>` : ''}
+${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
+</tr>
+<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+  <td colspan="${isSuperAdmin ? 13 : 11}">
       <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
         <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
           <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
