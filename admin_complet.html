@@ -411,6 +411,19 @@
       flex-direction: column;
       gap: 8px;
     }
+	    .detail-separator {
+      border: 0;
+      border-top: 1px solid #e2e6f0;
+      margin: 10px 0 6px;
+    }
+
+    .detail-warning-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b91c1c;
+      text-align: center;
+      margin-bottom: 6px;
+    }
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
@@ -1057,6 +1070,9 @@ function renderListe() {
         "Documents ajoutés au dossier"
       );
 
+      const attenteMoTexte =
+        d.attente_mo || d.statut === "Attente MO" ? "Oui" : "Non";
+
       content.innerHTML =
         '<div class="detail-header">' +
         '<div>' +
@@ -1074,6 +1090,7 @@ function renderListe() {
         "</div>" +
         "</div>" +
         '<div class="detail-body">' +
+        // 🔹 Infos dossier
         '<div class="detail-grid">' +
         '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
         (d.magasin || "") +
@@ -1081,7 +1098,7 @@ function renderListe() {
         '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
         (d.produit_concerne || "") +
         "</div></div>" +
-        '<div><div class="detail-field-label">Marque produit</div><div class="detail-field-value">' +
+        '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
         (d.marque_produit || "") +
         "</div></div>" +
         '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
@@ -1091,26 +1108,79 @@ function renderListe() {
         (d.immatriculation || "") +
         "</div></div>" +
         '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
-        (d.probleme_rencontre || "").replace(/\r\n/g, "<br>").replace(/\r/g, "<br>") +
+        (d.probleme_rencontre || "")
+          .replace(/\r\n/g, "<br>")
+          .replace(/\r/g, "<br>") +
         "</div></div>" +
         "</div>" +
+
+        // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
+        '<div class="detail-grid">' +
+        '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
+        (d.numero_avoir || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
+        attenteMoTexte +
+        "</div></div>" +
+        "</div>" +
+
+        // 🔹 Puis Documents ajoutés au dossier
+        docsAjHtml +
+
+        // (on garde quand même les PJ de base & docs déjà envoyés pour info)
         filesHtml +
         repFilesHtml +
-        docsAjHtml +
         "</div>" +
+        // 🔹 Formulaire d’édition (nouvelle disposition)
         construireFormulaireEdition(d);
     }
 
     function construireFormulaireEdition(d) {
-      const selectedAvoir =
-        d.statut === "Avoir Commercial" || d.statut === "en attente d'info";
       const selectedEnr = d.statut === "enregistré";
       const selectedAcc = d.statut === "accepté";
       const selectedRef = d.statut === "refusé";
+      const selectedAvoir = d.statut === "Avoir Commercial";
       const selectedMO = d.statut === "Attente MO";
+
+      const numeroAvoirValue = d.numero_avoir
+        ? String(d.numero_avoir).replace(/"/g, "&quot;")
+        : "";
+      const reponseValue = d.reponse
+        ? String(d.reponse).replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        : "";
+      const attenteMoChecked = d.attente_mo ? " checked" : "";
 
       return (
         '<form class="detail-form" id="edit-form">' +
+        // 🔹 Partie "infos dossier" modifiable : Numéro d'avoir + Attente MO + docs ajoutés
+        '<div class="detail-form-row">' +
+        '<div class="detail-form-group">' +
+        "<label>Numéro d'avoir</label>" +
+        '<input type="text" name="numero_avoir" value="' +
+        numeroAvoirValue +
+        '">' +
+        "</div>" +
+        '<div class="detail-form-group">' +
+        "<label>Attente MO</label>" +
+        '<div class="attente-mo-check">' +
+        '<input type="checkbox" id="attente_mo" name="attente_mo"' +
+        attenteMoChecked +
+        ">" +
+        '<label for="attente_mo">Dossier en "Attente MO"</label>' +
+        "</div>" +
+        "</div>" +
+        "</div>" +
+
+        '<div class="detail-form-group">' +
+        "<label>Documents ajoutés au dossier (non envoyés au client)</label>" +
+        '<input type="file" name="documentsAjoutes" multiple>' +
+        "</div>" +
+
+        // 🔹 Trait + titre rouge
+        '<hr class="detail-separator">' +
+        '<div class="detail-warning-title">⚠️TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT⚠️</div>' +
+
+        // 🔹 Statut
         '<div class="detail-form-row">' +
         '<div class="detail-form-group">' +
         "<label>Statut</label>" +
@@ -1132,34 +1202,23 @@ function renderListe() {
         ">Attente MO</option>" +
         "</select>" +
         "</div>" +
-        '<div class="detail-form-group">' +
-        "<label>Numéro d'avoir</label>" +
-        '<input type="text" name="numero_avoir" value="' +
-        (d.numero_avoir ? String(d.numero_avoir).replace(/"/g, "&quot;") : "") +
-        '">' +
         "</div>" +
-        "</div>" +
+
+        // 🔹 Réponse au client
         '<div class="detail-form-group">' +
         "<label>Réponse au client</label>" +
         '<textarea name="reponse" placeholder="Texte de réponse au client...">' +
-        (d.reponse ? String(d.reponse).replace(/</g, "&lt;").replace(/>/g, "&gt;") : "") +
+        reponseValue +
         "</textarea>" +
         "</div>" +
-        '<div class="detail-form-row">' +
+
+        // 🔹 Pièces jointes pour le client
         '<div class="detail-form-group">' +
         "<label>Pièces jointes pour le client (envoi mail)</label>" +
         '<input type="file" name="reponseFiles" multiple>' +
         "</div>" +
-        '<div class="detail-form-group">' +
-        "<label>Documents ajoutés au dossier (non envoyés)</label>" +
-        '<input type="file" name="documentsAjoutes" multiple>' +
-        "</div>" +
-        "</div>" +
-        '<div class="attente-mo-check">' +
-        '<input type="checkbox" id="attente_mo" name="attente_mo"' +
-        (d.attente_mo ? " checked" : "") +
-        '><label for="attente_mo">Marquer ce dossier en "Attente MO" (suspension de mail auto)</label>' +
-        "</div>" +
+
+        // 🔹 Boutons
         '<div class="detail-buttons">' +
         '<button type="submit" class="btn">💾 Enregistrer</button>' +
         '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>' +
