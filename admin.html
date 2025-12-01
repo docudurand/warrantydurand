@@ -218,8 +218,11 @@
       box-shadow: 0 0 0 1px #176a9d33;
     }
     #search-input {
-      min-width: 210px;
-    }
+  min-width: 160px;
+  max-width: 260px;
+  width: 100%;
+}
+
 
     .stats-row {
       display: flex;
@@ -572,9 +575,9 @@
         <label for="month-filter">Mois</label>
         <input type="month" id="month-filter">
       </div>
-      <div class="filter-group">
-        <label for="magasin-filter">Magasin</label>
-        <select id="magasin-filter">
+      <div class="filter-group" id="magasin-filter-group">
+  <label for="magasin-filter">Magasin</label>
+  <select id="magasin-filter">
           <option value="">Tous</option>
           <option value="Annemasse">Annemasse</option>
           <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
@@ -602,10 +605,10 @@
           <option value="Attente MO">Attente MO</option>
         </select>
       </div>
-      <div class="filter-group" style="flex:1 1 220px;">
-        <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
-        <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
-      </div>
+      <div class="filter-group" style="flex:0 0 260px;">
+  <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
+  <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
+</div>
     </div>
 
     <div class="stats-row" id="stats-row"></div>
@@ -700,23 +703,35 @@
       return raw || "";
     }
 
-    function toggleSuperAdminUI() {
-      const chip = document.getElementById("role-chip");
-      if (!chip) return;
-      if (isSuperAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Super Admin";
-      } else if (isAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Admin";
-      } else if (magasinAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Magasin : " + magasinAdmin;
-      } else {
-        chip.style.display = "none";
-        chip.textContent = "";
-      }
+function toggleSuperAdminUI() {
+  const chip = document.getElementById("role-chip");
+  if (chip) {
+    if (isSuperAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Super Admin";
+    } else if (isAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Admin";
+    } else if (magasinAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Magasin : " + magasinAdmin;
+    } else {
+      chip.style.display = "none";
+      chip.textContent = "";
     }
+  }
+
+  // 🔹 Gestion de l'affichage du filtre magasin
+  const magGroup = document.getElementById("magasin-filter-group");
+  if (magGroup) {
+    // Si c'est un compte magasin (magasinAdmin défini, mais pas admin ni super admin)
+    if (!isSuperAdmin && !isAdmin && magasinAdmin) {
+      magGroup.style.display = "none";   // on cache le choix de magasin
+    } else {
+      magGroup.style.display = "";       // visible pour admin et super admin
+    }
+  }
+}
 
     function normaliserStatut(d) {
       if (d && d.statut === "en attente d'info") {
