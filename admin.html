@@ -926,81 +926,88 @@
       });
     }
 
-    function renderListe() {
-      const list = document.getElementById("dossier-list");
-      if (!list) return;
-      const filtered = filtrerDossiers();
-      afficherCompteurs(filtered);
+function renderListe() {
+  const list = document.getElementById("dossier-list");
+  if (!list) return;
+  const filtered = filtrerDossiers();
+  afficherCompteurs(filtered);
 
-      if (!filtered.length) {
-        list.innerHTML =
-          '<div class="empty-msg">Aucun dossier ne correspond à vos filtres.</div>';
-        return;
-      }
+  if (!filtered.length) {
+    list.innerHTML =
+      '<div class="empty-msg">Aucun dossier ne correspond à vos filtres.</div>';
+    return;
+  }
 
-      const frag = document.createDocumentFragment();
-      filtered.forEach(d => {
-        const row = document.createElement("div");
-        row.className =
-          "dossier-row" +
-          (dossierSelectionne && dossierSelectionne.id === d.id
-            ? " active"
-            : "");
-        row.dataset.id = d.id;
+  const frag = document.createDocumentFragment();
+  filtered.forEach(d => {
+    const row = document.createElement("div");
+    row.className =
+      "dossier-row" +
+      (dossierSelectionne && dossierSelectionne.id === d.id
+        ? " active"
+        : "");
+    row.dataset.id = d.id;
 
-        const left = document.createElement("div");
-        left.className = "dossier-main";
-        const title = document.createElement("div");
-        title.className = "dossier-title";
-        const dateStr = d.date
-          ? new Date(d.date).toLocaleDateString("fr-FR")
-          : "";
-        title.textContent =
-  (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
-        const sub = document.createElement("div");
-        sub.className = "dossier-sub";
-        sub.textContent =
-          (d.produit_concerne || "") +
-          (d.reference_piece
-            ? " — Réf : " + d.reference_piece
-            : "");
-        left.appendChild(title);
-        left.appendChild(sub);
+    // 🔹 Colonne numéro de dossier (à gauche)
+    const colNum = document.createElement("div");
+    colNum.className = "dossier-num";
+    colNum.textContent = d.numero_dossier || "-";
 
-        const mid = document.createElement("div");
-        mid.innerHTML =
-          '<span class="badge-magasin">' +
-          (d.magasin || "—") +
-          "</span><br><span class=\"dossier-id\">ID : " +
-          d.id +
-          "</span>";
+    // 🔹 Bloc principal (nom + date + produit + réf)
+    const left = document.createElement("div");
+    left.className = "dossier-main";
 
-        const right = document.createElement("div");
-        right.innerHTML = statutChip(d.statut);
+    const title = document.createElement("div");
+    title.className = "dossier-title";
+    const dateStr = d.date
+      ? new Date(d.date).toLocaleDateString("fr-FR")
+      : "";
+    title.textContent =
+      (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
 
-        row.appendChild(colNum);
-row.appendChild(left);
-row.appendChild(mid);
-row.appendChild(right);
-		const colNum = document.createElement("div");
-		colNum.className = "dossier-num";
-		colNum.textContent = d.numero_dossier || "-";
+    const sub = document.createElement("div");
+    sub.className = "dossier-sub";
+    sub.textContent =
+      (d.produit_concerne || "") +
+      (d.reference_piece ? " — Réf : " + d.reference_piece : "");
 
+    left.appendChild(title);
+    left.appendChild(sub);
 
-        row.addEventListener("click", () => {
-          dossierSelectionne = d;
-          document
-            .querySelectorAll(".dossier-row.active")
-            .forEach(r => r.classList.remove("active"));
-          row.classList.add("active");
-          afficherDetail(d);
-        });
+    // 🔹 Colonne magasin + ID
+    const mid = document.createElement("div");
+    mid.innerHTML =
+      '<span class="badge-magasin">' +
+      (d.magasin || "—") +
+      "</span><br><span class=\"dossier-id\">ID : " +
+      d.id +
+      "</span>";
 
-        frag.appendChild(row);
-      });
-      list.innerHTML = "";
-      list.appendChild(frag);
-    }
+    // 🔹 Colonne statut
+    const right = document.createElement("div");
+    right.innerHTML = statutChip(d.statut);
+
+    // 🔹 Ordre des colonnes dans la ligne
+    row.appendChild(colNum); // n° dossier
+    row.appendChild(left);   // infos client/produit
+    row.appendChild(mid);    // magasin + ID
+    row.appendChild(right);  // statut
+
+    row.addEventListener("click", () => {
+      dossierSelectionne = d;
+      document
+        .querySelectorAll(".dossier-row.active")
+        .forEach(r => r.classList.remove("active"));
+      row.classList.add("active");
+      afficherDetail(d);
+    });
+
+    frag.appendChild(row);
+  });
+
+  list.innerHTML = "";
+  list.appendChild(frag);
+}
 
     function majStatsEtListe() {
       renderListe();
