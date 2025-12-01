@@ -20,7 +20,7 @@ const STATUTS = {
   ENREGISTRE: "enregistré",
   ACCEPTE: "accepté",
   REFUSE: "refusé",
-  ATTENTE_INFO: "en attente d'info",
+  ATTENTE_INFO: "Avoir Commercial",
   ATTENTE_MO: "Attente MO",
 };
 
@@ -104,12 +104,8 @@ const TEMP_UPLOAD_DIR = path.join(__dirname, "temp_uploads");
 try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
 const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
-/* ============================
-   GESTION FTP ROBUSTE
-   ============================ */
-
 async function getFTPClient() {
-  const client = new ftp.Client(10000); // timeout interne basic-ftp (ms)
+  const client = new ftp.Client(10000);
   client.ftp.verbose = false;
 
   try {
@@ -162,6 +158,17 @@ async function readDataFTP() {
   } finally {
     if (client) client.close();
   }
+
+  if (Array.isArray(json)) {
+    json.forEach(d => {
+      if (d && typeof d.statut === "string") {
+        if (d.statut.toLowerCase() === "en attente d'info") {
+          d.statut = STATUTS.ATTENTE_INFO;
+        }
+      }
+    });
+  }
+
   return json;
 }
 
@@ -223,10 +230,6 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   }
 }
 
-/**
- * Supprime plusieurs fichiers FTP en réutilisant UNE seule connexion,
- * et en ignorant les erreurs (y compris FIN inattendu).
- */
 async function deleteFilesFromFTP(urls = []) {
   if (!urls.length) return;
 
@@ -251,7 +254,6 @@ async function deleteFilesFromFTP(urls = []) {
         } else {
           console.warn("[FTP] Erreur lors de la suppression du fichier (ignorée) :", remotePath, msg);
         }
-        // On ignore et on continue
       }
     }
   } finally {
@@ -337,7 +339,6 @@ async function fetchFilesFromFTP(fileObjs) {
         } else {
           console.warn("[FTP] Erreur lors du téléchargement d'une PJ (ignorée) :", remote, msg);
         }
-        // On ignore ce fichier et on continue
       }
     }
   } finally {
@@ -355,10 +356,6 @@ function cleanupFiles(arr) {
     }
   }
 }
-
-/* ============================
-   PDF & UTILITAIRES
-   ============================ */
 
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
@@ -480,10 +477,6 @@ async function creerPDFDemande(d, nomFichier) {
     } catch (e) { reject(e); }
   });
 }
-
-/* ============================
-   ROUTES
-   ============================ */
 
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
@@ -607,14 +600,14 @@ app.post("/api/admin/dossier/:id",
         }
       }
       if (req.files && req.files.documentsAjoutes) {
-  for (const f of req.files.documentsAjoutes) {
-    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-    const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
-    await uploadFileToFTP(f.path, "uploads", remoteName);
-    dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-    try { fs.unlinkSync(f.path); } catch {}
-  }
-}
+        for (const f of req.files.documentsAjoutes) {
+          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
+          await uploadFileToFTP(f.path, "uploads", remoteName);
+          dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+          try { fs.unlinkSync(f.path); } catch {}
+        }
+      }
 
       if (typeof dossier.attente_mo !== "boolean") dossier.attente_mo = false;
       let suppressNotif = false;
@@ -625,20 +618,19 @@ app.post("/api/admin/dossier/:id",
           dossier.statut = STATUTS.ATTENTE_MO;
           suppressNotif = true;
         } else {
-          // retour à un autre statut géré plus bas
         }
       }
 
       if (statutRecu) {
         const s = statutRecu.toLowerCase();
-        if (s === STATUTS.ACCEPTE) {
+        if (s === STATUTS.ACCEPTE.toLowerCase()) {
           dossier.statut = STATUTS.ACCEPTE;
           dossier.attente_mo = false;
-        } else if (s === STATUTS.REFUSE) {
+        } else if (s === STATUTS.REFUSE.toLowerCase()) {
           dossier.statut = STATUTS.REFUSE;
-        } else if (s === STATUTS.ENREGISTRE) {
+        } else if (s === STATUTS.ENREGISTRE.toLowerCase()) {
           dossier.statut = STATUTS.ENREGISTRE;
-        } else if (s === STATUTS.ATTENTE_INFO) {
+        } else if (s === STATUTS.ATTENTE_INFO.toLowerCase()) {
           dossier.statut = STATUTS.ATTENTE_INFO;
         } else if (s === STATUTS.ATTENTE_MO.toLowerCase()) {
           dossier.statut = STATUTS.ATTENTE_MO;
@@ -871,13 +863,6 @@ app.post("/api/admin/login", (req, res) => {
   res.json({ success:false, message:"Mot de passe incorrect" });
 });
 
-/**
- * Suppression d'un dossier :
- * - récupère toutes les URLs de fichiers,
- * - les supprime avec UNE seule connexion FTP (deleteFilesFromFTP),
- * - supprime le dossier du JSON,
- * - ignore les erreurs FTP pour éviter que le serveur tombe.
- */
 app.delete("/api/admin/dossier/:id", async (req, res) => {
   try {
     if (!req.headers["x-superadmin"]) return res.json({ success:false, message:"Non autorisé" });
