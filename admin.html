@@ -2,1217 +2,1394 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>DSG - Admin Garantie (nouveau)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
   <style>
-    :root {
-      --bg: #f3f7fb;
-      --primary: #006e90;
-      --primary-light: #e4f3fb;
-      --primary-dark: #004f68;
-      --border: #d3e1ee;
-      --text-main: #1e3445;
-      --text-muted: #647586;
-      --danger: #d63031;
-      --success: #2ecc71;
-      --orange: #f8a900;
-      --purple: #7d3cff;
-      --card-bg: #ffffff;
-      --shadow-soft: 0 2px 10px rgba(0,0,0,0.06);
-      --radius-lg: 14px;
+    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+    .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
+    .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
+    .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
+    #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
+    #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
+    h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
+    .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
+    .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
+    .filters-row select { padding: 5px 9px; border-radius: 7px; border: 1px solid #b4c8d8; font-size: 1.05em; margin-right: 14px; }
+    .filters-row .search-container { margin-right: auto; display: flex; align-items: center; }
+    .filters-row input[type="text"] { font-size:1.08em; padding: 8px 13px; border-radius: 7px; border: 1px solid #b4c8d8; width: 240px; box-shadow:0 2px 6px #0001;}
+    .tabs { display:flex; gap:11px; justify-content:center; margin-bottom:34px; flex-wrap:wrap;}
+    .tab { padding: 12px 34px; border-radius: 10px 10px 0 0; cursor: pointer; background: #f0f6f9; font-weight: 600; color: #146083; font-size: 1.14em; border: 1.5px solid #cbe7f6; border-bottom: 0; min-width: 182px; text-align: center; transition: background 0.18s, color 0.18s; box-sizing: border-box; word-break: break-word; white-space: normal;}
+    .tab.active { background: #006e90; color: #fff; z-index: 1; }
+    #status-counters { display:flex; gap:35px; justify-content:center; margin-bottom:22px; flex-wrap: wrap;}
+    .counter-card { background: #fff; border-radius: 13px; box-shadow: 0 2px 12px #0001; padding: 32px 40px 26px 40px; display: flex; flex-direction: column; align-items: center; min-width: 220px; margin-bottom: 7px;}
+    .counter-card .counter-label { font-size: 1.13em; color:#234156; margin-bottom:13px; }
+    .counter-card .counter-label.orange { color: #f8a900; }
+    .counter-card .counter-label.green { color: #168b3e; }
+    .counter-card .counter-label.red { color: #bb1810; }
+    .counter-card .counter-label.blue { color: #1978d2; }
+    .counter-card .counter-value { font-size: 2.45em; font-weight: bold; margin-bottom:2px;}
+    .counter-card .counter-value.orange { color: #f8a900; }
+    .counter-card .counter-value.green { color: #168b3e; }
+    .counter-card .counter-value.red { color: #bb1810; }
+    .counter-card .counter-value.blue { color: #1978d2; }
+    .counter-card .counter-label.purple { color: #7d3cff; }
+    .counter-card .counter-value.purple { color: #7d3cff; }
+
+    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
+    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
+    td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
+    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
+    tr:nth-child(even) td { background:#f4fafd;}
+    td.action, th.action { min-width: 215px; max-width: 330px; }
+
+    .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
+    .bouton, .voir-btn, .maj-btn { background:#006e90; color:#fff; border:none; padding:7px 20px; border-radius:6px; cursor:pointer; font-size:1em; box-shadow:0 1px 4px #0002; transition:background 0.15s;}
+    .bouton:hover, .voir-btn:hover, .maj-btn:hover { background:#1780b0;}
+    .pj-img { max-width:70px; max-height:54px; border-radius:3px; box-shadow:0 1px 3px #0002; }
+    #dossier-list p {margin-top:15px;}
+    .mini-form-row td { background: #e8f3fa; border-top: 0 ; border-bottom: 2px solid #b3c9d9 ; padding-top: 19px ; padding-bottom: 19px ;}
+    .mini-form { display: flex; align-items: flex-end; gap:15px; justify-content: center; width: 100%; }
+    .mini-form textarea { min-width:160px; min-height:32px; font-size:0.97em; padding:4px 8px; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form input[type="file"] { margin-top:0; }
+    .mini-form input[name="numero_avoir"] { min-width: 120px; padding: 6px 8px; font-size: 0.98em; border-radius:6px; border:1px solid #c3d2e0;}
+    .mini-form select { font-size:0.97em;}
+    .mini-form .bouton { margin-left:7px;}
+    .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
+    .maj-btn { background: #1780b0; padding: 7px 12px;}
+    .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+    .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+    .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+    .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+    .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+    .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+    .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
+
+    #dossier-list td[id^="pj-"] a {
+      word-break: break-all;
+      white-space: normal;
+      display: inline-block;
+      max-width: 210px;
     }
-    * {
+    .mini-form label { font-size: 0.98em; color: #195e7c; margin-bottom: 0; margin-right:7px; }
+    .pj-documents { font-size: 0.93em; line-height: 1.2; word-break: break-all; white-space: normal; }
+    .pj-documents a { font-size: 0.93em; word-break: break-all;}
+    .mini-form-encadre {
+      overflow-x: auto;
+      border: 2px solid #111;
+      background: #e8f3fa;
+      border-radius: 4px;
+      padding: 12px 16px 10px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 0;
+      margin-right: 18px;
+      min-width: 0;
+      max-width: 900px;
+      width: 100%;
       box-sizing: border-box;
     }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top left, #f5fbff 0, #edf3f9 28%, #e6eef8 60%, #dde8f6 100%);
-      color: var(--text-main);
-      min-height: 100vh;
-    }
-    h1, h2, h3, h4 {
-      margin: 0;
-      font-weight: 600;
-    }
-    a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-
-    /* LOGIN OVERLAY */
-    #login-overlay {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at top, #f0f6fc 0, #dbe7f5 45%, #c7d9ee 100%);
+    .mini-form-flex {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-    .login-panel {
-      background: #ffffff;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.18);
-      border-radius: 18px;
-      padding: 32px 30px 26px;
-      max-width: 420px;
+      flex-direction: row;
+      gap: 28px;
+      align-items: flex-end;
+      justify-content: flex-start;
       width: 100%;
-      border: 1px solid #d6e2f1;
+      flex-wrap: wrap;
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
     }
-    .login-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
+    .mini-form-encadre .mini-form-flex > * {
+      margin-bottom: 0;
+      white-space: nowrap;
     }
-    .login-title .logo-circle {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: #14548C;
-      color: #fff;
-      font-weight: 700;
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    .mini-form-encadre textarea {
+      min-width: 145px;
+      max-width: 320px;
     }
-    .login-subtitle {
-      font-size: 0.98rem;
-      color: var(--text-muted);
-      margin-bottom: 18px;
+    @media (max-width: 900px) {
+      .mini-form-encadre .mini-form-flex {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .mini-form-encadre textarea {
+        min-width: 100px;
+        max-width: 100%;
+      }
     }
-    .login-field {
-      margin-bottom: 14px;
-    }
-    .login-field label {
-      display: block;
-      font-size: 0.9rem;
-      margin-bottom: 6px;
-      color: var(--text-muted);
+    .mini-form-avert {
+      width: 100%;
+      text-align: center;
+      font-size: 0.79em;
       font-weight: 500;
-    }
-    .login-field input[type="password"] {
-      width: 100%;
-      padding: 10px 11px;
-      border-radius: 9px;
-      border: 1px solid #c3d4e6;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.14s, box-shadow 0.14s;
-    }
-    .login-field input[type="password"]:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(0,110,144,0.15);
-    }
-    .login-actions {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .btn {
-      border: none;
-      outline: none;
-      cursor: pointer;
-      border-radius: 999px;
-      padding: 9px 20px;
-      font-size: 0.96rem;
-      font-weight: 600;
+      color: #234156;
+      margin-bottom: 4px;
+      margin-top: 0;
       letter-spacing: 0.01em;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      box-shadow: 0 2px 7px rgba(0,0,0,0.15);
-      transition: background 0.16s, transform 0.12s, box-shadow 0.16s;
-      background: var(--primary);
-      color: #fff;
+      gap: 7px;
+      flex-wrap: wrap;
+      background: none;
     }
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 5px 16px rgba(0,0,0,0.18);
+    .mini-form-avert .emoji {
+      font-size: 1.10em;
+      color: #f2a000;
     }
-    .btn:active {
-      transform: translateY(0);
-      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+    .file-list {
+      margin: 4px 0 0 0;
+      padding: 0;
+      list-style: none;
     }
-    .btn-secondary {
-      background: #f0f4fb;
-      color: #41556a;
-      box-shadow: none;
-      border-radius: 9px;
-      padding-inline: 14px;
-    }
-    .btn-secondary:hover {
-      background: #e4ecf9;
-      box-shadow: 0 2px 7px rgba(0,0,0,0.12);
-    }
-    .login-error {
-      color: #d63031;
-      font-size: 0.89rem;
-      margin-top: 6px;
-      min-height: 18px;
-    }
-
-    /* MAIN LAYOUT */
-    #app-root {
-      display: none;
-      min-height: 100vh;
-      padding: 18px 20px 20px;
-    }
-    .page-shell {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .page-header {
+    .file-list li {
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
+      font-size: 0.97em;
     }
-    .page-header-left h1 {
-      font-size: 1.6rem;
-      letter-spacing: 0.02em;
+    .file-remove {
+      background: #c62828;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 9px;
+      cursor: pointer;
+      font-size: 0.93em;
+    }
+    .file-remove:hover {
+      background: #a11610;
+    }
+
+    @media (max-width:1200px) {
+      #admin-content {
+        padding: 32px 16px 32px 16px;
+      }
+      h2 {
+        font-size: 1.8em;
+      }
+      table {
+        table-layout: auto;
+      }
+      th, td {
+        padding: 8px 4px;
+        font-size: 0.95em;
+      }
+      th {
+        font-size: 0.98em;
+      }
+      td:nth-child(5), th:nth-child(5) {
+        max-width: 90px;
+      }
+      td.action, th.action {
+        min-width: 120px;
+        max-width: 160px;
+      }
+      .bouton, .voir-btn, .maj-btn {
+        padding: 4px 8px;
+        font-size: 0.85em;
+        min-height: 32px;
+        min-width: 80px;
+        white-space: nowrap;
+      }
+      .statut-chip {
+        font-size: 0.9em;
+      }
+      .pj-img {
+        max-width: 55px;
+        max-height: 45px;
+      }
+    }
+
+    @media (max-width:1050px) {
+      #admin-content { padding: 10px 2vw 10px 2vw;}
+      .counter-card { padding:18px 7vw;}
+      h2 { font-size:1.28em;}
+      .top-tools { padding-right: 0.5vw;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
+    @media (max-width:700px) {
+      #admin-content {max-width: 99vw; padding: 2vw 1vw;}
+      .tabs { gap:4px;}
+      .tab { min-width: 86px; font-size:0.94em;}
+      #status-counters {flex-direction:column;align-items:center;gap:13px;}
+      .counter-card { min-width: 160px; padding:13px 1vw;}
+      .mini-form textarea { min-width: 60vw;}
+      .banniere { min-height: 32px; max-height: 80px;}
+      .top-tools { margin-top: 14px; margin-bottom: 18px; flex-direction: column; align-items: flex-end;}
+      .filters-row { flex-direction:column; align-items:stretch; gap:10px;}
+      .filters-row .search-container { margin: 0 0 8px 0; width: 100%; }
+    }
+
+    .mini-form-flex label[style*="flex-direction:column"] b {
+      font-size: 1em;
+      font-weight: 500;
+      color: #195e7c;
       margin-bottom: 2px;
     }
-    .page-header-left .subtitle {
-      font-size: 0.93rem;
-      color: var(--text-muted);
+    .mini-form-encadre { margin-bottom: 0; }
+    .mini-form-flex > div { min-width: 140px; }
+    @media (max-width: 650px) {
+      .mini-form-flex { flex-direction: column ; gap: 15px; }
     }
-    .user-pill {
-      padding: 9px 13px;
-      border-radius: 999px;
-      background: rgba(0,110,144,0.08);
-      border: 1px solid rgba(0,110,144,0.18);
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
+    .mini-form-flex textarea {
+      min-width: 110px;
+      max-width: 230px;
+      min-height: 28px;
+      font-size: 0.96em;
+      padding: 4px 6px;
     }
-    .user-pill span.role {
-      font-weight: 600;
-      color: var(--primary-dark);
-    }
-    .user-pill span.magasin {
-      color: var(--text-muted);
+    .mini-form-flex select,
+    .mini-form-flex input[type="file"] {
+      font-size: 0.96em;
+      padding: 5px 9px;
     }
 
-    /* FILTER BAR & STATS */
-    .top-row {
+    .mini-form-upload-block {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-    }
-    .filters-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      align-items: flex-end;
-    }
-    .filter-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      min-width: 140px;
-    }
-    .filter-group label {
-      font-size: 0.86rem;
-      color: #5f7286;
-      font-weight: 500;
-    }
-    select,
-    input[type="text"] {
-      border-radius: 9px;
-      border: 1px solid #c2d4e5;
-      padding: 7px 9px;
-      font-size: 0.95rem;
-      outline: none;
-      background: #ffffff;
-      min-height: 34px;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    select:focus,
-    input[type="text"]:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(0,110,144,0.13);
-    }
-
-    /* Barre de recherche raccourcie */
-    #search-filter-group {
-      flex: 0 0 260px;  /* largeur max ~260px */
-      max-width: 260px;
-    }
-    #search-input {
-      width: 100%;
-    }
-
-    .stats-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      padding: 13px 16px 11px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(198,216,234,0.9);
-      display: flex;
-      flex-direction: column;
-      min-width: 150px;
-      flex: 1 1 150px;
-    }
-    .stat-card span.label {
-      font-size: 0.84rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-      margin-bottom: 4px;
-    }
-    .stat-card span.value {
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
-    .stat-card span.value.orange { color: var(--orange); }
-    .stat-card span.value.green { color: var(--success); }
-    .stat-card span.value.red { color: var(--danger); }
-    .stat-card span.value.blue { color: #1978d2; }
-    .stat-card span.value.purple { color: var(--purple); }
-
-    /* MAIN SPLIT */
-    .layout-main {
-      display: grid;
-      grid-template-columns: minmax(340px, 520px) minmax(360px, 1fr);
-      gap: 18px;
-      align-items: stretch;
-    }
-    .panel {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid #d6e2f2;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      min-height: 280px;
-    }
-    .panel-header {
-      padding: 11px 14px 9px;
-      border-bottom: 1px solid #dde7f4;
-      background: linear-gradient(90deg, #f5f9fe 0, #edf4fb 48%, #e5f1fb 100%);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .panel-header h2 {
-      font-size: 1.02rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: #234156;
-    }
-    .panel-header span.secondary {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-    .panel-body {
-      padding: 10px 12px 10px;
-      overflow: auto;
-      max-height: calc(100vh - 260px);
-    }
-
-    /* DOSSIER LIST */
-    .dossier-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .dossier-row {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1.6fr) minmax(0, 1.2fr) auto; /* numéro + info + magasin + statut */
-      gap: 10px;
-      align-items: stretch;
-      padding: 8px 9px;
-      border-radius: 11px;
-      border: 1px solid #e0e9f3;
-      background: #fbfdff;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.08s;
-    }
-    .dossier-row:hover {
-      background: #f2f7fe;
-      border-color: #c0d6ef;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      transform: translateY(-1px);
-    }
-    .dossier-row.active {
-      background: #e8f3ff;
-      border-color: #8bb8f1;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-    }
-
-    .dossier-num {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #234156;
-      padding-right: 4px;
-      min-width: 65px;
-      border-right: 1px dashed #d4e1f1;
-    }
-
-    .dossier-row-left {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2px;
-      min-width: 0;
-    }
-    .dossier-main {
-      font-size: 0.97rem;
-      font-weight: 600;
-      color: #123047;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .dossier-main .date {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      font-weight: 500;
-      white-space: nowrap;
-    }
-    .dossier-sub {
-      font-size: 0.85rem;
-      color: #506278;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 10px;
-    }
-    .dossier-sub span.label {
-      font-weight: 600;
-      color: #234156;
-    }
-
-    .dossier-row-mid {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: flex-start;
-      gap: 4px;
-      min-width: 0;
+      margin-bottom: 20px;
+      min-width: 185px;
+      max-width: 240px;
+      width: 100%;
+      box-sizing: border-box;
     }
-    .badge-magasin {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      background: #f0f6ff;
-      color: #245179;
-      border: 1px solid #c9dcf3;
-      max-width: 100%;
-      white-space: nowrap;
+    .mini-form-upload-block label {
+      margin-bottom: 2px;
+    }
+    .mini-form-upload-block input[type="file"] {
+      margin-bottom: 2px;
+      min-height: 32px;
+      box-sizing: border-box;
+    }
+    .mini-form-upload-block .file-list {
+      width: 100%;
+      max-width: 240px;
+      overflow-x: auto;
+      word-break: break-all;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+    .mini-form-upload-block .file-list li {
+      max-width: 220px;
+      overflow-x: auto;
       text-overflow: ellipsis;
+      white-space: nowrap;
+      display: block;
+    }
+    .mini-form-upload-block .file-list li span {
+      display: inline-block;
+      max-width: 150px;
       overflow: hidden;
-    }
-
-    .dossier-row-right {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-    }
-    .statut-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border: 1px solid transparent;
+      text-overflow: ellipsis;
+      vertical-align: middle;
       white-space: nowrap;
     }
-    .statut-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 999px;
+  
+    .switch { position:relative; display:inline-block; width:46px; height:24px; }
+    .switch input { opacity:0; width:0; height:0; }
+    .switch .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:#cfd8dc; transition: .2s; border-radius:34px; box-shadow:inset 0 0 2px #0002;}
+    .switch .slider:before { position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:white; transition:.2s; border-radius:50%; box-shadow:0 1px 2px #0003;}
+    .switch input:checked + .slider { background:#7d3cff; }
+    .switch input:checked + .slider:before { transform: translateX(22px); }
+    .year-tabs { display:flex; gap:8px; align-items:center; }
+    .year-tab {
+      border:1px solid #cbe7f6;
+      background:#f0f6f9;
+      color:#146083;
+      padding: 10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight: 700;
+      font-size: 1.12em;
     }
-    .statut-enregistre {
-      background: rgba(248,169,0,0.09);
-      border-color: rgba(248,169,0,0.6);
-      color: #ad7a05;
-    }
-    .statut-enregistre .statut-dot {
-      background: #f8a900;
-      border: 2px solid #f9d87b;
-    }
-    .statut-accepte {
-      background: rgba(46, 204, 113, 0.09);
-      border-color: rgba(46, 204, 113, 0.7);
-      color: #1e8f4b;
-    }
-    .statut-accepte .statut-dot {
-      background: #2ecc71;
-      border: 2px solid #a3e9bb;
-    }
-    .statut-refuse {
-      background: rgba(214,48,49,0.07);
-      border-color: rgba(214,48,49,0.7);
-      color: #b1302f;
-    }
-    .statut-refuse .statut-dot {
-      background: #d63031;
-      border: 2px solid #f3a4a5;
-    }
-    .statut-attente {
-      background: rgba(25,120,210,0.07);
-      border-color: rgba(25,120,210,0.75);
-      color: #1c5f98;
-    }
-    .statut-attente .statut-dot {
-      background: #1978d2;
-      border: 2px solid #a0c7f1;
-    }
-    .statut-mo {
-      background: rgba(125,60,255,0.09);
-      border-color: rgba(125,60,255,0.7);
-      color: #5b33c6;
-    }
-    .statut-mo .statut-dot {
-      background: #7d3cff;
-      border: 2px solid #c7adff;
-    }
-
-    .empty-msg {
-      padding: 18px 8px;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-
-    /* DETAIL PANEL */
-    .detail-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-bottom: 4px;
-    }
-    .detail-summary {
-      font-size: 0.92rem;
-      color: var(--text-muted);
-      padding: 4px 2px 8px;
-    }
-    .detail-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px 16px;
-    }
-    .detail-block {
-      background: #f7fbff;
-      border-radius: 11px;
-      border: 1px solid #d3e3f4;
-      padding: 10px 11px;
-      font-size: 0.9rem;
-    }
-    .detail-block h3 {
-      font-size: 0.9rem;
-      color: #234156;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-    }
-    .detail-row {
-      display: grid;
-      grid-template-columns: 130px minmax(0, 1fr);
-      gap: 4px 6px;
-      margin-bottom: 3px;
-    }
-    .detail-label {
-      font-size: 0.83rem;
-      color: #6a7c90;
-      font-weight: 500;
-    }
-    .detail-value {
-      font-size: 0.86rem;
-      color: #1c3042;
-      word-break: break-word;
-    }
-    .detail-value pre {
-      margin: 0;
-      white-space: pre-wrap;
-      font-family: inherit;
-    }
-
-    @media (max-width: 1050px) {
-      .layout-main {
-        grid-template-columns: 1fr;
-      }
-      .panel-body {
-        max-height: none;
-      }
-    }
-
-    @media (max-width: 720px) {
-      #app-root {
-        padding-inline: 10px;
-      }
-      .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-      .layout-main {
-        gap: 12px;
-      }
-      .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .detail-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+    .year-tab.active { background:#006e90; color:#fff; }
   </style>
 </head>
 <body>
-<div id="login-overlay">
-  <div class="login-panel">
-    <div class="login-title">
-      <div class="logo-circle">DG</div>
-      <div>
-        <div style="font-size:1.05rem; font-weight:700; color:#123047;">Administration Garanties</div>
-        <div style="font-size:0.87rem; color:#647586;">Accès réservé Durand Services</div>
+  <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
+  <div class="top-tools" id="top-tools" style="display:none;">
+    <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
+  </div>
+  <div id="login">
+    <h2>Connexion admin</h2>
+    <input type="password" id="admin-pass" placeholder="Mot de passe" style="width:85%;padding:13px 9px;font-size:1.08em;margin-bottom:18px;border-radius:5px;border:1px solid #b4c8d8;"><br>
+    <button class="bouton" onclick="adminLogin()">Connexion</button>
+    <div id="login-msg" style="margin-top:12px;color:#d23b33;"></div>
+  </div>
+  <div id="admin-content">
+    <h2>Gestion des dossiers - Garantie Durand Services</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="status-counters"></div>
+    <div class="filters-row" id="filters-row" style="display:none;">
+      <div class="search-container">
+        <input type="text" id="search-client" placeholder="🔎 Recherche ..." autocomplete="off">
       </div>
+
+      <!-- Onglets année (2025 / 2026) -->
+      <div class="year-tabs" id="year-tabs" aria-label="Filtre rapide par année">
+        <button type="button" class="year-tab" data-year="2025">2025</button>
+        <button type="button" class="year-tab" data-year="2026">2026</button>
+      </div>
+      <label>Mois : <select id="mois-filter"><option value="">Tous</option></select></label>
+      <label id="statut-filter-label">Statut :
+        <select id="statut-filter">
+          <option value="">Tous</option>
+          <option value="enregistré">Enregistré</option>
+          <option value="accepté">Accepté</option>
+          <option value="refusé">Refusé</option>
+          <option value="Avoir Commercial">Avoir Commercial</option>
+          <option value="Attente MO">Attente MO</option>
+        </select>
+      </label>
     </div>
-    <p class="login-subtitle">
-      Saisissez votre mot de passe <strong>admin</strong>, <strong>super admin</strong> ou celui de votre <strong>magasin</strong>.
-    </p>
-    <form id="login-form">
-      <div class="login-field">
-        <label for="login-password">Mot de passe</label>
-        <input type="password" id="login-password" autocomplete="current-password" required>
-      </div>
-      <div class="login-actions">
-        <button type="submit" class="btn">
-          Se connecter
-        </button>
-        <button type="button" class="btn-secondary" onclick="document.getElementById('login-password').value='';">
-          Effacer
-        </button>
-      </div>
-      <div id="login-error" class="login-error"></div>
-    </form>
+    <div id="dossier-list"></div>
   </div>
-</div>
 
-<div id="app-root">
-  <div class="page-shell">
-    <header class="page-header">
-      <div class="page-header-left">
-        <h1>Suivi des dossiers Garantie</h1>
-        <div class="subtitle">Consultation des demandes et filtrage par magasin, date, statut et recherche rapide.</div>
-      </div>
-      <div class="page-header-right">
-        <div class="user-pill">
-          <span class="role" id="user-role-label">Connecté</span>
-          <span class="magasin" id="user-magasin-label"></span>
-        </div>
-      </div>
-    </header>
-
-    <section class="top-row">
-      <div class="filters-row">
-        <div class="filter-group" id="magasin-filter-group">
-          <label for="magasin-filter">Magasin</label>
-          <select id="magasin-filter">
-            <option value="">Tous les magasins</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="mois-filter">Mois</label>
-          <select id="mois-filter">
-            <option value="">Tous</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="statut-filter">Statut</label>
-          <select id="statut-filter">
-            <option value="">Tous</option>
-            <option value="enregistré">Enregistré</option>
-            <option value="accepté">Accepté</option>
-            <option value="refusé">Refusé</option>
-            <option value="en attente d'info">En attente d'info</option>
-            <option value="Attente MO">Attente MO</option>
-          </select>
-        </div>
-
-        <div class="filter-group" id="search-filter-group">
-          <label for="search-input">Recherche (client, produit, réf, marque, n°)</label>
-          <input type="text" id="search-input" placeholder="Tapez pour filtrer…">
-        </div>
-      </div>
-
-      <div class="stats-row" id="stats-row">
-        <!-- remplis en JS -->
-      </div>
-    </section>
-
-    <section class="layout-main">
-      <!-- LISTE GAUCHE -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Liste des dossiers</h2>
-          <span class="secondary" id="liste-compteur">0 dossier</span>
-        </div>
-        <div class="panel-body">
-          <div id="dossier-list" class="dossier-list"></div>
-        </div>
-      </div>
-
-      <!-- DETAIL DROITE -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Détail du dossier</h2>
-          <span class="secondary" id="detail-header-label">Sélectionnez un dossier dans la liste</span>
-        </div>
-        <div class="panel-body">
-          <div id="detail-content">
-            <p class="empty-msg">
-              Aucun dossier sélectionné. Cliquez sur une ligne à gauche pour voir les détails.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
-
-<script>
-  let allDossiers = [];
-  let filteredDossiers = [];
-  let selectedDossierId = null;
+  <script>
+  function formatDateFRshort(val) {
+    if (!val) return "";
+    let d = typeof val === "string" ? new Date(val) : val;
+    if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      let [y, m, d2] = val.split("-");
+      return `${d2}/${m}/${y.slice(2)}`;
+    }
+    if (!isNaN(d)) {
+      let day = ("0"+d.getDate()).slice(-2);
+      let month = ("0"+(d.getMonth()+1)).slice(-2);
+      let year = d.getFullYear().toString().slice(-2);
+      return `${day}/${month}/${year}`;
+    }
+    return val;
+  }
 
   let isSuperAdmin = false;
   let isAdmin = false;
-  let magasinAdmin = "";
+  let magasinUnique = null;
+  const MAGASINS = [
+    "Annemasse","Bourgoin-Jallieu","Chasse-sur-Rhone","Chassieu","Gleize",
+    "La Motte-Servolex","Les Echets","Pavi","Rives","Saint-Egreve",
+    "Saint-Jean-Bonnefonds","Seynod","Disponible"
+  ];
+  let allDossiers = [];
+  const CURRENT_YEAR = new Date().getFullYear().toString();
+  let currentMagasin = null;
+  let filtres = { mois: "", annee: CURRENT_YEAR, statut: "" };
+  let rechercheClient = "";
+  let ongletActif = null;
 
-  function formatDateFR(iso) {
-    if (!iso) return "";
-    const d = new Date(iso);
-    if (isNaN(d)) return "";
-    return d.toLocaleDateString("fr-FR");
-  }
+  const fileBuffers = {};
 
   function statutChip(statut) {
-    if (!statut) statut = "";
-    const s = statut.toLowerCase();
-    let cls = "";
-    let label = statut;
-
-    if (s === "enregistré") {
-      cls = "statut-enregistre";
-    } else if (s === "accepté") {
-      cls = "statut-accepte";
-    } else if (s === "refusé") {
-      cls = "statut-refuse";
-    } else if (s === "en attente d'info") {
-      cls = "statut-attente";
-    } else if (s === "attente mo") {
-      cls = "statut-mo";
-    }
-
-    return `
-      <span class="statut-chip ${cls}">
-        <span class="statut-dot"></span>
-        <span>${label}</span>
-      </span>
-    `;
+    let s = (statut||"").toLowerCase();
+    if (s==="enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
+    if (s==="accepté") return `<span class="statut-chip"><span class="statut-dot accepte"></span>Accepté</span>`;
+    if (s==="refusé") return `<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>`;
+    if (s==="avoir commercial") return `<span class="statut-chip"><span class="statut-dot info"></span>Avoir Commercial</span>`;
+    if (s==="attente mo") return `<span class="statut-chip"><span class="statut-dot attente-mo"></span>Attente MO</span>`;
+    return statut||"";
   }
 
-  function remplirMagasins() {
-    const select = document.getElementById("magasin-filter");
-    const mags = [...new Set(allDossiers.map(d => d.magasin).filter(Boolean))].sort();
-    select.innerHTML = '<option value="">Tous les magasins</option>';
-    mags.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = m;
-      select.appendChild(opt);
-    });
+  function toggleSuperAdminUI() {
+    document.getElementById("top-tools").style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
   }
 
-  function remplirMois() {
-    const select = document.getElementById("mois-filter");
-    const moisSet = new Set();
-    allDossiers.forEach(d => {
-      const date = new Date(d.date);
-      if (!isNaN(date)) {
-        const m = String(date.getMonth() + 1).padStart(2, "0");
-        moisSet.add(m);
+  document.getElementById("btn-export-excel").onclick = function(){
+    window.open('/api/admin/export-excel', '_blank');
+  };
+
+  function adminLogin() {
+    let pw = document.getElementById('admin-pass').value;
+    const loginMsg = document.getElementById('login-msg');
+    const url = '/api/admin/login';
+    (async () => {
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({password: pw})
+        });
+        if (!resp.ok) {
+          let msg = 'Erreur de connexion (' + resp.status + ').';
+          try {
+            const j = await resp.json();
+            if (j && j.message) msg = j.message;
+          } catch(e) {}
+          if (loginMsg) loginMsg.textContent = msg;
+          return;
+        }
+        const json = await resp.json();
+        if(json.success){
+          isSuperAdmin = !!json.isSuper;
+          isAdmin = !!json.isAdmin;
+          magasinUnique = json.magasin || null;
+          currentMagasin = magasinUnique || MAGASINS[0];
+          document.getElementById('login').style.display = "none";
+          document.getElementById('admin-content').style.display = "block";
+          toggleSuperAdminUI();
+          chargerDossiers();
+        } else {
+          if (loginMsg) loginMsg.textContent = json.message || "Erreur";
+        }
+      } catch (err) {
+        let extra = '';
+        try {
+          if (window.location.protocol === 'file:') {
+            extra = " Ouvrez cette page depuis votre site (https) afin d'accéder à l'API.";
+          }
+        } catch(e) {}
+        if (loginMsg) loginMsg.textContent = "Connexion impossible (réseau/API). " + extra;
+      }
+    })();
+  }
+  window.adminLogin = adminLogin;
+
+  function chargerDossiers() {
+    fetch('/api/admin/dossiers').then(r=>r.json()).then(data=>{
+      allDossiers = data;
+      afficherOnglets();
+      if (!allDossiers || allDossiers.length === 0) {
+        document.getElementById("dossier-list").innerHTML =
+          `<div style="background:#fff8e1;color:#b10a00;padding:18px 14px;margin:28px 0;border-radius:10px;
+          font-size:1.17em;text-align:center;font-weight:bold;box-shadow:0 2px 10px #0001;">
+          ⚠️ <u>Aucun dossier n'est présent dans la base !</u><br>
+          Il est probable que le serveur vient de redémarrer.<br>
+          <span style="color:#c90;font-weight:normal;">Merci de restaurer une sauvegarde avant d'utiliser l'outil !</span>
+          </div>`;
+        return;
+      }
+      if (ongletActif === "global") {
+        afficherGlobal();
+      } else {
+        afficherDossiers(currentMagasin, true);
       }
     });
-    const moisLib = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-    const moisNom = ["Jan.","Fév.","Mars","Avr.","Mai","Juin","Juil.","Août","Sept.","Oct.","Nov.","Déc."];
-    select.innerHTML = '<option value="">Tous</option>';
-    moisLib.forEach((m,i) => {
-      if (moisSet.has(m)) {
-        const opt = document.createElement("option");
-        opt.value = m;
-        opt.textContent = moisNom[i];
-        select.appendChild(opt);
-      }
-    });
   }
 
-  function majStats(dossiers) {
-    const statsRow = document.getElementById("stats-row");
-    const total = dossiers.length;
-    const nbEnreg = dossiers.filter(d => (d.statut || "").toLowerCase() === "enregistré").length;
-    const nbAcc = dossiers.filter(d => (d.statut || "").toLowerCase() === "accepté").length;
-    const nbRef = dossiers.filter(d => (d.statut || "").toLowerCase() === "refusé").length;
-    const nbInfo = dossiers.filter(d => (d.statut || "").toLowerCase() === "en attente d'info").length;
-    const nbMO = dossiers.filter(d => (d.statut || "").toLowerCase() === "attente mo").length;
-
-    statsRow.innerHTML = `
-      <div class="stat-card">
-        <span class="label">Total dossiers</span>
-        <span class="value blue">${total}</span>
-      </div>
-      <div class="stat-card">
-        <span class="label">Enregistrés</span>
-        <span class="value orange">${nbEnreg}</span>
-      </div>
-      <div class="stat-card">
-        <span class="label">Acceptés</span>
-        <span class="value green">${nbAcc}</span>
-      </div>
-      <div class="stat-card">
-        <span class="label">Refusés</span>
-        <span class="value red">${nbRef}</span>
-      </div>
-      <div class="stat-card">
-        <span class="label">En attente d'info</span>
-        <span class="value blue">${nbInfo}</span>
-      </div>
-      <div class="stat-card">
-        <span class="label">Attente MO</span>
-        <span class="value purple">${nbMO}</span>
-      </div>
-    `;
-  }
-
-  function appliquerFiltres() {
-    const magasinSel = document.getElementById("magasin-filter");
-    const moisSel = document.getElementById("mois-filter");
-    const statutSel = document.getElementById("statut-filter");
-    const searchInput = document.getElementById("search-input");
-
-    const search = (searchInput.value || "").trim().toLowerCase();
-    let magasin = magasinSel.value || "";
-
-    // Si connexion magasin => filtre forcé sur ce magasin + select caché
-    if (!isAdmin && !isSuperAdmin && magasinAdmin) {
-      magasin = magasinAdmin;
+  function afficherOnglets() {
+    let t = '';
+    if (isAdmin || isSuperAdmin) {
+      t += `<div class="tab${ongletActif === "global" ? " active" : ""}" data-global="1" id="onglet-global">Données globales</div>`;
     }
-
-    const mois = moisSel.value || "";
-    const statut = statutSel.value || "";
-
-    let dossiers = [...allDossiers];
-
-    // Filtre magasin
-    if (magasin) {
-      dossiers = dossiers.filter(d => (d.magasin || "") === magasin);
-    }
-
-    // Filtre mois
-    if (mois) {
-      dossiers = dossiers.filter(d => {
-        const dt = new Date(d.date);
-        if (isNaN(dt)) return false;
-        return String(dt.getMonth() + 1).padStart(2, "0") === mois;
+    if (isAdmin || isSuperAdmin) {
+      MAGASINS.forEach((m, i) => {
+        t += `<div class="tab${(ongletActif !== "global" && m === currentMagasin) ? " active" : ""}" data-magasin="${encodeURIComponent(m)}" id="onglet-${i}">${m}</div>`;
       });
+      document.getElementById('tabs').innerHTML = t;
+      document.getElementById('onglet-global').onclick = function() {
+        ongletActif = "global";
+        document.getElementById("statut-filter-label").style.display = "none";
+        afficherGlobal();
+      }
+      MAGASINS.forEach((m, i) => {
+        document.getElementById('onglet-' + i).onclick = function() {
+          ongletActif = null;
+          document.getElementById("statut-filter-label").style.display = "";
+          afficherDossiers(decodeURIComponent(this.getAttribute('data-magasin')), true);
+        }
+      });
+    } else if(magasinUnique){
+      document.getElementById('tabs').innerHTML =
+        `<div class="tab active" data-magasin="${encodeURIComponent(magasinUnique)}" id="onglet-0">${magasinUnique}</div>`;
     }
+  }
 
-    // Filtre statut
-    if (statut) {
-      dossiers = dossiers.filter(d => (d.statut || "") === statut);
+  function afficherCompteurs(dossiers) {
+    const stats = [
+      { label: "En attente de traitement <span title='Enregistré'>⏳</span>", val: "enregistré", color:"orange" },
+      { label: "Acceptés <span>👍</span>", val: "accepté", color:"green" },
+      { label: "Attente MO <span>🛠️</span>", val: "Attente MO", color:"purple" },
+      { label: "Avoir Commercial<span>📝</span>", val: "Avoir Commercial", color:"blue" },
+      { label: "Refusés <span>👎</span>", val: "refusé", color:"red" }
+    ];
+    let html = "";
+    stats.forEach(stat => {
+      const n = dossiers.filter(d => d.statut === stat.val).length;
+      html += `
+        <div class="counter-card">
+          <span class="counter-label ${stat.color}">${stat.label}</span>
+          <span class="counter-value ${stat.color}">${n}</span>
+        </div>
+      `;
+    });
+    document.getElementById("status-counters").innerHTML = html;
+  }
+
+  function renderYearTabs() {
+    const container = document.getElementById("year-tabs");
+    if (!container) return;
+    const buttons = container.querySelectorAll(".year-tab");
+    buttons.forEach(btn => {
+      const y = btn.getAttribute("data-year");
+      if (filtres.annee && filtres.annee === y) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+      btn.onclick = () => {
+        const clickedYear = btn.getAttribute("data-year");
+        if (filtres.annee === clickedYear) {
+          filtres.annee = "";
+        } else {
+          filtres.annee = clickedYear;
+        }
+        if (ongletActif === "global") {
+          afficherGlobal();
+        } else {
+          afficherDossiers(currentMagasin);
+        }
+      };
+    });
+  }
+
+  function afficherFiltres(dossiers, options={}) {
+    let moisSel = document.getElementById("mois-filter");
+    let statutSel = document.getElementById("statut-filter");
+    let moisSet = new Set(), anneeSet = new Set();
+
+    dossiers.forEach(d => {
+      let date = new Date(d.date);
+      if (!isNaN(date)) {
+        let mois = ("0" + (date.getMonth() + 1)).slice(-2);
+        let annee = date.getFullYear().toString();
+        moisSet.add(mois);
+        anneeSet.add(annee);
+      }
+    });
+
+    const moisFr = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+    const moisLib = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
+    moisSel.innerHTML = `<option value="">Tous</option>`;
+    moisFr.forEach((m,i)=>{ if(moisSet.has(m)) moisSel.innerHTML += `<option value="${m}">${moisLib[i]}</option>`; });
+
+    document.getElementById("filters-row").style.display = "flex";
+    document.getElementById("statut-filter-label").style.display = (options.statut === false ? "none" : "");
+
+    moisSel.value = filtres.mois;
+    statutSel.value = filtres.statut;
+
+    renderYearTabs();
+
+    moisSel.onchange = statutSel.onchange = function(){
+      filtres.mois = moisSel.value;
+      filtres.statut = statutSel.value;
+      if(ongletActif === "global"){
+        afficherGlobal();
+      } else {
+        afficherDossiers(currentMagasin);
+      }
+    };
+  }
+
+  document.getElementById('search-client').addEventListener('input', function() {
+    rechercheClient = this.value;
+    if(ongletActif === "global"){
+      afficherGlobal();
+    } else {
+      afficherDossiers(currentMagasin);
     }
+  });
 
-    // Filtre recherche
-    if (search.length > 0) {
+  function afficherDossiers(magasin, forceFiltres=false) {
+    currentMagasin = magasin;
+    ongletActif = null;
+    afficherOnglets();
+    let dossiers = allDossiers.filter(d=>d.magasin===magasin);
+
+    if(rechercheClient && rechercheClient.trim().length > 0){
+      const rc = rechercheClient.trim().toLowerCase();
       dossiers = dossiers.filter(d => {
         const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-        const nom = (d.nom || "").toLowerCase();
-        const produit = (d.produit_concerne || "").toLowerCase();
-        const ref = (d.reference_piece || "").toLowerCase();
-        const marque = (d.marque_produit || "").toLowerCase();
         return (
-          nom.includes(search) ||
-          produit.includes(search) ||
-          ref.includes(search) ||
-          marque.includes(search) ||
-          numero.includes(search)
+          (d.nom||"").toLowerCase().includes(rc) ||
+          (d.produit_concerne||"").toLowerCase().includes(rc) ||
+          (d.reference_piece||"").toLowerCase().includes(rc) ||
+          (d.marque_produit||"").toLowerCase().includes(rc) ||
+          numero.includes(rc)
         );
       });
     }
 
-    filteredDossiers = dossiers;
-    renderListe();
-    majStats(dossiers);
+    afficherCompteurs(dossiers);
+    afficherFiltres(dossiers);
 
-    const compteur = document.getElementById("liste-compteur");
-    if (dossiers.length <= 1) {
-      compteur.textContent = dossiers.length + " dossier";
-    } else {
-      compteur.textContent = dossiers.length + " dossiers";
+    if(filtres.mois) {
+      dossiers = dossiers.filter(d=>{
+        let date = new Date(d.date);
+        return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+      });
     }
-  }
-
-  function renderListe() {
-    const container = document.getElementById("dossier-list");
-    container.innerHTML = "";
-
-    if (!filteredDossiers.length) {
-      container.innerHTML = '<div class="empty-msg">Aucun dossier ne correspond aux filtres choisis.</div>';
-      document.getElementById("detail-content").innerHTML =
-        '<p class="empty-msg">Aucun dossier sélectionné. Cliquez sur une ligne à gauche pour voir les détails.</p>';
-      document.getElementById("detail-header-label").textContent =
-        "Sélectionnez un dossier dans la liste";
-      selectedDossierId = null;
-      return;
+    if(filtres.annee) {
+      dossiers = dossiers.filter(d=>{
+        let date = new Date(d.date);
+        return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+      });
+    }
+    if(filtres.statut) {
+      dossiers = dossiers.filter(d=>d.statut===filtres.statut);
     }
 
-    filteredDossiers
-      .sort((a,b) => {
-        // tri par numéro de dossier décroissant si possible
-        const na = parseInt(a.numero_dossier || "0", 10) || 0;
-        const nb = parseInt(b.numero_dossier || "0", 10) || 0;
-        return nb - na;
-      })
-      .forEach(d => {
-        const row = document.createElement("div");
-        row.className = "dossier-row";
-        row.dataset.id = d.id;
+    let html = `<table>
+      <tr>
+        <th style="width: 90px;">Numéro de dossier</th>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Produit</th>
+        <th>Référence de la pièce</th>
+        <th>Marque du produit</th>
+        <th>Statut</th>
+        <th>Réponse</th>
+        <th>Documents ajoutés</th>
+        <th class="action">Mettre à jour</th>
+        <th class="action">Voir</th>
+        ${isSuperAdmin ? '<th class="action">Fournisseur</th>' : ''}
+        ${isSuperAdmin ? '<th class="action">Supprimer</th>' : ''}
+      </tr>`;
+    dossiers.forEach(d=>{
+      let id = d.id;
 
-        if (selectedDossierId && selectedDossierId === d.id) {
-          row.classList.add("active");
+      let fichiersDocs = [].concat(
+        d.files||[],
+        d.documentsAjoutes||[],
+        d.reponseFiles||[]
+      );
+      fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+        f && f.url && arr.findIndex(x => x.url === f.url) === i
+      );
+
+      html += `<tr>
+        <td>${d.numero_dossier || ''}</td>
+        <td>${new Date(d.date).toLocaleDateString("fr-FR")}</td>
+        <td>${d.nom||''}</td>
+        <td>${d.produit_concerne||''}</td>
+        <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+        <td>${d.marque_produit||''}</td>
+        <td id="statut-${id}">${statutChip(d.statut)}</td>
+        <td id="reponse-${id}">${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ''}</td>
+        <td id="pj-${id}">
+        <div class="pj-documents">
+          ${
+            fichiersDocs.length
+              ? fichiersDocs.map(f=>{
+                  let ext = f.original.split('.').pop().toLowerCase();
+                  if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                    return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+                  } else {
+                    return `<a href="javascript:void(0)" onclick="ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original}</a>`;
+                  }
+                }).join("<br>")
+              : ""
+          }
+        </div>
+        </td>
+        <td class="action"><button class="maj-btn" data-id="${id}">Mettre à jour</button></td>
+<td class="action"><button class="voir-btn" onclick="voirDossier('${d.id}')">Voir</button></td>
+${isSuperAdmin ? `<td class="action"><button class="voir-btn" onclick="ouvrirFournisseur('${d.id}')">Dossier</button></td>` : ''}
+${isSuperAdmin ? `<td class="action"><button class="bouton" style="background:#bb1810" onclick="supprimerDossier('${id}')">Supprimer</button></td>` : ''}
+</tr>
+<tr class="mini-form-row" id="mini-row-${id}" style="display:none;">
+  <td colspan="${isSuperAdmin ? 13 : 11}">
+      <form class="mini-form" id="form-${id}" data-id="${id}" enctype="multipart/form-data" style="display:flex;flex-direction:row;align-items:stretch;gap:36px;width:100%;justify-content:flex-start;">
+        <div class="mini-form-encadre" style="padding:13px 20px 16px 20px;min-width:0;max-width:980px;flex:1;">
+          <div class="mini-form-avert" style="font-size:0.86em;margin-bottom:9px;">
+            <span class="emoji">⚠️</span>
+            TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT
+            <span class="emoji">⚠️</span>
+          </div>
+          <div class="mini-form-flex" style="gap:28px;align-items:flex-end;justify-content:flex-start;">
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:145px;">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;">Statut</label>
+              <select class="statut-select" name="statut">
+                <option value="enregistré"${d.statut==="enregistré"?" selected":""}>Enregistré</option>
+                <option value="accepté"${d.statut==="accepté"?" selected":""}>Accepté</option>
+                <option value="refusé"${d.statut==="refusé"?" selected":""}>Refusé</option>
+                <option value="Avoir Commercial"${d.statut==="Avoir Commercial"?" selected":""}>Avoir Commercial</option>
+                <option value="Attente MO"${d.statut==="Attente MO"?" selected":""}>Attente MO</option>
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;flex:1;min-width:210px;max-width:320px;margin-left:50px;">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;">Réponse (optionnel)</label>
+              <textarea name="reponse" style="width:100%;min-width:110px;max-width:250px;min-height:29px;font-size:0.96em;padding:4px 8px;">${d.reponse||""}</textarea>
+            </div>
+            <div class="mini-form-upload-block">
+              <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Envoie document au client</label>
+              <input type="file" name="reponseFiles" multiple>
+              <ul class="file-list" id="file-list-reponseFiles-${id}"></ul>
+            </div>
+          </div>
+        </div>
+        <div class="mini-form-upload-block">
+          <label style="font-size:1em;font-weight:600;color:#195e7c;">Ajout document dans dossier</label>
+          <input type="file" name="documentsAjoutes" multiple>
+          <ul class="file-list" id="file-list-documentsAjoutes-${id}"></ul>
+          <label style="font-size:1em;font-weight:600;color:#195e7c;margin-left:13px;">Attente MO</label>
+          <label class="switch" style="margin-left:13px;">
+            <input type="checkbox" name="attente_mo" ${ (d.statut==="Attente MO" || d.attente_mo) ? "checked" : "" }>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="numero-avoir-block" style="display:flex; flex-direction:column; align-items:flex-start; gap:3px; margin-bottom:40px;">
+          <label style="font-size:1em; font-weight:600; color:#195e7c; margin-left:16px;">Numéro d'avoir</label>
+          <input type="text" name="numero_avoir" placeholder="Numéro d'avoir" value="${d.numero_avoir||""}" style="min-width:140px; width:160px; font-size:0.96em; padding:5px 8px;margin-left:15px;">
+          <button type="button" class="bouton completer-btn" onclick="completerDossier('${id}')" style="margin-top:9px; margin-left:14px; align-self:flex-start;">Compléter Dossier</button>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:9px;margin-left:90px;">
+          <button type="submit" class="bouton" style="font-size:1em;width:120px;">Mettre à jour</button>
+          <button type="button" class="bouton" style="background:#ccc;color:#234;margin-top:2px;width:120px;" onclick="fermerMiniForm('${id}')">Annuler</button>
+          <span class="admin-msg" style="margin-top:6px;min-height:18px;display:inline-block;width:120px;font-size:0.97em;text-align:center;"></span>
+        </div>
+      </form>
+    </td>
+  </tr>
+  `;
+    });
+    html += `</table>`;
+    document.getElementById('dossier-list').innerHTML = html;
+
+    document.querySelectorAll('.maj-btn').forEach(btn => {
+      btn.onclick = function(){
+        document.querySelectorAll('.mini-form-row').forEach(f=>f.style.display="none");
+        let id = btn.getAttribute('data-id');
+        let row = document.getElementById('mini-row-'+id);
+        if(row) {
+          row.style.display = "table-row";
+          row.scrollIntoView({behavior:"smooth",block:"center"});
+          setTimeout(()=>initMiniFormBuffer(id), 20);
         }
+      };
+    });
 
-        // Colonne numéro de dossier à gauche
-        const numCol = document.createElement("div");
-        numCol.className = "dossier-num";
-        const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-        numCol.textContent = numero || "—";
+    document.querySelectorAll('.mini-form').forEach(form => {
+      const attToggle = form.querySelector("input[name='attente_mo']");
+      const statutSelIn = form.querySelector("select[name='statut']");
+      if (attToggle && statutSelIn) {
+        attToggle.addEventListener('change', ()=>{
+          if (attToggle.checked) {
+            statutSelIn.value = 'Attente MO';
+          } else {
+            if (statutSelIn.value === 'Attente MO') statutSelIn.value = 'enregistré';
+          }
+        });
+        statutSelIn.addEventListener('change', ()=>{
+          if (statutSelIn.value === 'accepté') attToggle.checked = false;
+          if (statutSelIn.value === 'Attente MO') attToggle.checked = true;
+        });
+      }
+      form.onsubmit = async function(e) {
+        e.preventDefault();
+        let id = this.getAttribute('data-id');
+        let fd = new FormData(this);
 
-        // Colonne info principale
-        const left = document.createElement("div");
-        left.className = "dossier-row-left";
-
-        const main = document.createElement("div");
-        main.className = "dossier-main";
-        const clientName = d.nom || "(Client inconnu)";
-        const dateTxt = formatDateFR(d.date) || "";
-        main.innerHTML = `
-          <span>${clientName}</span>
-          <span class="date">${dateTxt}</span>
-        `;
-
-        const sub = document.createElement("div");
-        sub.className = "dossier-sub";
-        const marque = d.marque_produit || "";
-        const produit = d.produit_concerne || "";
-        const ref = d.reference_piece || "";
-
-        sub.innerHTML = `
-          <span><span class="label">Marque du produit :</span> ${marque || "—"}</span>
-          <span><span class="label">Produit :</span> ${produit || "—"}</span>
-          ${ref ? `<span><span class="label">Réf :</span> ${ref}</span>` : ""}
-        `;
-
-        left.appendChild(main);
-        left.appendChild(sub);
-
-        // Colonne milieu (magasin)
-        const mid = document.createElement("div");
-        mid.className = "dossier-row-mid";
-        const magasin = d.magasin || "Magasin inconnu";
-        mid.innerHTML = `
-          <span class="badge-magasin">${magasin}</span>
-        `;
-        // ⚠️ ID caché : pas de span dossier-id, uniquement dataset pour la logique
-
-        // Colonne droite (statut)
-        const right = document.createElement("div");
-        right.className = "dossier-row-right";
-        right.innerHTML = statutChip(d.statut || "");
-
-        row.appendChild(numCol);
-        row.appendChild(left);
-        row.appendChild(mid);
-        row.appendChild(right);
-
-        row.addEventListener("click", () => {
-          selectedDossierId = d.id;
-          document.querySelectorAll(".dossier-row.active").forEach(el => el.classList.remove("active"));
-          row.classList.add("active");
-          renderDetail(d);
+        ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+          if(fileBuffers[id] && fileBuffers[id][field]) {
+            fileBuffers[id][field].forEach(f=>{
+              fd.append(field, f);
+            });
+          }
         });
 
-        container.appendChild(row);
-      });
-
-    // Sélection automatique du premier dossier si rien n'est sélectionné
-    if (!selectedDossierId && filteredDossiers.length) {
-      selectedDossierId = filteredDossiers[0].id;
-      const firstRow = container.querySelector(".dossier-row");
-      if (firstRow) firstRow.classList.add("active");
-      renderDetail(filteredDossiers[0]);
-    }
-  }
-
-  function renderDetail(d) {
-    const detailContainer = document.getElementById("detail-content");
-    const headerLabel = document.getElementById("detail-header-label");
-
-    const numero = (d.numero_dossier || "").toString().padStart(4, "0");
-    const dateTxt = formatDateFR(d.date);
-    headerLabel.textContent = `Dossier n° ${numero} – ${d.nom || "Client"} (${dateTxt || "date inconnue"})`;
-
-    const probleme = (d.probleme_rencontre || "").trim();
-
-    detailContainer.innerHTML = `
-      <div class="detail-wrapper">
-        <div class="detail-summary">
-          <strong>Statut :</strong> ${(d.statut || "") || "non renseigné"}<br>
-          <strong>Magasin :</strong> ${d.magasin || "non renseigné"}
-        </div>
-
-        <div class="detail-grid">
-          <div class="detail-block">
-            <h3>Client & Dossier</h3>
-            <div class="detail-row">
-              <div class="detail-label">Numéro de dossier</div>
-              <div class="detail-value">${numero}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Nom du client</div>
-              <div class="detail-value">${d.nom || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Email</div>
-              <div class="detail-value">${d.email || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Date création</div>
-              <div class="detail-value">${dateTxt || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Magasin</div>
-              <div class="detail-value">${d.magasin || ""}</div>
-            </div>
-          </div>
-
-          <div class="detail-block">
-            <h3>Produit</h3>
-            <div class="detail-row">
-              <div class="detail-label">Marque du produit</div>
-              <div class="detail-value">${d.marque_produit || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Produit concerné</div>
-              <div class="detail-value">${d.produit_concerne || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Référence de la pièce</div>
-              <div class="detail-value">${d.reference_piece || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Quantité posée</div>
-              <div class="detail-value">${d.quantite_posee || ""}</div>
-            </div>
-          </div>
-
-          <div class="detail-block">
-            <h3>Véhicule</h3>
-            <div class="detail-row">
-              <div class="detail-label">Immatriculation</div>
-              <div class="detail-value">${d.immatriculation || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Marque véhicule</div>
-              <div class="detail-value">${d.marque_vehicule || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Modèle véhicule</div>
-              <div class="detail-value">${d.modele_vehicule || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Numéro de série</div>
-              <div class="detail-value">${d.num_serie || ""}</div>
-            </div>
-          </div>
-
-          <div class="detail-block">
-            <h3>Dates & Km</h3>
-            <div class="detail-row">
-              <div class="detail-label">1ère immatriculation</div>
-              <div class="detail-value">${d.premiere_immat || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Date de pose</div>
-              <div class="detail-value">${d.date_pose || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Date du constat</div>
-              <div class="detail-value">${d.date_constat || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Km à la pose</div>
-              <div class="detail-value">${d.km_pose || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Km au constat</div>
-              <div class="detail-value">${d.km_constat || ""}</div>
-            </div>
-          </div>
-
-          <div class="detail-block">
-            <h3>BL & Commentaire</h3>
-            <div class="detail-row">
-              <div class="detail-label">N° BL 1ère Vente</div>
-              <div class="detail-value">${d.bl_pose || ""}</div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">N° BL 2ème Vente</div>
-              <div class="detail-value">${d.bl_constat || ""}</div>
-            </div>
-            <div class="detail-row" style="grid-template-columns: minmax(0,1fr);">
-              <div class="detail-label">Problème rencontré</div>
-            </div>
-            <div class="detail-value">
-              <pre>${probleme || ""}</pre>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  async function chargerDossiers() {
-    try {
-      const res = await fetch("/api/admin/dossiers");
-      const data = await res.json();
-      if (!Array.isArray(data)) {
-        allDossiers = [];
-      } else {
-        allDossiers = data;
-      }
-      remplirMagasins();
-      remplirMois();
-      appliquerFiltres();
-    } catch (e) {
-      console.error("Erreur de chargement des dossiers :", e);
-      document.getElementById("dossier-list").innerHTML =
-        '<div class="empty-msg">Erreur lors du chargement des dossiers.</div>';
-    }
-  }
-
-  function mettreAJourUIConnexion() {
-    const roleLabel = document.getElementById("user-role-label");
-    const magLabel = document.getElementById("user-magasin-label");
-    const magasinGroup = document.getElementById("magasin-filter-group");
-
-    if (isSuperAdmin) {
-      roleLabel.textContent = "Super admin";
-      magLabel.textContent = "Tous les magasins";
-      magasinGroup.style.display = "";
-    } else if (isAdmin) {
-      roleLabel.textContent = "Admin";
-      magLabel.textContent = "Tous les magasins";
-      magasinGroup.style.display = "";
-    } else if (magasinAdmin) {
-      roleLabel.textContent = "Magasin";
-      magLabel.textContent = magasinAdmin;
-      // On cache le choix de magasin pour les connexions magasin
-      magasinGroup.style.display = "none";
-    } else {
-      roleLabel.textContent = "Connecté";
-      magLabel.textContent = "";
-      magasinGroup.style.display = "";
-    }
-  }
-
-  async function handleLoginSubmit(e) {
-    e.preventDefault();
-    const input = document.getElementById("login-password");
-    const errorEl = document.getElementById("login-error");
-    errorEl.textContent = "";
-    const pw = input.value.trim();
-    if (!pw) {
-      errorEl.textContent = "Merci de saisir un mot de passe.";
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: pw })
-      });
-      const data = await res.json();
-      if (!data.success) {
-        errorEl.textContent = data.message || "Mot de passe incorrect.";
-        return;
-      }
-
-      isSuperAdmin = !!data.isSuper;
-      isAdmin = !!data.isAdmin;
-      magasinAdmin = data.magasin || "";
-
-      // mise à jour UI
-      mettreAJourUIConnexion();
-
-      // affichage interface
-      document.getElementById("login-overlay").style.display = "none";
-      document.getElementById("app-root").style.display = "block";
-
-      // charger les dossiers
-      await chargerDossiers();
-    } catch (err) {
-      console.error(err);
-      errorEl.textContent = "Erreur de connexion au serveur.";
-    }
-  }
-
-  function initEvents() {
-    document.getElementById("login-form").addEventListener("submit", handleLoginSubmit);
-
-    document.getElementById("magasin-filter").addEventListener("change", appliquerFiltres);
-    document.getElementById("mois-filter").addEventListener("change", appliquerFiltres);
-    document.getElementById("statut-filter").addEventListener("change", appliquerFiltres);
-    document.getElementById("search-input").addEventListener("input", () => {
-      appliquerFiltres();
+        this.querySelector('.admin-msg').textContent = "Envoi...";
+        let resp = await fetch(`/api/admin/dossier/${id}`, { method:"POST", body:fd });
+        let json = await resp.json();
+        if (json.success) {
+          this.querySelector('.admin-msg').textContent = "Mis à jour ✔";
+          setTimeout(()=>{
+            document.getElementById('mini-row-'+id).style.display="none";
+            chargerDossiers();
+          }, 1100);
+        } else {
+          this.querySelector('.admin-msg').textContent = "Erreur";
+        }
+      };
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    initEvents();
-  });
-</script>
+  function initMiniFormBuffer(id) {
+    if(!fileBuffers[id]) fileBuffers[id] = {};
+    ["reponseFiles", "documentsAjoutes"].forEach(field=>{
+      if(!fileBuffers[id][field]) fileBuffers[id][field] = [];
+      let input = document.querySelector(`#form-${id} input[name='${field}']`);
+      let ul = document.getElementById(`file-list-${field}-${id}`);
+      if(!input || !ul) return;
+      input.value = "";
+      ul.innerHTML = "";
+
+      input.addEventListener("change", function() {
+        Array.from(input.files).forEach(f=>fileBuffers[id][field].push(f));
+        renderFileListBuffer(id, field);
+        input.value = "";
+      });
+
+      renderFileListBuffer(id, field);
+    });
+  }
+
+  function renderFileListBuffer(id, field) {
+    let ul = document.getElementById(`file-list-${field}-${id}`);
+    if(!ul) return;
+    let arr = fileBuffers[id] && fileBuffers[id][field] ? fileBuffers[id][field] : [];
+    ul.innerHTML = "";
+    arr.forEach((file, i)=>{
+      let li = document.createElement("li");
+      li.innerHTML = `<span>${file.name}</span>
+        <button type="button" class="file-remove" title="Retirer" onclick="removeFileBuffer('${id}','${field}',${i})">✕</button>`;
+      ul.appendChild(li);
+    });
+  }
+
+  window.removeFileBuffer = function(id, field, idx) {
+    if(fileBuffers[id] && fileBuffers[id][field]) {
+      fileBuffers[id][field].splice(idx,1);
+      renderFileListBuffer(id, field);
+    }
+  }
+
+  function afficherGlobal() {
+    ongletActif = "global";
+    afficherOnglets();
+    let dossiers = allDossiers.slice();
+
+    if(filtres.mois) {
+      dossiers = dossiers.filter(d=>{
+        let date = new Date(d.date);
+        return !isNaN(date) && ("0"+(date.getMonth()+1)).slice(-2) === filtres.mois;
+      });
+    }
+    if(filtres.annee) {
+      dossiers = dossiers.filter(d=>{
+        let date = new Date(d.date);
+        return !isNaN(date) && date.getFullYear().toString() === filtres.annee;
+      });
+    }
+    if(rechercheClient && rechercheClient.trim().length > 0){
+      const rc = rechercheClient.trim().toLowerCase();
+      dossiers = dossiers.filter(d => (
+        (d.marque_produit||"").toLowerCase().includes(rc) ||
+        (d.produit_concerne||"").toLowerCase().includes(rc) ||
+        (d.reference_piece||"").toLowerCase().includes(rc) ||
+        (d.probleme_rencontre||"").toLowerCase().includes(rc)
+      ));
+    }
+
+    afficherFiltres(allDossiers, {statut: false});
+    document.getElementById("status-counters").innerHTML = "";
+
+    let html = `<table>
+      <tr>
+        <th>Date</th>
+        <th>Magasin</th>
+        <th>Marque du produit</th>
+        <th>Produit concerné</th>
+        <th>Référence de la pièce</th>
+        <th>Problème rencontré</th>
+      </tr>`;
+    dossiers.forEach(d=>{
+      html += `<tr>
+        <td>${d.date ? new Date(d.date).toLocaleDateString("fr-FR") : ""}</td>
+        <td>${d.magasin||''}</td>
+        <td>${d.marque_produit||''}</td>
+        <td>${d.produit_concerne||''}</td>
+        <td>${(d.reference_piece||'').replace(/\s*\/\s*/g, ' /<wbr>')}</td>
+        <td>${d.probleme_rencontre||''}</td>
+      </tr>`;
+    });
+    html += `</table>`;
+    document.getElementById('dossier-list').innerHTML = html;
+  }
+
+  function fermerMiniForm(id){
+    document.getElementById('mini-row-'+id).style.display = "none";
+  }
+
+  function supprimerDossier(id) {
+    if (!confirm("Voulez-vous vraiment supprimer ce dossier ? Cette action est définitive.")) return;
+    fetch(`/api/admin/dossier/${id}`, {
+      method: "DELETE",
+      headers: {'x-superadmin': '1'}
+    }).then(r=>r.json()).then(json=>{
+      if(json.success){
+        chargerDossiers();
+      } else {
+        alert(json.message || "Erreur lors de la suppression");
+      }
+    });
+  }
+
+  function voirDossier(id) {
+    let d = allDossiers.find(x=>x.id===id);
+    if (!d) return alert("Dossier introuvable !");
+    let logoUrl = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
+    let dateCreation = d.date ? new Date(d.date).toLocaleDateString("fr-FR") : "";
+    let clientNom = (d.nom||"Client").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+    let dateStr = "";
+    if (d.date) {
+      let dt = new Date(d.date);
+      if (!isNaN(dt)) {
+        dateStr = dt.toISOString().slice(0,10);
+      }
+    }
+    let nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}`;
+    let fichiersDocs = [].concat(
+      d.files||[],
+      d.documentsAjoutes||[],
+      d.reponseFiles||[]
+    ).filter(f => f && f.url);
+    fichiersDocs = fichiersDocs.filter((f, i, arr) =>
+      arr.findIndex(x => x.url === f.url) === i
+    );
+
+    let detailHtml = `
+      <html><head>
+      <meta charset="UTF-8">
+      <title>${nomFichier}</title>
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
+        .fiche-header { display:flex; align-items:center; gap:18px; margin-bottom:18px; }
+        .fiche-header img { height:62px; border-radius:11px; box-shadow:0 2px 12px #0001; background:#fff;}
+        .fiche-header .magasin-title { font-size:1.22em; font-weight:600; color:#17537a; }
+        .fiche-date { margin-left:auto; font-size:1.08em; color:#444; font-weight:bold;}
+        .fiche-table { max-width:760px; margin:30px auto; background:#fff; border-radius:10px; border:1px solid #e5e7eb; padding:18px 24px 14px 24px; }
+        .fiche-table table { width:100%; border-collapse:collapse; }
+        .fiche-table th, .fiche-table td { text-align:left; padding:8px 10px; border:none; }
+        .fiche-table th { color:#194e72; font-size:1.06em; text-align:left; width:220px; vertical-align:top;}
+        .fiche-table tr { border-bottom:1px solid #f0f0f0;}
+        .fiche-title { font-weight:bold; color:#006e90; padding-top:24px; font-size:1.08em;}
+        .fiche-actions { text-align:right; margin-bottom:14px;}
+        .print-btn { background:#006e90; color:#fff; border:none; padding:9px 22px; border-radius:7px; font-size:1.07em; font-weight:600; cursor:pointer; margin-left:7px;}
+        .print-btn:hover { background:#1780b0; }
+        @media print {
+          .print-btn { display:none !important; }
+          body { background: #fff; }
+          .fiche-table { box-shadow: none; border:1px solid #888;}
+          .fiche-header { padding-top:10px; }
+          .hide-print { display:none !important; }
+          .fiche-date { display:block !important; position:absolute; top:24px; right:40px; font-size:1.09em;}
+        }
+        .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
+        .statut-dot { display:inline-block; width:15px; height:15px; border-radius:50%; margin-right:2px; }
+        .statut-dot.enregistre { background:#f8a900; border: 2px solid #f7ce65; }
+        .statut-dot.accepte { background:#16c11c; border: 2px solid #a6ebba; }
+        .statut-dot.refuse { background:#bb1810; border: 2px solid #f49e9e; }
+        .statut-dot.info { background:#1978d2; border: 2px solid #93c7fa; }
+        .statut-dot.attente-mo { background:#7d3cff; border: 2px solid #cbb6ff; }
+        .pj-img { max-width:180px; max-height:120px; display:block; margin-bottom:6px; border-radius:5px; box-shadow:0 2px 6px #0002; }
+      </style>
+      </head><body>
+      <div class="fiche-header">
+        <img src="${logoUrl}" alt="Logo DSG">
+        <span class="magasin-title">${d.magasin||""}</span>
+        <span class="fiche-date" style="margin-left:auto;">Créé le : ${dateCreation}<br>Numéro de dossier : ${d.numero_dossier || ''}</span>
+      </div>
+      <div class="fiche-table">
+        <div class="fiche-actions">
+          <button class="print-btn" onclick="renameAndPrint('${nomFichier}')">🖨️ Imprimer</button>
+        </div>
+        <table>
+          <tr><th>Nom du client</th><td>${d.nom||""}</td></tr>
+          <tr><th>Email</th><td>${d.email||""}</td></tr>
+          <tr><th>Magasin</th><td>${d.magasin||""}</td></tr>
+          <tr class="hide-print"><td colspan="2" class="fiche-title">Produit</td></tr>
+          <tr><th>Marque du produit</th><td>${d.marque_produit||""}</td></tr>
+          <tr><th>Produit concerné</th><td>${d.produit_concerne||""}</td></tr>
+          <tr><th>Référence de la pièce</th><td>${d.reference_piece||""}</td></tr>
+          <tr><th>Quantité posée</th><td>${d.quantite_posee||""}</td></tr>
+          <tr class="hide-print"><td colspan="2" class="fiche-title">Véhicule</td></tr>
+          <tr><th>Immatriculation</th><td>${d.immatriculation||""}</td></tr>
+          <tr><th>Marque</th><td>${d.marque_vehicule||""}</td></tr>
+          <tr><th>Modèle</th><td>${d.modele_vehicule||""}</td></tr>
+          <tr><th>Numéro de série</th><td>${d.num_serie||""}</td></tr>
+          <tr><th>1ère immatriculation</th><td>${formatDateFRshort(d.premiere_immat)}</td></tr>
+          <tr class="hide-print"><td colspan="2" class="fiche-title">Problème</td></tr>
+          <tr><th>Date de pose</th><td>${formatDateFRshort(d.date_pose)}</td></tr>
+          <tr><th>Date du constat</th><td>${formatDateFRshort(d.date_constat)}</td></tr>
+          <tr><th>Kilométrage à la pose</th><td>${d.km_pose||""}</td></tr>
+          <tr><th>Kilométrage au constat</th><td>${d.km_constat||""}</td></tr>
+          <tr><th>N° BL 1ère Vente</th><td>${d.bl_pose||""}</td></tr>
+          <tr><th>N° BL 2ème Vente</th><td>${d.bl_constat||""}</td></tr>
+          <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
+          <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
+          <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
+          <tr><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
+          <tr class="hide-print"><th>Documents ajoutés</th>
+            <td>${
+              fichiersDocs.length ? fichiersDocs.map(f=>{
+                let ext = (f.original||"").split('.').pop().toLowerCase();
+                if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+                  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')"><img src="/download/${f.url}" class="pj-img"></a>`;
+                } else {
+                  return `<a href="javascript:void(0)" onclick="window.opener.ouvrirDocumentDansPopup('/download/${f.url}','${f.original}')">${f.original||""}</a>`;
+                }
+              }).join("<br>") : ""
+            }</td>
+          </tr>
+        </table>
+      </div>
+      <script>
+        function renameAndPrint(filename) {
+          var oldTitle = document.title;
+          document.title = filename;
+          window.print();
+          setTimeout(function() {
+            document.title = oldTitle;
+          }, 1500);
+        }
+        window.onbeforeprint = function() {
+          document.title = "${nomFichier}";
+        };
+        window.onafterprint = function() {
+          setTimeout(function(){
+            document.title = "${nomFichier}";
+          }, 500);
+        };
+      <\/script>
+      </body></html>
+    `;
+    let win = window.open("", "_blank", "width=820,height=900");
+    win.document.write(detailHtml);
+    win.document.close();
+  }
+
+  function completerDossier(id) {
+    let d = allDossiers.find(x => x.id === id);
+    if (!d) {
+      alert("Dossier introuvable !");
+      return;
+    }
+    const options = MAGASINS.map(m => `<option value="${m}"${d.magasin === m ? ' selected' : ''}>${m}</option>`).join('');
+    let editHtml = `
+      <html><head>
+      <meta charset="UTF-8">
+      <title>Compléter Dossier</title>
+      <style>
+        body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
+        h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
+        form { display:flex; flex-direction:column; gap:14px; }
+        label { font-weight:600; color:#195e7c; margin-bottom:3px; }
+        input, select, textarea { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; width:100%; box-sizing:border-box; }
+        textarea { resize:vertical; }
+        .form-row { display:flex; gap:20px; flex-wrap:wrap; }
+        .field { display:flex; flex-direction:column; flex:1; min-width:180px; }
+        .buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }
+        button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
+        button.validate { background:#006e90; color:#fff; }
+        button.cancel { background:#ccc; color:#333; }
+      </style>
+      </head><body>
+      <h2>Compléter Dossier</h2>
+      <form id="completerForm">
+        <div class="form-row">
+          <div class="field">
+            <label>Nom du client</label>
+            <input type="text" name="nom" value="${d.nom || ''}">
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" value="${d.email || ''}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Magasin</label>
+            <select name="magasin">${options}</select>
+          </div>
+          <div class="field">
+            <label>Marque du produit</label>
+            <input type="text" name="marque_produit" value="${d.marque_produit || ''}">
+          </div>
+          <div class="field">
+            <label>Produit concerné</label>
+            <input type="text" name="produit_concerne" value="${d.produit_concerne || ''}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Référence de la pièce</label>
+            <input type="text" name="reference_piece" value="${d.reference_piece || ''}">
+          </div>
+          <div class="field">
+            <label>Quantité posée</label>
+            <input type="number" name="quantite_posee" value="${d.quantite_posee || ''}">
+          </div>
+          <div class="field">
+            <label>Immatriculation</label>
+            <input type="text" name="immatriculation" value="${d.immatriculation || ''}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Marque véhicule</label>
+            <input type="text" name="marque_vehicule" value="${d.marque_vehicule || ''}">
+          </div>
+          <div class="field">
+            <label>Modèle véhicule</label>
+            <input type="text" name="modele_vehicule" value="${d.modele_vehicule || ''}">
+          </div>
+          <div class="field">
+            <label>Numéro de série</label>
+            <input type="text" name="num_serie" value="${d.num_serie || ''}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>1ère immatriculation</label>
+            <input type="date" name="premiere_immat" value="${d.premiere_immat || ''}">
+          </div>
+          <div class="field">
+            <label>Date de pose</label>
+            <input type="date" name="date_pose" value="${d.date_pose || ''}">
+          </div>
+          <div class="field">
+            <label>Date du constat</label>
+            <input type="date" name="date_constat" value="${d.date_constat || ''}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Kilométrage à la pose</label>
+            <input type="number" name="km_pose" value="${d.km_pose || ''}">
+          </div>
+          <div class="field">
+            <label>Kilométrage au constat</label>
+            <input type="number" name="km_constat" value="${d.km_constat || ''}">
+          </div>
+          <div class="field">
+            <label>N° BL 1ère Vente</label>
+            <input type="text" name="bl_pose" value="${d.bl_pose || ''}">
+          </div>
+          <div class="field">
+            <label>N° BL 2ème Vente</label>
+            <input type="text" name="bl_constat" value="${d.bl_constat || ''}">
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Problème rencontré</label>
+          <textarea name="probleme_rencontre" rows="4">${d.probleme_rencontre || ''}</textarea>
+        </div>
+        <div class="buttons">
+          <button type="button" class="cancel">Annuler</button>
+          <button type="button" class="validate">Valider</button>
+        </div>
+      </form>
+      <script>
+        const cancelBtn = document.querySelector('.cancel');
+        cancelBtn.addEventListener('click', () => { window.close(); });
+        const validateBtn = document.querySelector('.validate');
+        validateBtn.addEventListener('click', () => {
+          const form = document.getElementById('completerForm');
+          const data = {};
+          new FormData(form).forEach((value, key) => { data[key] = value; });
+          fetch('/api/admin/completer-dossier/${id}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          }).then(resp => resp.json()).then(json => {
+            if (json.success) {
+              if (window.opener && window.opener.chargerDossiers) {
+                window.opener.chargerDossiers();
+              }
+              window.close();
+            } else {
+              alert('Erreur lors de la mise à jour');
+            }
+          });
+        });
+      <\/script>
+      </body></html>
+    `;
+    const win = window.open('', '_blank', 'width=900,height=800');
+    win.document.open();
+    win.document.write(editHtml);
+    win.document.close();
+  }
+
+  function ouvrirFournisseur(id) {
+    const d = allDossiers.find(x => x.id === id);
+    if (!d) {
+      alert("Dossier introuvable !");
+      return;
+    }
+
+    const win = window.open('', '_blank', 'width=700,height=600');
+    const titre = 'Envoyer dossier au fournisseur';
+
+    const html = `
+      <html><head>
+        <meta charset="UTF-8">
+        <title>${titre}</title>
+        <style>
+          body { font-family:'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; padding:20px; }
+          h2 { color:#006e90; font-size:1.6em; margin-bottom:20px; }
+          form { display:flex; flex-direction:column; gap:14px; }
+          label { font-weight:600; color:#195e7c; margin-bottom:3px; }
+          select, textarea, input[type="file"] { padding:8px; font-size:1em; border:1px solid #b4c8d8; border-radius:4px; }
+          .info { font-size:1em; color:#234156; margin-bottom:8px; }
+          .buttons { display:flex; gap:20px; margin-top:20px; justify-content:center; }
+          .buttons button { padding:8px 16px; font-size:1em; border:none; border-radius:6px; cursor:pointer; }
+          .buttons .send { background:#006e90; color:#fff; }
+          .buttons .cancel { background:#ccc; color:#333; }
+          .status-msg { text-align:center; font-size:0.98em; margin-top:10px; color:#195e7c; min-height:20px; }
+          .send-form { background:#1780b0;color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:0.96em;cursor:pointer; }
+        </style>
+        </head><body>
+        <h2>${titre}</h2>
+        <div class="info">
+          <strong>Produit concerné :</strong> ${d.produit_concerne || ''}<br>
+          <strong>Référence de la pièce :</strong> ${d.reference_piece || ''}<br>
+          <strong>Numéro de dossier :</strong> ${d.numero_dossier || ''}
+        </div>
+        <form id="fournisseurForm" enctype="multipart/form-data">
+          <label for="fournisseur-select">Fournisseur</label>
+          <select id="fournisseur-select" name="fournisseur">
+            <option value="AUTOGAMMA">AUTOGAMMA</option>
+            <option value="BOSCH FREINAGE">BOSCH FREINAGE</option>
+            <option value="CORTECO">CORTECO</option>
+            <option value="DELPHI">DELPHI</option>
+            <option value="EFI">EFI</option>
+            <option value="FEBI">FEBI</option>
+            <option value="KYB">KYB</option>
+            <option value="MAGNETI">MAGNETI</option>
+            <option value="METELLI">METELLI</option>
+            <option value="MS MOTORS">MS MOTORS</option>
+            <option value="NGK">NGK</option>
+            <option value="NRF">NRF</option>
+            <option value="QH">QH</option>
+            <option value="RIAL">RIAL</option>
+            <option value="SCHAEFFLER">SCHAEFFLER</option>
+            <option value="SEIM">SEIM</option>
+            <option value="VERNET">VERNET-CALORSTAT</option>
+          </select>
+
+          <label for="message-input">Message (optionnel)</label>
+          <textarea id="message-input" name="message" rows="3" placeholder="Votre message au fournisseur" style="resize:vertical;"></textarea>
+
+          <label for="file-input">Ajouter des fichiers (optionnel)</label>
+          <input type="file" id="file-input" name="fichiers" multiple>
+
+          <div style="margin-top:8px; display:flex; align-items:center; gap:12px;">
+            <button type="button" class="send-form">Formulaire</button>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="cancel">Annuler</button>
+            <button type="button" class="send">Envoyer</button>
+          </div>
+          <div class="status-msg" id="status-msg"></div>
+        </form>
+      </body></html>
+    `;
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+
+    const cancelBtn   = win.document.querySelector('.cancel');
+    const sendBtn     = win.document.querySelector('.send');
+    const formBtn     = win.document.querySelector('.send-form');
+    const statusEl    = win.document.getElementById('status-msg');
+    const supplierSelect = win.document.getElementById('fournisseur-select');
+
+    const HIDE_FORM_FOR = new Set(["BOSCH FREINAGE", "CORTECO", "KYB", "VERNET"]);
+    function updateFormButtonVisibility() {
+      if (!formBtn) return;
+      const supVal = supplierSelect ? supplierSelect.value : "";
+      formBtn.style.display = HIDE_FORM_FOR.has(supVal) ? "none" : "inline-block";
+    }
+    if (supplierSelect) {
+      updateFormButtonVisibility();
+      supplierSelect.addEventListener("change", updateFormButtonVisibility);
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => win.close());
+    }
+
+    if (formBtn) {
+      formBtn.addEventListener('click', () => {
+        const supVal = supplierSelect ? supplierSelect.value : '';
+
+        const resourceMap = {
+          "FEBI":       { type: "pdf", file: "FICHE_GARANTIE_FEBI.pdf" },
+          "METELLI":    { type: "pdf", file: "formulaire_garantie_metelli.pdf" },
+          "EFI":        { type: "pdf", file: "Formulaire_EFI.pdf" },
+          "MAGNETI":    { type: "pdf", file: "FORMULAIRE_MAGNETI.pdf" },
+          "QH":         { type: "pdf", file: "FORMULAIRE_QH.pdf" },
+          "RIAL":       { type: "pdf", file: "DEMANDE_RIAL.pdf" },
+          "AUTOGAMMA":  { type: "pdf", file: "Formulaire_ AUTOGAMMA.pdf" },
+          "DELPHI":     { type: "pdf", file: "Formulaire_delphi.pdf" },
+          "MS MOTORS":  { type: "pdf", file: "FORMULAIRE_ms.pdf" },
+          "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
+          "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
+          "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
+          "SCHAEFFLER": null,
+          "BOSCH FREINAGE": null,
+          "CORTECO":    null,
+          "KYB":        null,
+          "VERNET":     null,
+          "QH1":        null
+        };
+
+        const conf = resourceMap[supVal] || null;
+        if (!conf || !conf.file) {
+          alert("Aucun formulaire spécifique pour ce fournisseur.");
+          return;
+        }
+        const url = "/templates/" + encodeURIComponent(conf.file);
+        window.open(url, "_blank");
+      });
+    }
+
+    if (sendBtn) {
+      sendBtn.addEventListener('click', () => {
+        if (!supplierSelect || !supplierSelect.value) {
+          alert("Merci de sélectionner un fournisseur.");
+          return;
+        }
+        const formEl = win.document.getElementById('fournisseurForm');
+        const formData = new FormData(formEl);
+        statusEl.textContent = "Envoi en cours...";
+        fetch(`/api/admin/envoyer-fournisseur/${id}`, {
+          method: 'POST',
+          body: formData
+        }).then(resp => resp.json()).then(json => {
+          if (json.success) {
+            statusEl.textContent = "Mail envoyé avec succès ✔";
+            setTimeout(() => { win.close(); }, 1800);
+          } else {
+            statusEl.textContent = "Erreur lors de l'envoi du mail";
+          }
+        }).catch(() => {
+          statusEl.textContent = "Erreur réseau lors de l'envoi";
+        });
+      });
+    }
+  }
+
+  window.ouvrirFournisseur = ouvrirFournisseur;
+
+  function ouvrirDocumentDansPopup(url, filename) {
+    const win = window.open('', '_blank', 'width=900,height=700');
+    const ext = (filename || '').split('.').pop().toLowerCase();
+    let content = '';
+    if(["jpg","jpeg","png","gif","webp","bmp"].includes(ext)){
+      content = `<img src="${url}" alt="${filename}" style="max-width:100%;max-height:100%;display:block;margin:0 auto;">`;
+    } else {
+      content = `<iframe src="${url}" style="width:100%;height:100%;border:none;"></iframe>`;
+    }
+    win.document.write(`
+      <html><head><meta charset="UTF-8"><title>${filename}</title></head>
+      <body style="margin:0;padding:0;overflow:hidden;background:#000;">
+      ${content}
+      </body></html>
+    `);
+    win.document.close();
+  }
+  window.ouvrirDocumentDansPopup = ouvrirDocumentDansPopup;
+  </script>
 </body>
 </html>
