@@ -20,7 +20,7 @@ const STATUTS = {
   ENREGISTRE: "enregistré",
   ACCEPTE: "accepté",
   REFUSE: "refusé",
-  ATTENTE_INFO: "en attente d'info",
+  ATTENTE_INFO: "Avoir Commercial",
   ATTENTE_MO: "Attente MO",
 };
 
@@ -105,165 +105,61 @@ try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
 const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
 async function getFTPClient() {
-  const client = new ftp.Client(10000);
-  client.ftp.verbose = false;
-
-  try {
-    await client.access({
-      host: FTP_HOST,
-      port: FTP_PORT,
-      user: FTP_USER,
-      password: FTP_PASS,
-      secure: true,
-      secureOptions: { rejectUnauthorized: false }
-    });
-    return client;
-  } catch (err) {
-    client.close();
-    console.error("[FTP] Erreur de connexion :", err && err.message ? err.message : err);
-    throw new Error("Erreur de connexion au serveur FTP");
-  }
+  const client = new ftp.Client();
+  await client.access({
+    host: FTP_HOST,
+    port: FTP_PORT,
+    user: FTP_USER,
+    password: FTP_PASS,
+    secure: true,
+    secureOptions: { rejectUnauthorized: false }
+  });
+  return client;
 }
 
 async function readDataFTP() {
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour lire demandes.json :", err.message || err);
-    return [];
-  }
-
+  const client = await getFTPClient();
   let json = [];
   try {
     const tmp = path.join(__dirname, "temp_demandes.json");
     await client.downloadTo(tmp, JSON_FILE_FTP);
-
-    try {
-      json = JSON.parse(fs.readFileSync(tmp, "utf8"));
-    } catch (parseErr) {
-      console.error("[FTP] Erreur de parsing de demandes.json :", parseErr.message || parseErr);
-      json = [];
-    }
-
+    json = JSON.parse(fs.readFileSync(tmp, "utf8"));
     try { fs.unlinkSync(tmp); } catch {}
-  } catch (err) {
-    const msg = err && err.message ? err.message : String(err);
-    if (msg.includes("Server sent FIN packet unexpectedly")) {
-      console.warn("[FTP] FIN inattendu en lecture de demandes.json, retour d'une liste vide.");
-    } else {
-      console.error("[FTP] Erreur lors de la lecture de demandes.json :", msg);
-    }
+  } catch {
     json = [];
-  } finally {
-    if (client) client.close();
   }
+  client.close();
   return json;
 }
 
 async function writeDataFTP(data) {
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour écrire demandes.json :", err.message || err);
-    throw new Error("Impossible de se connecter au FTP pour sauvegarder les données.");
-  }
-
+  const client = await getFTPClient();
   const tmp = path.join(__dirname, "temp_demandes.json");
-  try {
-    fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-    await client.ensureDir(FTP_BACKUP_FOLDER);
-    await client.uploadFrom(tmp, JSON_FILE_FTP);
-    console.log(`[SAVE] demandes.json mis à jour (${data.length} dossiers)`);
-  } catch (err) {
-    const msg = err && err.message ? err.message : String(err);
-    if (msg.includes("Server sent FIN packet unexpectedly")) {
-      console.error("[FTP] FIN inattendu pendant l'écriture de demandes.json :", msg);
-    } else {
-      console.error("[FTP] Erreur lors de l'écriture de demandes.json :", msg);
-    }
-    throw new Error("Erreur lors de la sauvegarde des données sur le FTP.");
-  } finally {
-    try { fs.unlinkSync(tmp); } catch {}
-    if (client) client.close();
-  }
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
+  await client.ensureDir(FTP_BACKUP_FOLDER);
+  await client.uploadFrom(tmp, JSON_FILE_FTP);
+  try { fs.unlinkSync(tmp); } catch {}
+  client.close();
+  console.log(`[SAVE] demandes.json mis à jour (${data.length} dossiers)`);
 }
 
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour uploader un fichier :", err.message || err);
-    throw new Error("Erreur de connexion au FTP pour l'upload de fichier.");
-  }
-
+  const client = await getFTPClient();
   const remoteName = remoteFileName || path.basename(localPath);
-  const remoteDir  = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder);
-  const remotePath = path.posix.join(remoteDir, remoteName);
-
-  try {
-    await client.ensureDir(remoteDir);
-    await client.uploadFrom(localPath, remotePath);
-  } catch (err) {
-    const msg = err && err.message ? err.message : String(err);
-    if (msg.includes("Server sent FIN packet unexpectedly")) {
-      console.error("[FTP] FIN inattendu pendant l'upload :", remotePath, msg);
-    } else {
-      console.error("[FTP] Erreur upload FTP :", remotePath, msg);
-    }
-    throw new Error("Erreur lors de l'envoi du fichier sur le FTP.");
-  } finally {
-    if (client) client.close();
-  }
+  const remotePath = path.posix.join(FTP_BACKUP_FOLDER, remoteSubfolder, remoteName);
+  await client.uploadFrom(localPath, remotePath);
+  client.close();
 }
 
-async function deleteFilesFromFTP(urls = []) {
-  if (!urls.length) return;
-
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour supprimer plusieurs fichiers :", err.message || err);
-    return;
-  }
-
-  try {
-    for (const remoteFileName of urls) {
-      if (!remoteFileName) continue;
-      const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
-      try {
-        await client.remove(remotePath);
-      } catch (err) {
-        const msg = err && err.message ? err.message : String(err);
-        if (msg.includes("Server sent FIN packet unexpectedly")) {
-          console.warn("[FTP] FIN inattendu lors de la suppression (ignorée) :", remotePath, msg);
-        } else {
-          console.warn("[FTP] Erreur lors de la suppression du fichier (ignorée) :", remotePath, msg);
-        }
-      }
-    }
-  } finally {
-    if (client) client.close();
-  }
+async function deleteFileFromFTP(remoteFileName) {
+  const client = await getFTPClient();
+  const remotePath = path.posix.join(UPLOADS_FTP, remoteFileName);
+  await client.remove(remotePath).catch(()=>{});
+  client.close();
 }
 
 async function streamFTPFileToRes(res, remotePath, fileName) {
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour streamer un fichier :", err.message || err);
-    if (!res.headersSent) {
-      res.status(500).send("Erreur de connexion au serveur de fichiers.");
-    } else {
-      res.end();
-    }
-    return;
-  }
-
+  const client = await getFTPClient();
   try {
     let size = 0;
     try {
@@ -271,69 +167,32 @@ async function streamFTPFileToRes(res, remotePath, fileName) {
     } catch {}
 
     const ctype = mime.lookup(fileName) || "application/octet-stream";
-    if (!res.headersSent) {
-      res.setHeader("Content-Type", ctype);
-      if (size > 0) res.setHeader("Content-Length", String(size));
+    res.setHeader("Content-Type", ctype);
+    if (size > 0) res.setHeader("Content-Length", String(size));
 
-      const ext = (fileName || "").split(".").pop().toLowerCase();
-      const inlineTypes = ["pdf","jpg","jpeg","png","gif","webp","bmp"];
-      const disp = inlineTypes.includes(ext) ? "inline" : "attachment";
-      res.setHeader("Content-Disposition", `${disp}; filename*=UTF-8''${encodeURIComponent(fileName)}`);
-    }
+    const ext = (fileName || "").split(".").pop().toLowerCase();
+    const inlineTypes = ["pdf","jpg","jpeg","png","gif","webp","bmp"];
+    const disp = inlineTypes.includes(ext) ? "inline" : "attachment";
+    res.setHeader("Content-Disposition", `${disp}; filename*=UTF-8''${encodeURIComponent(fileName)}`);
 
     await client.downloadTo(res, remotePath);
-  } catch (err) {
-    const msg = err && err.message ? err.message : String(err);
-    if (msg.includes("Server sent FIN packet unexpectedly")) {
-      console.error("[FTP] FIN inattendu pendant le streaming du fichier :", remotePath, msg);
-    } else {
-      console.error("[FTP] Erreur pendant le téléchargement du fichier :", remotePath, msg);
-    }
-    if (!res.headersSent) {
-      res.status(500).send("Erreur lors du téléchargement du fichier.");
-    } else {
-      res.end();
-    }
   } finally {
-    if (client) client.close();
+    client.close();
   }
 }
 
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
-
-  let client;
-  try {
-    client = await getFTPClient();
-  } catch (err) {
-    console.error("[FTP] Impossible de se connecter pour récupérer les pièces jointes :", err.message || err);
-    return [];
-  }
-
+  const client = await getFTPClient();
   const files = [];
-  try {
-    for (const f of fileObjs) {
-      if (!f || !f.url) continue;
-      const remote = path.posix.join(UPLOADS_FTP, f.url);
-      const safeLocal = "att_" + f.url.replace(/[^\w.\-]/g,"_");
-      const tempPath = path.join(__dirname, safeLocal);
-
-      try {
-        await client.downloadTo(tempPath, remote);
-        files.push({ filename: f.original, path: tempPath });
-      } catch (err) {
-        const msg = err && err.message ? err.message : String(err);
-        if (msg.includes("Server sent FIN packet unexpectedly")) {
-          console.warn("[FTP] FIN inattendu pendant le téléchargement d'une PJ (ignorée) :", remote, msg);
-        } else {
-          console.warn("[FTP] Erreur lors du téléchargement d'une PJ (ignorée) :", remote, msg);
-        }
-      }
-    }
-  } finally {
-    if (client) client.close();
+  for (const f of fileObjs) {
+    const remote = path.posix.join(UPLOADS_FTP, f.url);
+    const safeLocal = "att_" + f.url.replace(/[^\w.\-]/g,"_");
+    const tempPath = path.join(__dirname, safeLocal);
+    await client.downloadTo(tempPath, remote).catch(()=>{});
+    files.push({ filename: f.original, path: tempPath });
   }
-
+  client.close();
   return files;
 }
 
@@ -345,7 +204,6 @@ function cleanupFiles(arr) {
     }
   }
 }
-
 
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
@@ -543,7 +401,6 @@ L'équipe Durand Services Garantie.
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Erreur /api/demandes :", err.message || err);
     res.json({ success: false, message: err.message });
   }
 });
@@ -590,14 +447,14 @@ app.post("/api/admin/dossier/:id",
         }
       }
       if (req.files && req.files.documentsAjoutes) {
-  for (const f of req.files.documentsAjoutes) {
-    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-    const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
-    await uploadFileToFTP(f.path, "uploads", remoteName);
-    dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-    try { fs.unlinkSync(f.path); } catch {}
-  }
-}
+        for (const f of req.files.documentsAjoutes) {
+          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
+          await uploadFileToFTP(f.path, "uploads", remoteName);
+          dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+          try { fs.unlinkSync(f.path); } catch {}
+        }
+      }
 
       if (typeof dossier.attente_mo !== "boolean") dossier.attente_mo = false;
       let suppressNotif = false;
@@ -671,7 +528,6 @@ app.post("/api/admin/dossier/:id",
 
       res.json({ success: true });
     } catch (err) {
-      console.error("Erreur /api/admin/dossier/:id :", err.message || err);
       res.json({ success:false, message: err.message });
     }
   }
@@ -748,7 +604,6 @@ app.post("/api/admin/envoyer-fournisseur/:id",
 
       res.json({ success:true });
     } catch (err) {
-      console.error("Erreur /api/admin/envoyer-fournisseur/:id :", err.message || err);
       res.json({ success:false, message: err.message });
     }
   }
@@ -778,7 +633,6 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     await writeDataFTP(data);
     res.json({ success:true });
   } catch (err) {
-    console.error("Erreur /api/admin/completer-dossier/:id :", err.message || err);
     res.json({ success:false, message: err.message });
   }
 });
@@ -804,40 +658,25 @@ app.get("/templates/:name", (req, res) => {
 });
 
 app.get("/api/admin/dossiers", async (req, res) => {
-  try {
-    const data = await readDataFTP();
-    res.json(data);
-  } catch (err) {
-    console.error("Erreur /api/admin/dossiers :", err.message || err);
-    res.status(500).json([]);
-  }
+  const data = await readDataFTP();
+  res.json(data);
 });
 
 app.get("/api/mes-dossiers", async (req, res) => {
-  try {
-    const email = (req.query.email||"").toLowerCase();
-    const data = await readDataFTP();
-    const dossiers = data.filter(d => d.email && d.email.toLowerCase() === email);
-    res.json(dossiers);
-  } catch (err) {
-    console.error("Erreur /api/mes-dossiers :", err.message || err);
-    res.status(500).json([]);
-  }
+  const email = (req.query.email||"").toLowerCase();
+  const data = await readDataFTP();
+  const dossiers = data.filter(d => d.email && d.email.toLowerCase() === email);
+  res.json(dossiers);
 });
 
 app.get("/download/:file", async (req, res) => {
-  try {
-    const raw = req.params.file;
-    const fileParam = decodeURIComponent(raw || "");
-    if (!fileParam || fileParam.includes("/") || fileParam.includes("\\") || fileParam.includes("..") || fileParam.includes("\0")) {
-      return res.status(400).send("Bad filename");
-    }
-    const remotePath = path.posix.join(UPLOADS_FTP, fileParam);
-    await streamFTPFileToRes(res, remotePath, fileParam);
-  } catch (err) {
-    console.error("Erreur /download/:file :", err.message || err);
-    if (!res.headersSent) res.status(500).send("Erreur interne.");
+  const raw = req.params.file;
+  const fileParam = decodeURIComponent(raw || "");
+  if (!fileParam || fileParam.includes("/") || fileParam.includes("\\") || fileParam.includes("..") || fileParam.includes("\0")) {
+    return res.status(400).send("Bad filename");
   }
+  const remotePath = path.posix.join(UPLOADS_FTP, fileParam);
+  await streamFTPFileToRes(res, remotePath, fileParam);
 });
 
 app.post("/api/admin/login", (req, res) => {
@@ -854,72 +693,58 @@ app.post("/api/admin/login", (req, res) => {
 });
 
 app.delete("/api/admin/dossier/:id", async (req, res) => {
-  try {
-    if (!req.headers["x-superadmin"]) return res.json({ success:false, message:"Non autorisé" });
-    const { id } = req.params;
-    let data = await readDataFTP();
-    if (!Array.isArray(data)) data = [];
-    const idx = data.findIndex(x => x.id === id);
-    if (idx === -1) return res.json({ success:false, message:"Introuvable" });
+  if (!req.headers["x-superadmin"]) return res.json({ success:false, message:"Non autorisé" });
+  const { id } = req.params;
+  let data = await readDataFTP();
+  if (!Array.isArray(data)) data = [];
+  const idx = data.findIndex(x => x.id === id);
+  if (idx === -1) return res.json({ success:false, message:"Introuvable" });
 
-    const dossier = data[idx];
+  const dossier = data[idx];
+  if (dossier.files)           { for (const f of dossier.files)           { await deleteFileFromFTP(f.url); } }
+  if (dossier.reponseFiles)    { for (const f of dossier.reponseFiles)    { await deleteFileFromFTP(f.url); } }
+  if (dossier.documentsAjoutes){ for (const f of dossier.documentsAjoutes){ await deleteFileFromFTP(f.url); } }
 
-    const allUrls = [];
-    if (dossier.files)            allUrls.push(...dossier.files.map(f => f.url));
-    if (dossier.reponseFiles)     allUrls.push(...dossier.reponseFiles.map(f => f.url));
-    if (dossier.documentsAjoutes) allUrls.push(...dossier.documentsAjoutes.map(f => f.url));
-
-    await deleteFilesFromFTP(allUrls);
-
-    data.splice(idx, 1);
-    await writeDataFTP(data);
-    res.json({ success:true });
-  } catch (err) {
-    console.error("Erreur /api/admin/dossier/:id (DELETE) :", err.message || err);
-    res.json({ success:false, message: err.message });
-  }
+  data.splice(idx, 1);
+  await writeDataFTP(data);
+  res.json({ success:true });
 });
 
 app.get("/api/admin/export-excel", async (req, res) => {
-  try {
-    const data = await readDataFTP();
-    const columns = [
-      { header: "Date", key: "date" },
-      { header: "Magasin", key: "magasin" },
-      { header: "Marque du produit", key: "marque_produit" },
-      { header: "Produit concerné", key: "produit_concerne" },
-      { header: "Référence de la pièce", key: "reference_piece" },
-      { header: "Problème rencontré", key: "probleme_rencontre" },
-      { header: "Nom client", key: "nom" },
-      { header: "Email", key: "email" },
-      { header: "Statut", key: "statut" },
-      { header: "Réponse", key: "reponse" },
-      { header: "Numéro d'avoir", key: "numero_avoir" },
-    ];
+  const data = await readDataFTP();
+  const columns = [
+    { header: "Date", key: "date" },
+    { header: "Magasin", key: "magasin" },
+    { header: "Marque du produit", key: "marque_produit" },
+    { header: "Produit concerné", key: "produit_concerne" },
+    { header: "Référence de la pièce", key: "reference_piece" },
+    { header: "Problème rencontré", key: "probleme_rencontre" },
+    { header: "Nom client", key: "nom" },
+    { header: "Email", key: "email" },
+    { header: "Statut", key: "statut" },
+    { header: "Réponse", key: "reponse" },
+    { header: "Numéro d'avoir", key: "numero_avoir" },
+  ];
 
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("Demandes globales");
-    ws.columns = columns;
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Demandes globales");
+  ws.columns = columns;
 
-    data.forEach(d => {
-      const obj = {};
-      columns.forEach(col => {
-        let val = d[col.key] || "";
-        if (col.key === "date" && val) val = new Date(val).toLocaleDateString("fr-FR");
-        if (typeof val === "string") val = val.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
-        obj[col.key] = val;
-      });
-      ws.addRow(obj);
+  data.forEach(d => {
+    const obj = {};
+    columns.forEach(col => {
+      let val = d[col.key] || "";
+      if (col.key === "date" && val) val = new Date(val).toLocaleDateString("fr-FR");
+      if (typeof val === "string") val = val.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+      obj[col.key] = val;
     });
+    ws.addRow(obj);
+  });
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
-    await wb.xlsx.write(res);
-    res.end();
-  } catch (err) {
-    console.error("Erreur /api/admin/export-excel :", err.message || err);
-    if (!res.headersSent) res.status(500).send("Erreur lors de la génération du fichier Excel.");
-  }
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
+  await wb.xlsx.write(res);
+  res.end();
 });
 
 app.get("/admin", (req, res) => {
