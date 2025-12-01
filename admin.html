@@ -218,8 +218,10 @@
       box-shadow: 0 0 0 1px #176a9d33;
     }
     #search-input {
-      min-width: 210px;
-    }
+  min-width: 160px;
+  max-width: 260px;
+  width: 100%;
+}
 
     .stats-row {
       display: flex;
@@ -273,11 +275,12 @@
       max-height: calc(100vh - 260px);
       overflow: auto;
     }
-    .dossier-row {
+   .dossier-row {
   padding: 8px 4px;
   border-bottom: 1px solid #eef1f5;
   cursor: pointer;
   display: grid;
+  /* colonne n° dossier | infos client | magasin/ID | statut */
   grid-template-columns: 90px 1fr auto auto;
   gap: 8px;
   align-items: center;
@@ -585,9 +588,9 @@
         <label for="month-filter">Mois</label>
         <input type="month" id="month-filter">
       </div>
-      <div class="filter-group">
-        <label for="magasin-filter">Magasin</label>
-        <select id="magasin-filter">
+      <div class="filter-group" id="magasin-filter-group">
+  <label for="magasin-filter">Magasin</label>
+  <select id="magasin-filter">
           <option value="">Tous</option>
           <option value="Annemasse">Annemasse</option>
           <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
@@ -615,10 +618,10 @@
           <option value="Attente MO">Attente MO</option>
         </select>
       </div>
-      <div class="filter-group" style="flex:1 1 220px;">
-        <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
-        <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
-      </div>
+      <div class="filter-group" style="flex:0 0 260px;">
+  <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
+  <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
+</div>
     </div>
 
     <div class="stats-row" id="stats-row"></div>
@@ -718,22 +721,34 @@
     }
 
     function toggleSuperAdminUI() {
-      const chip = document.getElementById("role-chip");
-      if (!chip) return;
-      if (isSuperAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Super Admin";
-      } else if (isAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Admin";
-      } else if (magasinAdmin) {
-        chip.style.display = "inline-flex";
-        chip.textContent = "Magasin : " + magasinAdmin;
-      } else {
-        chip.style.display = "none";
-        chip.textContent = "";
-      }
+  const chip = document.getElementById("role-chip");
+  if (chip) {
+    if (isSuperAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Super Admin";
+    } else if (isAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Admin";
+    } else if (magasinAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Magasin : " + magasinAdmin;
+    } else {
+      chip.style.display = "none";
+      chip.textContent = "";
     }
+  }
+
+  // 🔹 Gestion de l'affichage du filtre magasin
+  const magGroup = document.getElementById("magasin-filter-group");
+  if (magGroup) {
+    // Si c'est un compte magasin (magasinAdmin défini, mais pas admin ni super admin)
+    if (!isSuperAdmin && !isAdmin && magasinAdmin) {
+      magGroup.style.display = "none";   // on cache le choix de magasin
+    } else {
+      magGroup.style.display = "";       // visible pour admin et super admin
+    }
+  }
+}
 
     function normaliserStatut(d) {
       if (d && d.statut === "en attente d'info") {
@@ -983,22 +998,36 @@ function renderListe() {
       (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
 
     const sub = document.createElement("div");
-    sub.className = "dossier-sub";
-    sub.textContent =
-      (d.produit_concerne || "") +
-      (d.reference_piece ? " — Réf : " + d.reference_piece : "");
+sub.className = "dossier-sub";
+
+const parts = [];
+
+// Produit
+if (d.produit_concerne) {
+  parts.push("Produit : " + d.produit_concerne);
+}
+
+// Marque du produit
+if (d.marque_produit) {
+  parts.push("Marque du produit : " + d.marque_produit);
+}
+
+// Référence
+if (d.reference_piece) {
+  parts.push("Réf : " + d.reference_piece);
+}
+
+sub.textContent = parts.join(" — ");
 
     left.appendChild(title);
     left.appendChild(sub);
 
     // 🔹 Colonne magasin + ID
     const mid = document.createElement("div");
-    mid.innerHTML =
-      '<span class="badge-magasin">' +
-      (d.magasin || "—") +
-      "</span><br><span class=\"dossier-id\">ID : " +
-      d.id +
-      "</span>";
+mid.innerHTML =
+  '<span class="badge-magasin">' +
+  (d.magasin || "—") +
+  "</span>";
 
     // 🔹 Colonne statut
     const right = document.createElement("div");
@@ -1099,8 +1128,8 @@ function renderListe() {
         (d.produit_concerne || "") +
         "</div></div>" +
         '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
-        (d.marque_produit || "") +
-        "</div></div>" +
+(d.marque_produit || "") +
+"</div></div>" +
         '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
         (d.reference_piece || "") +
         "</div></div>" +
