@@ -981,22 +981,38 @@ function renderListe() {
       (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
 
     const sub = document.createElement("div");
-    sub.className = "dossier-sub";
-    sub.textContent =
-      (d.produit_concerne || "") +
-      (d.reference_piece ? " — Réf : " + d.reference_piece : "");
+sub.className = "dossier-sub";
+
+const parts = [];
+
+// Produit
+if (d.produit_concerne) {
+  parts.push("Produit : " + d.produit_concerne);
+}
+
+// Marque du produit
+if (d.marque_produit) {
+  parts.push("Marque du produit : " + d.marque_produit);
+}
+
+// Référence
+if (d.reference_piece) {
+  parts.push("Réf : " + d.reference_piece);
+}
+
+sub.textContent = parts.join(" — ");
+
 
     left.appendChild(title);
     left.appendChild(sub);
 
     // 🔹 Colonne magasin + ID
     const mid = document.createElement("div");
-    mid.innerHTML =
-      '<span class="badge-magasin">' +
-      (d.magasin || "—") +
-      "</span><br><span class=\"dossier-id\">ID : " +
-      d.id +
-      "</span>";
+mid.innerHTML =
+  '<span class="badge-magasin">' +
+  (d.magasin || "—") +
+  "</span>";
+
 
     // 🔹 Colonne statut
     const right = document.createElement("div");
@@ -1092,9 +1108,9 @@ function renderListe() {
         '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
         (d.produit_concerne || "") +
         "</div></div>" +
-        '<div><div class="detail-field-label">Marque produit</div><div class="detail-field-value">' +
-        (d.marque_produit || "") +
-        "</div></div>" +
+        '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
+(d.marque_produit || "") +
+"</div></div>" +
         '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
         (d.reference_piece || "") +
         "</div></div>" +
