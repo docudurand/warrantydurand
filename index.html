@@ -1,294 +1,1218 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Durand Services Garantie – Accueil</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-
+<head>
+  <meta charset="UTF-8">
+  <title>DSG - Admin Garantie (nouveau)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
     :root {
-      --primary-color: #004080;
-      --secondary-color: #0072c6;
-      --accent-color: #00a7e1;
-      --light-bg: #f5f9fc;
-      --dark-text: #073763;
-      --neutral: #eeeeee;
-      --success: #2e7d32;
-      --error: #c62828;
+      --bg: #f3f7fb;
+      --primary: #006e90;
+      --primary-light: #e4f3fb;
+      --primary-dark: #004f68;
+      --border: #d3e1ee;
+      --text-main: #1e3445;
+      --text-muted: #647586;
+      --danger: #d63031;
+      --success: #2ecc71;
+      --orange: #f8a900;
+      --purple: #7d3cff;
+      --card-bg: #ffffff;
+      --shadow-soft: 0 2px 10px rgba(0,0,0,0.06);
+      --radius-lg: 14px;
     }
-
-
-    html,
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Montserrat", sans-serif;
-      color: var(--dark-text);
-      background-color: var(--light-bg);
-      line-height: 1.6;
-      scroll-behavior: smooth;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #f5fbff 0, #edf3f9 28%, #e6eef8 60%, #dde8f6 100%);
+      color: var(--text-main);
+      min-height: 100vh;
     }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: inherit;
+    h1, h2, h3, h4 {
+      margin: 0;
+      font-weight: 600;
     }
-
     a {
-      color: var(--primary-color);
+      color: var(--primary);
       text-decoration: none;
-      transition: color 0.2s;
-    }
-    a:hover {
-      color: var(--accent-color);
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 1rem;
+    /* LOGIN OVERLAY */
+    #login-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, #f0f6fc 0, #dbe7f5 45%, #c7d9ee 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
     }
-
-
-    .navbar {
-      background-color: #fff;
-      border-bottom: 1px solid var(--neutral);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+    .login-panel {
+      background: #ffffff;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.18);
+      border-radius: 18px;
+      padding: 32px 30px 26px;
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid #d6e2f1;
     }
-    .nav-content {
+    .login-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .login-title .logo-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #14548C;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+    }
+    .login-subtitle {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+    .login-field {
+      margin-bottom: 14px;
+    }
+    .login-field label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .login-field input[type="password"] {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 9px;
+      border: 1px solid #c3d4e6;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.14s, box-shadow 0.14s;
+    }
+    .login-field input[type="password"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0,110,144,0.15);
+    }
+    .login-actions {
+      margin-top: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
+      gap: 10px;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--primary-color);
-    }
-    .brand .logo {
-      height: 40px;
-      margin-right: 0.5rem;
-    }
-    .nav-links {
-      list-style: none;
-      display: flex;
-      margin: 0;
-      padding: 0;
-    }
-    .nav-links li {
-      margin-left: 1.5rem;
-    }
-    .nav-links a {
-      position: relative;
-      padding: 0.5rem 0;
-      font-weight: 500;
-    }
-    .nav-links a.active::after {
-      content: "";
-      position: absolute;
-      bottom: -5px;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background-color: var(--primary-color);
-      border-radius: 2px;
-    }
-
     .btn {
-      display: inline-block;
-      padding: 0.65rem 1.3rem;
-      border-radius: 4px;
-      font-weight: 600;
       border: none;
+      outline: none;
       cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-      text-align: center;
-    }
-    .btn.primary {
-      background-color: var(--primary-color);
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.15);
+      transition: background 0.16s, transform 0.12s, box-shadow 0.16s;
+      background: var(--primary);
       color: #fff;
     }
-    .btn.primary:hover {
-      background-color: var(--secondary-color);
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 5px 16px rgba(0,0,0,0.18);
     }
-    .btn.secondary {
-      background-color: var(--neutral);
-      color: var(--dark-text);
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
     }
-    .btn.secondary:hover {
-      background-color: var(--accent-color);
-      color: #fff;
+    .btn-secondary {
+      background: #f0f4fb;
+      color: #41556a;
+      box-shadow: none;
+      border-radius: 9px;
+      padding-inline: 14px;
     }
-
-    .hero {
-      background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-      color: #fff;
-      padding: 4rem 0;
-      text-align: center;
-      clip-path: ellipse(150% 100% at 50% 0);
+    .btn-secondary:hover {
+      background: #e4ecf9;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.12);
     }
-    .hero h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-    .hero p {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .cta-buttons .btn {
-      margin: 0 0.5rem;
-      min-width: 150px;
+    .login-error {
+      color: #d63031;
+      font-size: 0.89rem;
+      margin-top: 6px;
+      min-height: 18px;
     }
 
-    .features {
-      padding: 3rem 0;
+    /* MAIN LAYOUT */
+    #app-root {
+      display: none;
+      min-height: 100vh;
+      padding: 18px 20px 20px;
     }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-    }
-    .feature {
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    .feature h3 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-      color: var(--primary-color);
-    }
-    .feature p {
-      margin: 0;
-    }
-
-    .footer {
-      background-color: #fff;
-      border-top: 1px solid var(--neutral);
-      padding: 1rem 0;
-      font-size: 0.9rem;
-      color: var(--dark-text);
-    }
-    .footer-content {
+    .page-shell {
+      max-width: 1400px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
+      gap: 18px;
+    }
+    .page-header {
+      display: flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .page-header-left h1 {
+      font-size: 1.6rem;
+      letter-spacing: 0.02em;
+      margin-bottom: 2px;
+    }
+    .page-header-left .subtitle {
+      font-size: 0.93rem;
+      color: var(--text-muted);
+    }
+    .user-pill {
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(0,110,144,0.08);
+      border: 1px solid rgba(0,110,144,0.18);
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .user-pill span.role {
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+    .user-pill span.magasin {
+      color: var(--text-muted);
     }
 
-    @media (max-width: 768px) {
-      .nav-links li {
-        margin-left: 0.75rem;
-      }
-      .hero h1 {
-        font-size: 2rem;
-      }
-      .hero {
-        padding: 3rem 1rem;
-      }
+    /* FILTER BAR & STATS */
+    .top-row {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
-    @media (max-width: 480px) {
-      .nav-content {
-        flex-direction: column;
-        height: auto;
-        padding: 0.5rem 0;
-      }
-      .nav-links {
-        flex-direction: column;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-      }
-      .features-grid {
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: flex-end;
+    }
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 140px;
+    }
+    .filter-group label {
+      font-size: 0.86rem;
+      color: #5f7286;
+      font-weight: 500;
+    }
+    select,
+    input[type="text"] {
+      border-radius: 9px;
+      border: 1px solid #c2d4e5;
+      padding: 7px 9px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #ffffff;
+      min-height: 34px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    select:focus,
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0,110,144,0.13);
+    }
+
+    /* Barre de recherche raccourcie */
+    #search-filter-group {
+      flex: 0 0 260px;  /* largeur max ~260px */
+      max-width: 260px;
+    }
+    #search-input {
+      width: 100%;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 13px 16px 11px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(198,216,234,0.9);
+      display: flex;
+      flex-direction: column;
+      min-width: 150px;
+      flex: 1 1 150px;
+    }
+    .stat-card span.label {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 4px;
+    }
+    .stat-card span.value {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .stat-card span.value.orange { color: var(--orange); }
+    .stat-card span.value.green { color: var(--success); }
+    .stat-card span.value.red { color: var(--danger); }
+    .stat-card span.value.blue { color: #1978d2; }
+    .stat-card span.value.purple { color: var(--purple); }
+
+    /* MAIN SPLIT */
+    .layout-main {
+      display: grid;
+      grid-template-columns: minmax(340px, 520px) minmax(360px, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .panel {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid #d6e2f2;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 280px;
+    }
+    .panel-header {
+      padding: 11px 14px 9px;
+      border-bottom: 1px solid #dde7f4;
+      background: linear-gradient(90deg, #f5f9fe 0, #edf4fb 48%, #e5f1fb 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .panel-header h2 {
+      font-size: 1.02rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #234156;
+    }
+    .panel-header span.secondary {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .panel-body {
+      padding: 10px 12px 10px;
+      overflow: auto;
+      max-height: calc(100vh - 260px);
+    }
+
+    /* DOSSIER LIST */
+    .dossier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .dossier-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1.6fr) minmax(0, 1.2fr) auto; /* numéro + info + magasin + statut */
+      gap: 10px;
+      align-items: stretch;
+      padding: 8px 9px;
+      border-radius: 11px;
+      border: 1px solid #e0e9f3;
+      background: #fbfdff;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.08s;
+    }
+    .dossier-row:hover {
+      background: #f2f7fe;
+      border-color: #c0d6ef;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .dossier-row.active {
+      background: #e8f3ff;
+      border-color: #8bb8f1;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    }
+
+    .dossier-num {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #234156;
+      padding-right: 4px;
+      min-width: 65px;
+      border-right: 1px dashed #d4e1f1;
+    }
+
+    .dossier-row-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      min-width: 0;
+    }
+    .dossier-main {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: #123047;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dossier-main .date {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .dossier-sub {
+      font-size: 0.85rem;
+      color: #506278;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+    }
+    .dossier-sub span.label {
+      font-weight: 600;
+      color: #234156;
+    }
+
+    .dossier-row-mid {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 4px;
+      min-width: 0;
+    }
+    .badge-magasin {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: #f0f6ff;
+      color: #245179;
+      border: 1px solid #c9dcf3;
+      max-width: 100%;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .dossier-row-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .statut-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .statut-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+    }
+    .statut-enregistre {
+      background: rgba(248,169,0,0.09);
+      border-color: rgba(248,169,0,0.6);
+      color: #ad7a05;
+    }
+    .statut-enregistre .statut-dot {
+      background: #f8a900;
+      border: 2px solid #f9d87b;
+    }
+    .statut-accepte {
+      background: rgba(46, 204, 113, 0.09);
+      border-color: rgba(46, 204, 113, 0.7);
+      color: #1e8f4b;
+    }
+    .statut-accepte .statut-dot {
+      background: #2ecc71;
+      border: 2px solid #a3e9bb;
+    }
+    .statut-refuse {
+      background: rgba(214,48,49,0.07);
+      border-color: rgba(214,48,49,0.7);
+      color: #b1302f;
+    }
+    .statut-refuse .statut-dot {
+      background: #d63031;
+      border: 2px solid #f3a4a5;
+    }
+    .statut-attente {
+      background: rgba(25,120,210,0.07);
+      border-color: rgba(25,120,210,0.75);
+      color: #1c5f98;
+    }
+    .statut-attente .statut-dot {
+      background: #1978d2;
+      border: 2px solid #a0c7f1;
+    }
+    .statut-mo {
+      background: rgba(125,60,255,0.09);
+      border-color: rgba(125,60,255,0.7);
+      color: #5b33c6;
+    }
+    .statut-mo .statut-dot {
+      background: #7d3cff;
+      border: 2px solid #c7adff;
+    }
+
+    .empty-msg {
+      padding: 18px 8px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* DETAIL PANEL */
+    .detail-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 4px;
+    }
+    .detail-summary {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      padding: 4px 2px 8px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px 16px;
+    }
+    .detail-block {
+      background: #f7fbff;
+      border-radius: 11px;
+      border: 1px solid #d3e3f4;
+      padding: 10px 11px;
+      font-size: 0.9rem;
+    }
+    .detail-block h3 {
+      font-size: 0.9rem;
+      color: #234156;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 4px 6px;
+      margin-bottom: 3px;
+    }
+    .detail-label {
+      font-size: 0.83rem;
+      color: #6a7c90;
+      font-weight: 500;
+    }
+    .detail-value {
+      font-size: 0.86rem;
+      color: #1c3042;
+      word-break: break-word;
+    }
+    .detail-value pre {
+      margin: 0;
+      white-space: pre-wrap;
+      font-family: inherit;
+    }
+
+    @media (max-width: 1050px) {
+      .layout-main {
         grid-template-columns: 1fr;
       }
-      .cta-buttons {
-        flex-direction: column;
+      .panel-body {
+        max-height: none;
       }
     }
-    </style>
-  </head>
-  <body>
-    <header class="navbar">
-      <div class="container nav-content">
-        <a href="index.html" class="brand">
-          <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" alt="Logo DSG" class="logo" />
-          <span>Durand Services Garantie</span>
-        </a>
-        <nav>
-          <ul class="nav-links">
-          </ul>
-        </nav>
+
+    @media (max-width: 720px) {
+      #app-root {
+        padding-inline: 10px;
+      }
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .layout-main {
+        gap: 12px;
+      }
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="login-overlay">
+  <div class="login-panel">
+    <div class="login-title">
+      <div class="logo-circle">DG</div>
+      <div>
+        <div style="font-size:1.05rem; font-weight:700; color:#123047;">Administration Garanties</div>
+        <div style="font-size:0.87rem; color:#647586;">Accès réservé Durand Services</div>
+      </div>
+    </div>
+    <p class="login-subtitle">
+      Saisissez votre mot de passe <strong>admin</strong>, <strong>super admin</strong> ou celui de votre <strong>magasin</strong>.
+    </p>
+    <form id="login-form">
+      <div class="login-field">
+        <label for="login-password">Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password" required>
+      </div>
+      <div class="login-actions">
+        <button type="submit" class="btn">
+          Se connecter
+        </button>
+        <button type="button" class="btn-secondary" onclick="document.getElementById('login-password').value='';">
+          Effacer
+        </button>
+      </div>
+      <div id="login-error" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<div id="app-root">
+  <div class="page-shell">
+    <header class="page-header">
+      <div class="page-header-left">
+        <h1>Suivi des dossiers Garantie</h1>
+        <div class="subtitle">Consultation des demandes et filtrage par magasin, date, statut et recherche rapide.</div>
+      </div>
+      <div class="page-header-right">
+        <div class="user-pill">
+          <span class="role" id="user-role-label">Connecté</span>
+          <span class="magasin" id="user-magasin-label"></span>
+        </div>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="container hero-content">
-        <h1>Votre tranquillité, notre engagement</h1>
-        <p>
-          Chez Durand Services Garantie, nous simplifions la gestion de vos
-          garanties produit. Déposez facilement votre demande, suivez son
-          traitement en temps réel et laissez‑nous nous occuper du reste.
-        </p>
-        <div class="cta-buttons">
-           <span class="btn primary" style="pointer-events: none; cursor: default;">Faire une demande</span>
-			<span class="btn secondary" style="pointer-events: none; cursor: default;">Suivre une demande</span>
+    <section class="top-row">
+      <div class="filters-row">
+        <div class="filter-group" id="magasin-filter-group">
+          <label for="magasin-filter">Magasin</label>
+          <select id="magasin-filter">
+            <option value="">Tous les magasins</option>
+          </select>
         </div>
+
+        <div class="filter-group">
+          <label for="mois-filter">Mois</label>
+          <select id="mois-filter">
+            <option value="">Tous</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="statut-filter">Statut</label>
+          <select id="statut-filter">
+            <option value="">Tous</option>
+            <option value="enregistré">Enregistré</option>
+            <option value="accepté">Accepté</option>
+            <option value="refusé">Refusé</option>
+            <option value="en attente d'info">En attente d'info</option>
+            <option value="Attente MO">Attente MO</option>
+          </select>
+        </div>
+
+        <div class="filter-group" id="search-filter-group">
+          <label for="search-input">Recherche (client, produit, réf, marque, n°)</label>
+          <input type="text" id="search-input" placeholder="Tapez pour filtrer…">
+        </div>
+      </div>
+
+      <div class="stats-row" id="stats-row">
+        <!-- remplis en JS -->
       </div>
     </section>
 
-    <section class="features">
-      <div class="container features-grid">
-        <div class="feature">
-          <h3>Processus simple</h3>
-          <p>
-            Remplissez un formulaire convivial et téléchargez vos justificatifs en
-            quelques clics.
-          </p>
+    <section class="layout-main">
+      <!-- LISTE GAUCHE -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Liste des dossiers</h2>
+          <span class="secondary" id="liste-compteur">0 dossier</span>
         </div>
-        <div class="feature">
-          <h3>Suivi en temps réel</h3>
-          <p>
-            Consultez l’état d’avancement de votre dossier à tout moment depuis
-            notre interface de suivi.
-          </p>
+        <div class="panel-body">
+          <div id="dossier-list" class="dossier-list"></div>
         </div>
-        <div class="feature">
-          <h3>Service attentif</h3>
-          <p>
-            Notre équipe est à votre écoute pour répondre à vos questions et
-            accélérer le traitement de votre demande.
-          </p>
+      </div>
+
+      <!-- DETAIL DROITE -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Détail du dossier</h2>
+          <span class="secondary" id="detail-header-label">Sélectionnez un dossier dans la liste</span>
+        </div>
+        <div class="panel-body">
+          <div id="detail-content">
+            <p class="empty-msg">
+              Aucun dossier sélectionné. Cliquez sur une ligne à gauche pour voir les détails.
+            </p>
+          </div>
         </div>
       </div>
     </section>
+  </div>
+</div>
 
-    <footer class="footer">
-      <div class="container footer-content">
-        <p>&copy; <span id="year"></span> Durand Services Garantie. Tous droits réservés.</p>
-       
+<script>
+  let allDossiers = [];
+  let filteredDossiers = [];
+  let selectedDossierId = null;
+
+  let isSuperAdmin = false;
+  let isAdmin = false;
+  let magasinAdmin = "";
+
+  function formatDateFR(iso) {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toLocaleDateString("fr-FR");
+  }
+
+  function statutChip(statut) {
+    if (!statut) statut = "";
+    const s = statut.toLowerCase();
+    let cls = "";
+    let label = statut;
+
+    if (s === "enregistré") {
+      cls = "statut-enregistre";
+    } else if (s === "accepté") {
+      cls = "statut-accepte";
+    } else if (s === "refusé") {
+      cls = "statut-refuse";
+    } else if (s === "en attente d'info") {
+      cls = "statut-attente";
+    } else if (s === "attente mo") {
+      cls = "statut-mo";
+    }
+
+    return `
+      <span class="statut-chip ${cls}">
+        <span class="statut-dot"></span>
+        <span>${label}</span>
+      </span>
+    `;
+  }
+
+  function remplirMagasins() {
+    const select = document.getElementById("magasin-filter");
+    const mags = [...new Set(allDossiers.map(d => d.magasin).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">Tous les magasins</option>';
+    mags.forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      select.appendChild(opt);
+    });
+  }
+
+  function remplirMois() {
+    const select = document.getElementById("mois-filter");
+    const moisSet = new Set();
+    allDossiers.forEach(d => {
+      const date = new Date(d.date);
+      if (!isNaN(date)) {
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        moisSet.add(m);
+      }
+    });
+    const moisLib = ["01","02","03","04","05","06","07","08","09","10","11","12"];
+    const moisNom = ["Jan.","Fév.","Mars","Avr.","Mai","Juin","Juil.","Août","Sept.","Oct.","Nov.","Déc."];
+    select.innerHTML = '<option value="">Tous</option>';
+    moisLib.forEach((m,i) => {
+      if (moisSet.has(m)) {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = moisNom[i];
+        select.appendChild(opt);
+      }
+    });
+  }
+
+  function majStats(dossiers) {
+    const statsRow = document.getElementById("stats-row");
+    const total = dossiers.length;
+    const nbEnreg = dossiers.filter(d => (d.statut || "").toLowerCase() === "enregistré").length;
+    const nbAcc = dossiers.filter(d => (d.statut || "").toLowerCase() === "accepté").length;
+    const nbRef = dossiers.filter(d => (d.statut || "").toLowerCase() === "refusé").length;
+    const nbInfo = dossiers.filter(d => (d.statut || "").toLowerCase() === "en attente d'info").length;
+    const nbMO = dossiers.filter(d => (d.statut || "").toLowerCase() === "attente mo").length;
+
+    statsRow.innerHTML = `
+      <div class="stat-card">
+        <span class="label">Total dossiers</span>
+        <span class="value blue">${total}</span>
       </div>
-    </footer>
+      <div class="stat-card">
+        <span class="label">Enregistrés</span>
+        <span class="value orange">${nbEnreg}</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Acceptés</span>
+        <span class="value green">${nbAcc}</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Refusés</span>
+        <span class="value red">${nbRef}</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">En attente d'info</span>
+        <span class="value blue">${nbInfo}</span>
+      </div>
+      <div class="stat-card">
+        <span class="label">Attente MO</span>
+        <span class="value purple">${nbMO}</span>
+      </div>
+    `;
+  }
 
-    <script>
-      document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
-  </body>
+  function appliquerFiltres() {
+    const magasinSel = document.getElementById("magasin-filter");
+    const moisSel = document.getElementById("mois-filter");
+    const statutSel = document.getElementById("statut-filter");
+    const searchInput = document.getElementById("search-input");
+
+    const search = (searchInput.value || "").trim().toLowerCase();
+    let magasin = magasinSel.value || "";
+
+    // Si connexion magasin => filtre forcé sur ce magasin + select caché
+    if (!isAdmin && !isSuperAdmin && magasinAdmin) {
+      magasin = magasinAdmin;
+    }
+
+    const mois = moisSel.value || "";
+    const statut = statutSel.value || "";
+
+    let dossiers = [...allDossiers];
+
+    // Filtre magasin
+    if (magasin) {
+      dossiers = dossiers.filter(d => (d.magasin || "") === magasin);
+    }
+
+    // Filtre mois
+    if (mois) {
+      dossiers = dossiers.filter(d => {
+        const dt = new Date(d.date);
+        if (isNaN(dt)) return false;
+        return String(dt.getMonth() + 1).padStart(2, "0") === mois;
+      });
+    }
+
+    // Filtre statut
+    if (statut) {
+      dossiers = dossiers.filter(d => (d.statut || "") === statut);
+    }
+
+    // Filtre recherche
+    if (search.length > 0) {
+      dossiers = dossiers.filter(d => {
+        const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+        const nom = (d.nom || "").toLowerCase();
+        const produit = (d.produit_concerne || "").toLowerCase();
+        const ref = (d.reference_piece || "").toLowerCase();
+        const marque = (d.marque_produit || "").toLowerCase();
+        return (
+          nom.includes(search) ||
+          produit.includes(search) ||
+          ref.includes(search) ||
+          marque.includes(search) ||
+          numero.includes(search)
+        );
+      });
+    }
+
+    filteredDossiers = dossiers;
+    renderListe();
+    majStats(dossiers);
+
+    const compteur = document.getElementById("liste-compteur");
+    if (dossiers.length <= 1) {
+      compteur.textContent = dossiers.length + " dossier";
+    } else {
+      compteur.textContent = dossiers.length + " dossiers";
+    }
+  }
+
+  function renderListe() {
+    const container = document.getElementById("dossier-list");
+    container.innerHTML = "";
+
+    if (!filteredDossiers.length) {
+      container.innerHTML = '<div class="empty-msg">Aucun dossier ne correspond aux filtres choisis.</div>';
+      document.getElementById("detail-content").innerHTML =
+        '<p class="empty-msg">Aucun dossier sélectionné. Cliquez sur une ligne à gauche pour voir les détails.</p>';
+      document.getElementById("detail-header-label").textContent =
+        "Sélectionnez un dossier dans la liste";
+      selectedDossierId = null;
+      return;
+    }
+
+    filteredDossiers
+      .sort((a,b) => {
+        // tri par numéro de dossier décroissant si possible
+        const na = parseInt(a.numero_dossier || "0", 10) || 0;
+        const nb = parseInt(b.numero_dossier || "0", 10) || 0;
+        return nb - na;
+      })
+      .forEach(d => {
+        const row = document.createElement("div");
+        row.className = "dossier-row";
+        row.dataset.id = d.id;
+
+        if (selectedDossierId && selectedDossierId === d.id) {
+          row.classList.add("active");
+        }
+
+        // Colonne numéro de dossier à gauche
+        const numCol = document.createElement("div");
+        numCol.className = "dossier-num";
+        const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+        numCol.textContent = numero || "—";
+
+        // Colonne info principale
+        const left = document.createElement("div");
+        left.className = "dossier-row-left";
+
+        const main = document.createElement("div");
+        main.className = "dossier-main";
+        const clientName = d.nom || "(Client inconnu)";
+        const dateTxt = formatDateFR(d.date) || "";
+        main.innerHTML = `
+          <span>${clientName}</span>
+          <span class="date">${dateTxt}</span>
+        `;
+
+        const sub = document.createElement("div");
+        sub.className = "dossier-sub";
+        const marque = d.marque_produit || "";
+        const produit = d.produit_concerne || "";
+        const ref = d.reference_piece || "";
+
+        sub.innerHTML = `
+          <span><span class="label">Marque du produit :</span> ${marque || "—"}</span>
+          <span><span class="label">Produit :</span> ${produit || "—"}</span>
+          ${ref ? `<span><span class="label">Réf :</span> ${ref}</span>` : ""}
+        `;
+
+        left.appendChild(main);
+        left.appendChild(sub);
+
+        // Colonne milieu (magasin)
+        const mid = document.createElement("div");
+        mid.className = "dossier-row-mid";
+        const magasin = d.magasin || "Magasin inconnu";
+        mid.innerHTML = `
+          <span class="badge-magasin">${magasin}</span>
+        `;
+        // ⚠️ ID caché : pas de span dossier-id, uniquement dataset pour la logique
+
+        // Colonne droite (statut)
+        const right = document.createElement("div");
+        right.className = "dossier-row-right";
+        right.innerHTML = statutChip(d.statut || "");
+
+        row.appendChild(numCol);
+        row.appendChild(left);
+        row.appendChild(mid);
+        row.appendChild(right);
+
+        row.addEventListener("click", () => {
+          selectedDossierId = d.id;
+          document.querySelectorAll(".dossier-row.active").forEach(el => el.classList.remove("active"));
+          row.classList.add("active");
+          renderDetail(d);
+        });
+
+        container.appendChild(row);
+      });
+
+    // Sélection automatique du premier dossier si rien n'est sélectionné
+    if (!selectedDossierId && filteredDossiers.length) {
+      selectedDossierId = filteredDossiers[0].id;
+      const firstRow = container.querySelector(".dossier-row");
+      if (firstRow) firstRow.classList.add("active");
+      renderDetail(filteredDossiers[0]);
+    }
+  }
+
+  function renderDetail(d) {
+    const detailContainer = document.getElementById("detail-content");
+    const headerLabel = document.getElementById("detail-header-label");
+
+    const numero = (d.numero_dossier || "").toString().padStart(4, "0");
+    const dateTxt = formatDateFR(d.date);
+    headerLabel.textContent = `Dossier n° ${numero} – ${d.nom || "Client"} (${dateTxt || "date inconnue"})`;
+
+    const probleme = (d.probleme_rencontre || "").trim();
+
+    detailContainer.innerHTML = `
+      <div class="detail-wrapper">
+        <div class="detail-summary">
+          <strong>Statut :</strong> ${(d.statut || "") || "non renseigné"}<br>
+          <strong>Magasin :</strong> ${d.magasin || "non renseigné"}
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-block">
+            <h3>Client & Dossier</h3>
+            <div class="detail-row">
+              <div class="detail-label">Numéro de dossier</div>
+              <div class="detail-value">${numero}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Nom du client</div>
+              <div class="detail-value">${d.nom || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Email</div>
+              <div class="detail-value">${d.email || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date création</div>
+              <div class="detail-value">${dateTxt || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Magasin</div>
+              <div class="detail-value">${d.magasin || ""}</div>
+            </div>
+          </div>
+
+          <div class="detail-block">
+            <h3>Produit</h3>
+            <div class="detail-row">
+              <div class="detail-label">Marque du produit</div>
+              <div class="detail-value">${d.marque_produit || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Produit concerné</div>
+              <div class="detail-value">${d.produit_concerne || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Référence de la pièce</div>
+              <div class="detail-value">${d.reference_piece || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Quantité posée</div>
+              <div class="detail-value">${d.quantite_posee || ""}</div>
+            </div>
+          </div>
+
+          <div class="detail-block">
+            <h3>Véhicule</h3>
+            <div class="detail-row">
+              <div class="detail-label">Immatriculation</div>
+              <div class="detail-value">${d.immatriculation || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Marque véhicule</div>
+              <div class="detail-value">${d.marque_vehicule || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Modèle véhicule</div>
+              <div class="detail-value">${d.modele_vehicule || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Numéro de série</div>
+              <div class="detail-value">${d.num_serie || ""}</div>
+            </div>
+          </div>
+
+          <div class="detail-block">
+            <h3>Dates & Km</h3>
+            <div class="detail-row">
+              <div class="detail-label">1ère immatriculation</div>
+              <div class="detail-value">${d.premiere_immat || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date de pose</div>
+              <div class="detail-value">${d.date_pose || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Date du constat</div>
+              <div class="detail-value">${d.date_constat || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Km à la pose</div>
+              <div class="detail-value">${d.km_pose || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Km au constat</div>
+              <div class="detail-value">${d.km_constat || ""}</div>
+            </div>
+          </div>
+
+          <div class="detail-block">
+            <h3>BL & Commentaire</h3>
+            <div class="detail-row">
+              <div class="detail-label">N° BL 1ère Vente</div>
+              <div class="detail-value">${d.bl_pose || ""}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">N° BL 2ème Vente</div>
+              <div class="detail-value">${d.bl_constat || ""}</div>
+            </div>
+            <div class="detail-row" style="grid-template-columns: minmax(0,1fr);">
+              <div class="detail-label">Problème rencontré</div>
+            </div>
+            <div class="detail-value">
+              <pre>${probleme || ""}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function chargerDossiers() {
+    try {
+      const res = await fetch("/api/admin/dossiers");
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        allDossiers = [];
+      } else {
+        allDossiers = data;
+      }
+      remplirMagasins();
+      remplirMois();
+      appliquerFiltres();
+    } catch (e) {
+      console.error("Erreur de chargement des dossiers :", e);
+      document.getElementById("dossier-list").innerHTML =
+        '<div class="empty-msg">Erreur lors du chargement des dossiers.</div>';
+    }
+  }
+
+  function mettreAJourUIConnexion() {
+    const roleLabel = document.getElementById("user-role-label");
+    const magLabel = document.getElementById("user-magasin-label");
+    const magasinGroup = document.getElementById("magasin-filter-group");
+
+    if (isSuperAdmin) {
+      roleLabel.textContent = "Super admin";
+      magLabel.textContent = "Tous les magasins";
+      magasinGroup.style.display = "";
+    } else if (isAdmin) {
+      roleLabel.textContent = "Admin";
+      magLabel.textContent = "Tous les magasins";
+      magasinGroup.style.display = "";
+    } else if (magasinAdmin) {
+      roleLabel.textContent = "Magasin";
+      magLabel.textContent = magasinAdmin;
+      // On cache le choix de magasin pour les connexions magasin
+      magasinGroup.style.display = "none";
+    } else {
+      roleLabel.textContent = "Connecté";
+      magLabel.textContent = "";
+      magasinGroup.style.display = "";
+    }
+  }
+
+  async function handleLoginSubmit(e) {
+    e.preventDefault();
+    const input = document.getElementById("login-password");
+    const errorEl = document.getElementById("login-error");
+    errorEl.textContent = "";
+    const pw = input.value.trim();
+    if (!pw) {
+      errorEl.textContent = "Merci de saisir un mot de passe.";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        errorEl.textContent = data.message || "Mot de passe incorrect.";
+        return;
+      }
+
+      isSuperAdmin = !!data.isSuper;
+      isAdmin = !!data.isAdmin;
+      magasinAdmin = data.magasin || "";
+
+      // mise à jour UI
+      mettreAJourUIConnexion();
+
+      // affichage interface
+      document.getElementById("login-overlay").style.display = "none";
+      document.getElementById("app-root").style.display = "block";
+
+      // charger les dossiers
+      await chargerDossiers();
+    } catch (err) {
+      console.error(err);
+      errorEl.textContent = "Erreur de connexion au serveur.";
+    }
+  }
+
+  function initEvents() {
+    document.getElementById("login-form").addEventListener("submit", handleLoginSubmit);
+
+    document.getElementById("magasin-filter").addEventListener("change", appliquerFiltres);
+    document.getElementById("mois-filter").addEventListener("change", appliquerFiltres);
+    document.getElementById("statut-filter").addEventListener("change", appliquerFiltres);
+    document.getElementById("search-input").addEventListener("input", () => {
+      appliquerFiltres();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initEvents();
+  });
+</script>
+</body>
 </html>
