@@ -407,38 +407,39 @@
       word-break: break-word;
     }
     .detail-form {
-  margin-top: 10px;
+  margin-top: 6px;
   border-top: 1px solid #e2e6f0;
-  padding-top: 8px;
+  padding-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;          /* plus de gap vertical global */
 }
 .detail-separator {
   border: 0;
   border-top: 1px solid #e2e6f0;
-  margin: 2px 0 2px;
+  margin: 0;       /* collé aux éléments */
 }
+
 .detail-warning-title {
   font-size: 0.85rem;
   font-weight: 700;
   color: #b91c1c;
   text-align: center;
-  margin-bottom: 2px;
+  margin: 2px 0;   /* juste un tout petit espace */
 }
-
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
     }
     .detail-form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1 1 170px;
-      font-size: 0.85rem;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 170px;
+  font-size: 0.85rem;
+  margin: 0 0 2px 0;  /* micro marge uniquement en bas */
+}
     .detail-form-group label {
       font-weight: 600;
       color: #345;
