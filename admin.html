@@ -16,7 +16,7 @@
       font-family: "Segoe UI", Arial, sans-serif;
       background: #f3f4f7;
       color: #123046;
-      /* Augmentation légère de la taille de police globale pour une meilleure lisibilité */
+      /* Augmente légèrement la taille globale de la police */
       font-size: 1.02rem;
     }
     .banner {
@@ -274,8 +274,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px #0001;
   padding: 10px 10px 4px;
-  /* On augmente la hauteur maximale de la liste pour afficher davantage de dossiers sans scroll trop court */
-  max-height: calc(100vh - 120px);
+  /* agrandit davantage la hauteur de la liste des dossiers pour afficher plus de lignes */
+  max-height: calc(100vh - 80px);
   overflow: auto;
 }
 
@@ -411,13 +411,12 @@
       word-break: break-word;
     }
     .detail-form {
-  /* Réduction des marges et espacement verticaux pour un rendu plus compact */
   margin-top: 2px;
   border-top: 1px solid #e2e6f0;
   padding-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 .detail-separator {
   border: 0;
@@ -443,8 +442,8 @@
   gap: 2px;
   flex: 1 1 170px;
   font-size: 0.85rem;
-  /* Suppression des marges verticales superflues */
-  margin: 0 0 4px 0;
+  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
+  margin: 0;
 }
     .detail-form-group label {
       font-weight: 600;
@@ -489,8 +488,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  /* Légère marge pour séparer les boutons du contenu précédent */
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
     .attente-mo-check {
@@ -580,117 +578,67 @@
       background: #a11610;
     }
 
-    /* === Fenêtre modale de modification complète du dossier === */
-    #edit-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: #0007;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    #edit-modal {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px 24px 24px;
-      max-width: 880px;
-      width: 95vw;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 8px 28px #0004;
-      font-size: 0.92rem;
-    }
-    #edit-modal h3 {
-      margin-top: 0;
-      color: #006e90;
-      font-size: 1.25rem;
-      margin-bottom: 10px;
-    }
-    .modifier-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px 16px;
-    }
-    .modifier-grid .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .modifier-grid .field label {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #345;
-    }
-    .modifier-grid .field input,
-    .modifier-grid .field select,
-    .modifier-grid .field textarea {
-      font-size: 0.9rem;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #c4cfdd;
-      background: #fff;
-      outline: none;
-    }
-    .modifier-grid .field textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-    #edit-modal .modal-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    /* Slider toggle pour la case "Dossier en Attente MO" */
-    .attente-toggle {
-      position: relative;
-      display: inline-block;
-      width: 42px;
-      height: 22px;
-      margin-right: 8px;
-    }
-    .attente-toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-    .attente-toggle .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 34px;
-    }
-    .attente-toggle .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 4px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
-    .attente-toggle input:checked + .slider {
-      background-color: #176a9d;
-    }
-    .attente-toggle input:checked + .slider:before {
-      transform: translateX(18px);
-    }
-
     /* Réduction de l'espace entre Réponse au client et Pièces jointes pour le client */
     .detail-form-group.reponse-client {
       margin-bottom: 4px !important;
     }
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
+    }
+
+    /* Styles spécifiques pour la fenêtre de modification complète du dossier (edit-modal) */
+    #edit-modal-backdrop .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 22px;
+      max-width: 850px;
+      width: 95vw;
+      box-shadow: 0 8px 24px #0004;
+      font-size: 0.95rem;
+    }
+    #edit-modal-backdrop h3 {
+      color: #006e90;
+      font-size: 1.35rem;
+      margin: 0 0 20px;
+    }
+    #edit-modal-backdrop .modifier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px 20px;
+    }
+    #edit-modal-backdrop .modifier-grid .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    #edit-modal-backdrop .modifier-grid .field.full {
+      grid-column: 1 / -1;
+    }
+    #edit-modal-backdrop .modifier-grid .field label {
+      font-weight: 600;
+      color: #195e7c;
+      margin-bottom: 3px;
+      font-size: 0.95rem;
+    }
+    #edit-modal-backdrop .modifier-grid .field input,
+    #edit-modal-backdrop .modifier-grid .field select,
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      padding: 8px;
+      font-size: 0.95rem;
+      border: 1px solid #b4c8d8;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    #edit-modal-backdrop .modal-buttons {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      justify-content: center;
     }
 </style>
 </head>
@@ -700,6 +648,99 @@
     <div>
       <div class="banner-title">DURAND SERVICES GARANTIE</div>
       <div class="banner-sub">Administration des dossiers de garantie</div>
+    </div>
+  </div>
+
+  <!-- Modal de modification complète du dossier -->
+  <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
+    <div class="modal">
+      <h3>Modifier le dossier</h3>
+      <form id="modifier-form">
+        <div class="modifier-grid">
+          <div class="field">
+            <label>Nom du client</label>
+            <input type="text" name="nom" required>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="field">
+            <label>Magasin</label>
+            <input type="text" name="magasin" list="magasins-list">
+          </div>
+          <div class="field">
+            <label>Marque du produit</label>
+            <input type="text" name="marque_produit">
+          </div>
+          <div class="field">
+            <label>Produit concerné</label>
+            <input type="text" name="produit_concerne">
+          </div>
+          <div class="field">
+            <label>Référence de la pièce</label>
+            <input type="text" name="reference_piece">
+          </div>
+          <div class="field">
+            <label>Quantité posée</label>
+            <input type="number" name="quantite_posee" min="0">
+          </div>
+          <div class="field">
+            <label>Immatriculation</label>
+            <input type="text" name="immatriculation">
+          </div>
+          <div class="field">
+            <label>Marque véhicule</label>
+            <input type="text" name="marque_vehicule">
+          </div>
+          <div class="field">
+            <label>Modèle véhicule</label>
+            <input type="text" name="modele_vehicule">
+          </div>
+          <div class="field">
+            <label>Numéro de série</label>
+            <input type="text" name="num_serie">
+          </div>
+          <div class="field">
+            <label>1ère immatriculation</label>
+            <input type="date" name="premiere_immat">
+          </div>
+          <div class="field">
+            <label>Date de pose</label>
+            <input type="date" name="date_pose">
+          </div>
+          <div class="field">
+            <label>Date du constat</label>
+            <input type="date" name="date_constat">
+          </div>
+          <div class="field">
+            <label>Kilométrage à la pose</label>
+            <input type="number" name="km_pose" min="0">
+          </div>
+          <div class="field">
+            <label>Kilométrage au constat</label>
+            <input type="number" name="km_constat" min="0">
+          </div>
+          <div class="field">
+            <label>N° BL 1ère Vente</label>
+            <input type="text" name="bl_pose">
+          </div>
+          <div class="field">
+            <label>N° BL 2ème Vente</label>
+            <input type="text" name="bl_constat">
+          </div>
+          <div class="field full">
+            <label>Problème rencontré</label>
+            <textarea name="probleme_rencontre" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn secondary" id="modifier-annuler">Annuler</button>
+          <button type="submit" class="btn" id="modifier-valider">Valider</button>
+        </div>
+      </form>
+      <!-- datalist pour autocompléter les magasins -->
+      <datalist id="magasins-list"></datalist>
     </div>
   </div>
 
@@ -831,98 +872,6 @@
         <div class="modal-buttons">
           <button type="button" class="btn secondary" id="btn-modal-cancel">Annuler</button>
           <button type="submit" class="btn">Envoyer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal de modification du dossier -->
-  <div id="edit-modal-backdrop">
-    <div id="edit-modal">
-      <h3>Modifier le dossier</h3>
-      <form id="modifier-form">
-        <div class="modifier-grid">
-          <div class="field">
-            <label for="mod-nom">Nom du client</label>
-            <input type="text" id="mod-nom" name="nom" required>
-          </div>
-          <div class="field">
-            <label for="mod-email">Email</label>
-            <input type="email" id="mod-email" name="email">
-          </div>
-          <div class="field">
-            <label for="mod-magasin">Magasin</label>
-            <input list="magasin-options" id="mod-magasin" name="magasin" required>
-            <datalist id="magasin-options"></datalist>
-          </div>
-          <div class="field">
-            <label for="mod-marque-produit">Marque du produit</label>
-            <input type="text" id="mod-marque-produit" name="marque_produit">
-          </div>
-          <div class="field">
-            <label for="mod-produit">Produit concerné</label>
-            <input type="text" id="mod-produit" name="produit_concerne">
-          </div>
-          <div class="field">
-            <label for="mod-reference">Référence de la pièce</label>
-            <input type="text" id="mod-reference" name="reference_piece">
-          </div>
-          <div class="field">
-            <label for="mod-quantite">Quantité posée</label>
-            <input type="number" id="mod-quantite" name="quantite_posee" min="0">
-          </div>
-          <div class="field">
-            <label for="mod-immatriculation">Immatriculation</label>
-            <input type="text" id="mod-immatriculation" name="immatriculation">
-          </div>
-          <div class="field">
-            <label for="mod-marque-vehicule">Marque véhicule</label>
-            <input type="text" id="mod-marque-vehicule" name="marque_vehicule">
-          </div>
-          <div class="field">
-            <label for="mod-modele-vehicule">Modèle véhicule</label>
-            <input type="text" id="mod-modele-vehicule" name="modele_vehicule">
-          </div>
-          <div class="field">
-            <label for="mod-num-serie">Numéro de série</label>
-            <input type="text" id="mod-num-serie" name="num_serie">
-          </div>
-          <div class="field">
-            <label for="mod-premiere-immat">1ère immatriculation</label>
-            <input type="date" id="mod-premiere-immat" name="premiere_immat">
-          </div>
-          <div class="field">
-            <label for="mod-date-pose">Date de pose</label>
-            <input type="date" id="mod-date-pose" name="date_pose">
-          </div>
-          <div class="field">
-            <label for="mod-date-constat">Date du constat</label>
-            <input type="date" id="mod-date-constat" name="date_constat">
-          </div>
-          <div class="field">
-            <label for="mod-km-pose">Kilométrage à la pose</label>
-            <input type="number" id="mod-km-pose" name="km_pose" min="0">
-          </div>
-          <div class="field">
-            <label for="mod-km-constat">Kilométrage au constat</label>
-            <input type="number" id="mod-km-constat" name="km_constat" min="0">
-          </div>
-          <div class="field">
-            <label for="mod-bl-pose">N° BL 1ère Vente</label>
-            <input type="text" id="mod-bl-pose" name="bl_pose">
-          </div>
-          <div class="field">
-            <label for="mod-bl-constat">N° BL 2ème Vente</label>
-            <input type="text" id="mod-bl-constat" name="bl_constat">
-          </div>
-          <div class="field" style="grid-column: 1 / -1;">
-            <label for="mod-probleme">Problème rencontré</label>
-            <textarea id="mod-probleme" name="probleme_rencontre" rows="3"></textarea>
-          </div>
-        </div>
-        <div class="modal-buttons">
-          <button type="button" class="btn secondary" id="btn-edit-cancel">Annuler</button>
-          <button type="submit" class="btn">💾 Enregistrer</button>
         </div>
       </form>
     </div>
@@ -1316,12 +1265,20 @@ mid.innerHTML =
       html += '<div class="detail-files-list">';
       arr.forEach(f => {
         const name = f.original || f.url || "fichier";
-        html +=
-          '<a class="file-pill" href="/download/' +
-          encodeURIComponent(f.url) +
-          '" target="_blank" title="Télécharger">' +
-          name +
-          "</a>";
+        const urlEnc = encodeURIComponent(f.url || "");
+        if (title === "Documents ajoutés au dossier") {
+          // Ajoute un bouton pour supprimer visuellement le document
+          html +=
+            '<span class="file-pill">' +
+            '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' + name + '</a>' +
+            ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(event, \'' + urlEnc + '\')" title="Supprimer">✕</button>' +
+            '</span>';
+        } else {
+          html +=
+            '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+            name +
+            '</a>';
+        }
       });
       html += "</div>";
       return html;
@@ -1429,9 +1386,15 @@ mid.innerHTML =
     "</div></div>" +
     "</div>" +
 
-
-    // 🔹 (suppression de Numéro d'avoir et Attente MO dans le résumé)
-    '' +
+    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
+    '<div class="detail-grid">' +
+    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
+    (d.numero_avoir || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
+    attenteMoTexte +
+    "</div></div>" +
+    "</div>" +
 
     // 🔹 Puis Documents ajoutés au dossier
     docsAjHtml +
@@ -1554,16 +1517,14 @@ mid.innerHTML =
         '">' +
         "</div>" +
         '<div class="detail-form-group">' +
-        '<label>Attente MO</label>' +
-        /* Utilisation d\'un curseur (slider) pour basculer l\'état "Attente MO" plutôt qu\'une simple case à cocher */
+        "<label>Attente MO</label>" +
         '<div class="attente-mo-check">' +
-        '<label class="attente-toggle">' +
-        '<input type="checkbox" id="attente_mo" name="attente_mo"' + attenteMoChecked + '>' +
-        '<span class="slider"></span>' +
-        '</label>' +
-        '<span>Dossier en "Attente MO"</span>' +
-        '</div>' +
-        '</div>' +
+        '<input type="checkbox" id="attente_mo" name="attente_mo"' +
+        attenteMoChecked +
+        ">" +
+        '<label for="attente_mo">Dossier en "Attente MO"</label>' +
+        "</div>" +
+        "</div>" +
         "</div>" +
 
         '<div class="detail-form-group" id="docs-group">' +
@@ -1619,15 +1580,14 @@ mid.innerHTML =
         '<div class="detail-buttons">' +
         '<button type="submit" class="btn">💾 Enregistrer</button>' +
         '<button type="button" class="btn secondary" id="btn-imprimer-dossier">🖨️ Imprimer</button>' +
-        /* Ajout d\'un bouton permettant d\'ouvrir la fenêtre de modification complète du dossier */
         '<button type="button" class="btn secondary" id="btn-modifier-dossier">📝 Modifier dossier</button>' +
         ((isSuperAdmin || isAdmin)
           ? '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>'
-          : '') +
+          : "") +
         (isSuperAdmin
           ? '<button type="button" class="btn danger" id="btn-supprimer-dossier">🗑️ Supprimer le dossier</button>'
-          : '') +
-        '</div>' +
+          : "") +
+        "</div>" +
         "</form>"
       );
     }
@@ -1704,6 +1664,23 @@ mid.innerHTML =
         });
     }
 
+    /**
+     * Supprime visuellement un document ajouté au dossier. En l'absence d'API
+     * serveur pour réellement supprimer le fichier, cette fonction retire la
+     * pastille de la liste et avertit l'utilisateur.
+     * @param {Event} evt Événement click du bouton de suppression
+     * @param {string} urlEnc Nom de fichier encodé
+     */
+    function supprimerDocumentDossier(evt, urlEnc) {
+      if (!confirm('Supprimer ce document ?')) return;
+      // retire la pastille de la liste
+      if (evt && evt.target) {
+        const pill = evt.target.closest('.file-pill');
+        if (pill) pill.remove();
+      }
+      alert("La suppression de documents n'est pas prise en charge par le serveur.");
+    }
+
     function ouvrirModalFournisseur() {
       if (!dossierSelectionne) return;
       const backdrop = document.getElementById("modal-backdrop");
@@ -1715,6 +1692,96 @@ mid.innerHTML =
     function fermerModalFournisseur() {
       const backdrop = document.getElementById("modal-backdrop");
       if (backdrop) backdrop.style.display = "none";
+    }
+
+    /**
+     * Ouvre la fenêtre de modification complète du dossier. Pré-remplit les champs
+     * avec les valeurs du dossier sélectionné et affiche un datalist pour le champ
+     * magasin en se basant sur les magasins existants dans la liste des dossiers.
+     */
+    function ouvrirModifierDossier() {
+      if (!dossierSelectionne) return;
+      const back = document.getElementById('edit-modal-backdrop');
+      const form = document.getElementById('modifier-form');
+      if (!back || !form) return;
+      const d = dossierSelectionne;
+      form.nom.value = d.nom || '';
+      form.email.value = d.email || '';
+      form.magasin.value = d.magasin || '';
+      form.marque_produit.value = d.marque_produit || '';
+      form.produit_concerne.value = d.produit_concerne || '';
+      form.reference_piece.value = d.reference_piece || '';
+      form.quantite_posee.value = d.quantite_posee || '';
+      form.immatriculation.value = d.immatriculation || '';
+      form.marque_vehicule.value = d.marque_vehicule || '';
+      form.modele_vehicule.value = d.modele_vehicule || '';
+      form.num_serie.value = d.num_serie || '';
+      form.premiere_immat.value = d.premiere_immat || '';
+      form.date_pose.value = d.date_pose || '';
+      form.date_constat.value = d.date_constat || '';
+      form.km_pose.value = d.km_pose || '';
+      form.km_constat.value = d.km_constat || '';
+      form.bl_pose.value = d.bl_pose || '';
+      form.bl_constat.value = d.bl_constat || '';
+      form.probleme_rencontre.value = d.probleme_rencontre || '';
+      // Remplir datalist des magasins
+      const dataList = document.getElementById('magasins-list');
+      if (dataList) {
+        const opts = Array.from(new Set(allDossiers.map(x => x.magasin).filter(Boolean)))
+          .sort((a,b) => a.localeCompare(b,'fr'))
+          .map(m => '<option value="' + m + '"></option>')
+          .join('');
+        dataList.innerHTML = opts;
+      }
+      back.style.display = 'flex';
+    }
+
+    /**
+     * Ferme la fenêtre de modification complète du dossier.
+     */
+    function fermerModifierDossier() {
+      const back = document.getElementById('edit-modal-backdrop');
+      if (back) back.style.display = 'none';
+    }
+
+    /**
+     * Gère la soumission du formulaire de modification du dossier. Envoie les
+     * informations au serveur via l'API /api/admin/completer-dossier/{id} et
+     * rafraîchit l'affichage des dossiers.
+     */
+    function onSubmitModifierForm(e) {
+      e.preventDefault();
+      if (!dossierSelectionne) return;
+      const id = dossierSelectionne.id;
+      const form = e.target;
+      const data = {};
+      new FormData(form).forEach((v, k) => { data[k] = v; });
+      fetch('/api/admin/completer-dossier/' + encodeURIComponent(id), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(resp => {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.json().catch(() => { throw new Error('invalid_json'); });
+      }).then(json => {
+        if (!json || !json.success) {
+          alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
+          return;
+        }
+        // rafraîchit
+        fermerModifierDossier();
+        chargerDossiers();
+        setTimeout(() => {
+          const d = allDossiers.find(x => x.id === id);
+          if (d) {
+            dossierSelectionne = d;
+            afficherDetail(d);
+          }
+        }, 200);
+      }).catch(err => {
+        console.error(err);
+        alert(err.message || 'Erreur réseau');
+      });
     }
 
     function onSubmitFournisseurForm(e) {
@@ -1745,76 +1812,6 @@ mid.innerHTML =
 
     function exportExcel() {
       window.location.href = "/api/admin/export-excel";
-    }
-
-    // === Fonctions pour la modification complète du dossier ===
-    function ouvrirModifierDossier() {
-      if (!dossierSelectionne) return;
-      const backdrop = document.getElementById('edit-modal-backdrop');
-      if (!backdrop) return;
-      backdrop.style.display = 'flex';
-      const form = document.getElementById('modifier-form');
-      if (!form) return;
-      // Pré-remplir le formulaire avec les données du dossier sélectionné
-      form.nom.value = dossierSelectionne.nom || '';
-      form.email.value = dossierSelectionne.email || '';
-      form.magasin.value = dossierSelectionne.magasin || '';
-      form.marque_produit.value = dossierSelectionne.marque_produit || '';
-      form.produit_concerne.value = dossierSelectionne.produit_concerne || '';
-      form.reference_piece.value = dossierSelectionne.reference_piece || '';
-      form.quantite_posee.value = dossierSelectionne.quantite_posee || '';
-      form.immatriculation.value = dossierSelectionne.immatriculation || '';
-      form.marque_vehicule.value = dossierSelectionne.marque_vehicule || '';
-      form.modele_vehicule.value = dossierSelectionne.modele_vehicule || '';
-      form.num_serie.value = dossierSelectionne.num_serie || '';
-      form.premiere_immat.value = dossierSelectionne.premiere_immat || '';
-      form.date_pose.value = dossierSelectionne.date_pose || '';
-      form.date_constat.value = dossierSelectionne.date_constat || '';
-      form.km_pose.value = dossierSelectionne.km_pose || '';
-      form.km_constat.value = dossierSelectionne.km_constat || '';
-      form.bl_pose.value = dossierSelectionne.bl_pose || '';
-      form.bl_constat.value = dossierSelectionne.bl_constat || '';
-      form.probleme_rencontre.value = dossierSelectionne.probleme_rencontre || '';
-      // Met à jour le datalist des magasins à partir des dossiers existants
-      const dataList = document.getElementById('magasin-options');
-      if (dataList) {
-        const magasins = Array.from(new Set(allDossiers.map(x => x.magasin).filter(Boolean))).sort();
-        dataList.innerHTML = magasins.map(m => '<option value="' + m + '"></option>').join('');
-      }
-    }
-
-    function fermerModifierDossier() {
-      const backdrop = document.getElementById('edit-modal-backdrop');
-      if (backdrop) backdrop.style.display = 'none';
-    }
-
-    function onSubmitModifierForm(e) {
-      e.preventDefault();
-      if (!dossierSelectionne) return;
-      const id = dossierSelectionne.id;
-      const form = e.target;
-      const fd = new FormData(form);
-      fetch('/api/admin/completer-dossier/' + encodeURIComponent(id), {
-        method: 'POST',
-        body: fd
-      })
-        .then(r => r.json())
-        .then(json => {
-          if (!json || !json.success) {
-            alert('Erreur lors de la mise à jour du dossier : ' + (json && json.message ? json.message : '')); 
-          } else {
-            alert('Modifications enregistrées.');
-          }
-          // Ferme la modale et recharge les dossiers pour refléter les changements
-          fermerModifierDossier();
-          // rafraîchir la liste des dossiers pour afficher immédiatement les modifications
-          chargerDossiers();
-        })
-        .catch(err => {
-          console.error(err);
-          alert('Erreur réseau lors de la mise à jour du dossier.');
-          fermerModifierDossier();
-        });
     }
 
     
@@ -1944,6 +1941,8 @@ function initEvents() {
             if (dossierSelectionne && dossierSelectionne.id) {
               voirDossier(dossierSelectionne.id);
             }
+          } else if (t.id === "btn-modifier-dossier") {
+            ouvrirModifierDossier();
           }
         });
 
@@ -1979,24 +1978,20 @@ function initEvents() {
         });
       }
 
-      // Écouteurs pour le bouton "Modifier dossier" et la modale de modification
-      const btnModifier = document.getElementById('btn-modifier-dossier');
-      if (btnModifier) {
-        btnModifier.addEventListener('click', ouvrirModifierDossier);
-      }
-      const editCancel = document.getElementById('btn-edit-cancel');
-      if (editCancel) {
-        editCancel.addEventListener('click', fermerModifierDossier);
-      }
+      // Gestion des interactions de la fenêtre de modification de dossier
+      const modAnnuler = document.getElementById('modifier-annuler');
       const editBackdrop = document.getElementById('edit-modal-backdrop');
+      const modForm = document.getElementById('modifier-form');
+      if (modAnnuler) {
+        modAnnuler.addEventListener('click', fermerModifierDossier);
+      }
       if (editBackdrop) {
-        editBackdrop.addEventListener('click', (e) => {
-          if (e.target && e.target.id === 'edit-modal-backdrop') fermerModifierDossier();
+        editBackdrop.addEventListener('click', e => {
+          if (e.target.id === 'edit-modal-backdrop') fermerModifierDossier();
         });
       }
-      const editForm = document.getElementById('modifier-form');
-      if (editForm) {
-        editForm.addEventListener('submit', onSubmitModifierForm);
+      if (modForm) {
+        modForm.addEventListener('submit', onSubmitModifierForm);
       }
 
     }
