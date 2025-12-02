@@ -257,7 +257,7 @@
 
     .layout-main {
       display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1.1fr);
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 0.9fr);
       gap: 14px;
       align-items: flex-start;
     }
@@ -388,7 +388,7 @@
     .detail-body {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
       font-size: 0.9rem;
     }
     .detail-grid {
@@ -407,39 +407,39 @@
       word-break: break-word;
     }
     .detail-form {
-  margin-top: 6px;
+  margin-top: 2px;
   border-top: 1px solid #e2e6f0;
-  padding-top: 4px;
+  padding-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 .detail-separator {
   border: 0;
   border-top: 1px solid #e2e6f0;
-  margin: 2px 0;
+  margin: 0;       /* collé aux éléments */
 }
+
 .detail-warning-title {
   font-size: 0.85rem;
   font-weight: 700;
   color: #b91c1c;
   text-align: center;
-  margin: 2px 0;
+  margin: 2px 0;   /* juste un tout petit espace */
 }
-
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
     }
     .detail-form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      flex: 1 1 170px;
-      font-size: 0.85rem;
-      margin-bottom: 2px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 170px;
+  font-size: 0.85rem;
+  margin: 0 0 2px 0;  /* micro marge uniquement en bas */
+}
     .detail-form-group label {
       font-weight: 600;
       color: #345;
@@ -457,7 +457,7 @@
     }
     .detail-form-group textarea {
       resize: vertical;
-      min-height: 70px;
+      min-height: 40px;
     }
     .detail-form-group input:focus,
     .detail-form-group select:focus,
@@ -539,7 +539,7 @@
     }
     .modal-row textarea {
       resize: vertical;
-      min-height: 70px;
+      min-height: 40px;
     }
     .modal-buttons {
       display: flex;
@@ -748,16 +748,6 @@
       magGroup.style.display = "none";   // on cache le choix de magasin
     } else {
       magGroup.style.display = "";       // visible pour admin et super admin
-    }
-  }
-
-  // 🔹 Affichage du bouton Export Excel
-  const exportBtn = document.getElementById("btn-export");
-  if (exportBtn) {
-    if (isSuperAdmin || isAdmin) {
-      exportBtn.style.display = "inline-flex";
-    } else {
-      exportBtn.style.display = "none";
     }
   }
 }
