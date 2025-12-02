@@ -16,6 +16,8 @@
       font-family: "Segoe UI", Arial, sans-serif;
       background: #f3f4f7;
       color: #123046;
+      /* Augmente légèrement la taille globale de la police */
+      font-size: 1.02rem;
     }
     .banner {
       width: 100%;
@@ -257,7 +259,7 @@
 
     .layout-main {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
   gap: 14px;
   align-items: flex-start;
 }
@@ -272,8 +274,8 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px #0001;
   padding: 10px 10px 4px;
-  /* Augmente la hauteur disponible pour la liste afin qu'elle puisse accueillir davantage de lignes. */
-  max-height: calc(100vh - 110px);
+  /* agrandit davantage la hauteur de la liste des dossiers pour afficher plus de lignes */
+  max-height: calc(100vh - 80px);
   overflow: auto;
 }
 
@@ -440,7 +442,8 @@
   gap: 2px;
   flex: 1 1 170px;
   font-size: 0.85rem;
-  margin: 0 0 2px 0;  /* micro marge uniquement en bas */
+  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
+  margin: 0;
 }
     .detail-form-group label {
       font-weight: 600;
@@ -514,46 +517,6 @@
       box-shadow: 0 8px 24px #0004;
       font-size: 0.9rem;
     }
-
-    /* Grande boîte de dialogue pour la modification complète du dossier */
-    .modal.large {
-      max-width: 850px;
-      width: 96vw;
-    }
-
-    /* Grille du formulaire de modification du dossier */
-    #edit-modal .modifier-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px 14px;
-    }
-    #edit-modal .modifier-grid .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    #edit-modal .modifier-grid .field.full {
-      grid-column: 1 / -1;
-    }
-
-    /* Réduction des espaces verticaux au sein du formulaire détaillé */
-    #docs-group,
-    #reponse-group,
-    .reponse-client,
-    .detail-form-group {
-      /* supprime la marge inférieure par défaut sur les groupes */
-      margin-bottom: 0 !important;
-    }
-    .detail-warning-title {
-      margin: 4px 0 !important;
-    }
-    hr.detail-separator {
-      margin: 6px 0 !important;
-    }
-    .detail-buttons {
-      margin-top: 6px !important;
-    }
-
     .modal h3 {
       margin: 0 0 8px;
       font-size: 1.05rem;
@@ -622,6 +585,61 @@
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
+
+    /* Styles spécifiques pour la fenêtre de modification complète du dossier (edit-modal) */
+    #edit-modal-backdrop .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 22px;
+      max-width: 850px;
+      width: 95vw;
+      box-shadow: 0 8px 24px #0004;
+      font-size: 0.95rem;
+    }
+    #edit-modal-backdrop h3 {
+      color: #006e90;
+      font-size: 1.35rem;
+      margin: 0 0 20px;
+    }
+    #edit-modal-backdrop .modifier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px 20px;
+    }
+    #edit-modal-backdrop .modifier-grid .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    #edit-modal-backdrop .modifier-grid .field.full {
+      grid-column: 1 / -1;
+    }
+    #edit-modal-backdrop .modifier-grid .field label {
+      font-weight: 600;
+      color: #195e7c;
+      margin-bottom: 3px;
+      font-size: 0.95rem;
+    }
+    #edit-modal-backdrop .modifier-grid .field input,
+    #edit-modal-backdrop .modifier-grid .field select,
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      padding: 8px;
+      font-size: 0.95rem;
+      border: 1px solid #b4c8d8;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    #edit-modal-backdrop .modal-buttons {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      justify-content: center;
+    }
 </style>
 </head>
 <body>
@@ -630,6 +648,99 @@
     <div>
       <div class="banner-title">DURAND SERVICES GARANTIE</div>
       <div class="banner-sub">Administration des dossiers de garantie</div>
+    </div>
+  </div>
+
+  <!-- Modal de modification complète du dossier -->
+  <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
+    <div class="modal">
+      <h3>Modifier le dossier</h3>
+      <form id="modifier-form">
+        <div class="modifier-grid">
+          <div class="field">
+            <label>Nom du client</label>
+            <input type="text" name="nom" required>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="field">
+            <label>Magasin</label>
+            <input type="text" name="magasin" list="magasins-list">
+          </div>
+          <div class="field">
+            <label>Marque du produit</label>
+            <input type="text" name="marque_produit">
+          </div>
+          <div class="field">
+            <label>Produit concerné</label>
+            <input type="text" name="produit_concerne">
+          </div>
+          <div class="field">
+            <label>Référence de la pièce</label>
+            <input type="text" name="reference_piece">
+          </div>
+          <div class="field">
+            <label>Quantité posée</label>
+            <input type="number" name="quantite_posee" min="0">
+          </div>
+          <div class="field">
+            <label>Immatriculation</label>
+            <input type="text" name="immatriculation">
+          </div>
+          <div class="field">
+            <label>Marque véhicule</label>
+            <input type="text" name="marque_vehicule">
+          </div>
+          <div class="field">
+            <label>Modèle véhicule</label>
+            <input type="text" name="modele_vehicule">
+          </div>
+          <div class="field">
+            <label>Numéro de série</label>
+            <input type="text" name="num_serie">
+          </div>
+          <div class="field">
+            <label>1ère immatriculation</label>
+            <input type="date" name="premiere_immat">
+          </div>
+          <div class="field">
+            <label>Date de pose</label>
+            <input type="date" name="date_pose">
+          </div>
+          <div class="field">
+            <label>Date du constat</label>
+            <input type="date" name="date_constat">
+          </div>
+          <div class="field">
+            <label>Kilométrage à la pose</label>
+            <input type="number" name="km_pose" min="0">
+          </div>
+          <div class="field">
+            <label>Kilométrage au constat</label>
+            <input type="number" name="km_constat" min="0">
+          </div>
+          <div class="field">
+            <label>N° BL 1ère Vente</label>
+            <input type="text" name="bl_pose">
+          </div>
+          <div class="field">
+            <label>N° BL 2ème Vente</label>
+            <input type="text" name="bl_constat">
+          </div>
+          <div class="field full">
+            <label>Problème rencontré</label>
+            <textarea name="probleme_rencontre" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button type="button" class="btn secondary" id="modifier-annuler">Annuler</button>
+          <button type="submit" class="btn" id="modifier-valider">Valider</button>
+        </div>
+      </form>
+      <!-- datalist pour autocompléter les magasins -->
+      <datalist id="magasins-list"></datalist>
     </div>
   </div>
 
@@ -761,99 +872,6 @@
         <div class="modal-buttons">
           <button type="button" class="btn secondary" id="btn-modal-cancel">Annuler</button>
           <button type="submit" class="btn">Envoyer</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal de modification complète du dossier -->
-  <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
-    <div id="edit-modal" class="modal large">
-      <h3>Modifier le dossier</h3>
-      <form id="modifier-form">
-        <div class="modifier-grid">
-          <div class="field">
-            <label>Nom du client</label>
-            <input type="text" name="nom" required>
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" name="email" required>
-          </div>
-          <div class="field">
-            <label>Magasin</label>
-            <input type="text" name="magasin" list="magasins-list">
-            <!-- liste pour aider l'autocomplétion du magasin -->
-            <datalist id="magasins-list"></datalist>
-          </div>
-          <div class="field">
-            <label>Marque du produit</label>
-            <input type="text" name="marque_produit">
-          </div>
-          <div class="field">
-            <label>Produit concerné</label>
-            <input type="text" name="produit_concerne">
-          </div>
-          <div class="field">
-            <label>Référence de la pièce</label>
-            <input type="text" name="reference_piece">
-          </div>
-          <div class="field">
-            <label>Quantité posée</label>
-            <input type="number" name="quantite_posee" min="0">
-          </div>
-          <div class="field">
-            <label>Immatriculation</label>
-            <input type="text" name="immatriculation">
-          </div>
-          <div class="field">
-            <label>Marque véhicule</label>
-            <input type="text" name="marque_vehicule">
-          </div>
-          <div class="field">
-            <label>Modèle véhicule</label>
-            <input type="text" name="modele_vehicule">
-          </div>
-          <div class="field">
-            <label>Numéro de série</label>
-            <input type="text" name="num_serie">
-          </div>
-          <div class="field">
-            <label>1ère immatriculation</label>
-            <input type="date" name="premiere_immat">
-          </div>
-          <div class="field">
-            <label>Date de pose</label>
-            <input type="date" name="date_pose">
-          </div>
-          <div class="field">
-            <label>Date du constat</label>
-            <input type="date" name="date_constat">
-          </div>
-          <div class="field">
-            <label>Kilométrage à la pose</label>
-            <input type="number" name="km_pose" min="0">
-          </div>
-          <div class="field">
-            <label>Kilométrage au constat</label>
-            <input type="number" name="km_constat" min="0">
-          </div>
-          <div class="field">
-            <label>N° BL 1ère Vente</label>
-            <input type="text" name="bl_pose">
-          </div>
-          <div class="field">
-            <label>N° BL 2ème Vente</label>
-            <input type="text" name="bl_constat">
-          </div>
-          <div class="field full">
-            <label>Problème rencontré</label>
-            <textarea name="probleme_rencontre" rows="3"></textarea>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:14px;">
-          <button type="button" class="btn secondary" id="modifier-annuler">Annuler</button>
-          <button type="submit" class="btn" id="modifier-valider">Valider</button>
         </div>
       </form>
     </div>
@@ -1249,11 +1267,11 @@ mid.innerHTML =
         const name = f.original || f.url || "fichier";
         const urlEnc = encodeURIComponent(f.url || "");
         if (title === "Documents ajoutés au dossier") {
-          // Possibilité de retirer le document
+          // Ajoute un bouton pour supprimer visuellement le document
           html +=
             '<span class="file-pill">' +
             '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' + name + '</a>' +
-            ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(\'' + urlEnc + '\')" title="Supprimer">✕</button>' +
+            ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(event, \'' + urlEnc + '\')" title="Supprimer">✕</button>' +
             '</span>';
         } else {
           html +=
@@ -1368,7 +1386,15 @@ mid.innerHTML =
     "</div></div>" +
     "</div>" +
 
-    // 🔹 (suppression de Numéro d'avoir et Attente MO dans le résumé)
+    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
+    '<div class="detail-grid">' +
+    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
+    (d.numero_avoir || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
+    attenteMoTexte +
+    "</div></div>" +
+    "</div>" +
 
     // 🔹 Puis Documents ajoutés au dossier
     docsAjHtml +
@@ -1638,69 +1664,21 @@ mid.innerHTML =
         });
     }
 
-    // Supprime un document ajouté au dossier (dans la liste "Documents ajoutés au dossier").
-    function supprimerDocumentDossier(urlEnc) {
-      if (!urlEnc) return;
-      // Demande de confirmation à l'administrateur
-      if (!confirm("Supprimer ce document du dossier ?")) return;
-      // Fonction d'appel d'un endpoint de suppression et de gestion de réponse JSON
-      const attemptDelete = (endpoint) => {
-        return fetch(endpoint, { method: 'DELETE' })
-          .then(resp => {
-            // Si le code HTTP indique une erreur, on lève une exception
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            // On tente de parser le JSON, mais si le contenu n'est pas du JSON
-            // (par exemple une page HTML), on lève une erreur pour passer au fallback
-            return resp.json().catch(() => { throw new Error('invalid_json'); });
-          });
-      };
-      // Compose les différents chemins pour la suppression
-      const dossierId = dossierSelectionne && dossierSelectionne.id;
-      const enc = urlEnc;
-      const endpoint1 = dossierId ? ('/api/admin/dossier/' + encodeURIComponent(dossierId) + '/document/' + enc) : null;
-      const endpoint2 = '/api/admin/file/' + enc;
-      // Essaye d'abord avec le chemin dossier/document si le dossier est connu
-      const tryEndpoints = [];
-      if (endpoint1) tryEndpoints.push(endpoint1);
-      tryEndpoints.push(endpoint2);
-      // Procède à l'appel séquentiel jusqu'à réussite
-      const attempt = (idx) => {
-        const url = tryEndpoints[idx];
-        if (!url) return Promise.reject(new Error('Aucun endpoint disponible'));
-        return attemptDelete(url)
-          .then(json => {
-            return json;
-          })
-          .catch(err => {
-            // Passe au suivant si HTTP 404 ou JSON invalide
-            if (idx + 1 < tryEndpoints.length) {
-              return attempt(idx + 1);
-            } else {
-              throw err;
-            }
-          });
-      };
-      attempt(0)
-        .then(json => {
-          if (!json || !json.success) {
-            alert('Erreur lors de la suppression : ' + (json && json.message ? json.message : ''));
-          } else {
-            // Recharger les dossiers pour mettre à jour l'affichage
-            chargerDossiers();
-            // Réafficher le détail si un dossier est toujours sélectionné
-            if (dossierSelectionne) {
-              const d = allDossiers.find(x => x.id === dossierSelectionne.id);
-              if (d) {
-                dossierSelectionne = d;
-                afficherDetail(d);
-              }
-            }
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert('Impossible de supprimer ce document : ' + (err.message === 'invalid_json' ? 'réponse invalide du serveur' : err.message));
-        });
+    /**
+     * Supprime visuellement un document ajouté au dossier. En l'absence d'API
+     * serveur pour réellement supprimer le fichier, cette fonction retire la
+     * pastille de la liste et avertit l'utilisateur.
+     * @param {Event} evt Événement click du bouton de suppression
+     * @param {string} urlEnc Nom de fichier encodé
+     */
+    function supprimerDocumentDossier(evt, urlEnc) {
+      if (!confirm('Supprimer ce document ?')) return;
+      // retire la pastille de la liste
+      if (evt && evt.target) {
+        const pill = evt.target.closest('.file-pill');
+        if (pill) pill.remove();
+      }
+      alert("La suppression de documents n'est pas prise en charge par le serveur.");
     }
 
     function ouvrirModalFournisseur() {
@@ -1717,18 +1695,15 @@ mid.innerHTML =
     }
 
     /**
-     * Ouvre la fenêtre de modification complète du dossier. Remplit les champs
-     * du formulaire avec les valeurs existantes du dossier sélectionné et
-     * affiche un datalist pour le champ "Magasin" en se basant sur les
-     * magasins déjà présents dans la liste des dossiers.
+     * Ouvre la fenêtre de modification complète du dossier. Pré-remplit les champs
+     * avec les valeurs du dossier sélectionné et affiche un datalist pour le champ
+     * magasin en se basant sur les magasins existants dans la liste des dossiers.
      */
     function ouvrirModifierDossier() {
       if (!dossierSelectionne) return;
-      const backdrop = document.getElementById('edit-modal-backdrop');
-      if (!backdrop) return;
+      const back = document.getElementById('edit-modal-backdrop');
       const form = document.getElementById('modifier-form');
-      if (!form) return;
-      // Remplir les champs
+      if (!back || !form) return;
       const d = dossierSelectionne;
       form.nom.value = d.nom || '';
       form.email.value = d.email || '';
@@ -1749,72 +1724,64 @@ mid.innerHTML =
       form.bl_pose.value = d.bl_pose || '';
       form.bl_constat.value = d.bl_constat || '';
       form.probleme_rencontre.value = d.probleme_rencontre || '';
-      // Alimenter le datalist des magasins en fonction des données existantes
+      // Remplir datalist des magasins
       const dataList = document.getElementById('magasins-list');
       if (dataList) {
-        const options = Array.from(new Set(allDossiers.map(x => x.magasin).filter(Boolean)))
-          .sort((a,b) => a.localeCompare(b, 'fr'))
-          .map(m => `<option value="${m}"></option>`) // datalist options
+        const opts = Array.from(new Set(allDossiers.map(x => x.magasin).filter(Boolean)))
+          .sort((a,b) => a.localeCompare(b,'fr'))
+          .map(m => '<option value="' + m + '"></option>')
           .join('');
-        dataList.innerHTML = options;
+        dataList.innerHTML = opts;
       }
-      // Afficher la modal
-      backdrop.style.display = 'flex';
+      back.style.display = 'flex';
     }
 
     /**
      * Ferme la fenêtre de modification complète du dossier.
      */
     function fermerModifierDossier() {
-      const backdrop = document.getElementById('edit-modal-backdrop');
-      if (backdrop) backdrop.style.display = 'none';
+      const back = document.getElementById('edit-modal-backdrop');
+      if (back) back.style.display = 'none';
     }
 
     /**
-     * Soumet le formulaire de modification du dossier. Envoie les données au
-     * serveur via l'API /api/admin/completer-dossier/{id} et met à jour la
-     * liste des dossiers et le détail affiché. Affiche des messages en cas
-     * d'erreur réseau ou de réponse inattendue.
+     * Gère la soumission du formulaire de modification du dossier. Envoie les
+     * informations au serveur via l'API /api/admin/completer-dossier/{id} et
+     * rafraîchit l'affichage des dossiers.
      */
     function onSubmitModifierForm(e) {
       e.preventDefault();
       if (!dossierSelectionne) return;
       const id = dossierSelectionne.id;
-      const form = document.getElementById('modifier-form');
+      const form = e.target;
       const data = {};
-      new FormData(form).forEach((value, key) => {
-        data[key] = value;
-      });
+      new FormData(form).forEach((v, k) => { data[k] = v; });
       fetch('/api/admin/completer-dossier/' + encodeURIComponent(id), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      })
-        .then(resp => {
-          if (!resp.ok) throw new Error('Erreur lors de la sauvegarde du dossier');
-          return resp.json().catch(() => { throw new Error('Réponse JSON invalide'); });
-        })
-        .then(json => {
-          if (!json || !json.success) {
-            alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : '')); 
-            return;
+      }).then(resp => {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.json().catch(() => { throw new Error('invalid_json'); });
+      }).then(json => {
+        if (!json || !json.success) {
+          alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
+          return;
+        }
+        // rafraîchit
+        fermerModifierDossier();
+        chargerDossiers();
+        setTimeout(() => {
+          const d = allDossiers.find(x => x.id === id);
+          if (d) {
+            dossierSelectionne = d;
+            afficherDetail(d);
           }
-          // Mise à jour réussie
-          fermerModifierDossier();
-          chargerDossiers();
-          // Restaurer la sélection du dossier après rafraîchissement
-          setTimeout(() => {
-            const d = allDossiers.find(x => x.id === id);
-            if (d) {
-              dossierSelectionne = d;
-              afficherDetail(d);
-            }
-          }, 200);
-        })
-        .catch(err => {
-          console.error(err);
-          alert(err.message || 'Erreur réseau');
-        });
+        }, 200);
+      }).catch(err => {
+        console.error(err);
+        alert(err.message || 'Erreur réseau');
+      });
     }
 
     function onSubmitFournisseurForm(e) {
@@ -1974,8 +1941,8 @@ function initEvents() {
             if (dossierSelectionne && dossierSelectionne.id) {
               voirDossier(dossierSelectionne.id);
             }
-            } else if (t.id === "btn-modifier-dossier") {
-              ouvrirModifierDossier();
+          } else if (t.id === "btn-modifier-dossier") {
+            ouvrirModifierDossier();
           }
         });
 
@@ -2011,20 +1978,20 @@ function initEvents() {
         });
       }
 
-      // Gestion des événements pour la fenêtre de modification complète du dossier
+      // Gestion des interactions de la fenêtre de modification de dossier
+      const modAnnuler = document.getElementById('modifier-annuler');
       const editBackdrop = document.getElementById('edit-modal-backdrop');
-      const annulerBtn = document.getElementById('modifier-annuler');
-      const modifierForm = document.getElementById('modifier-form');
-      if (annulerBtn) {
-        annulerBtn.addEventListener('click', fermerModifierDossier);
+      const modForm = document.getElementById('modifier-form');
+      if (modAnnuler) {
+        modAnnuler.addEventListener('click', fermerModifierDossier);
       }
       if (editBackdrop) {
         editBackdrop.addEventListener('click', e => {
           if (e.target.id === 'edit-modal-backdrop') fermerModifierDossier();
         });
       }
-      if (modifierForm) {
-        modifierForm.addEventListener('submit', onSubmitModifierForm);
+      if (modForm) {
+        modForm.addEventListener('submit', onSubmitModifierForm);
       }
 
     }
@@ -2141,6 +2108,7 @@ function voirDossier(id) {
           <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
           <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
           <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
+          <tr><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
           <tr class="hide-print"><th>Documents ajoutés</th>
             <td>${
               fichiersDocs.length ? fichiersDocs.map(f=>{
