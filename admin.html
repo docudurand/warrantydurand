@@ -421,17 +421,13 @@ html {
   gap: 0;
 }
 .detail-separator {
-  border: 0;
-  border-top: 1px solid #e2e6f0;
-  margin: 0;       /* collé aux éléments */
+  margin-top: 4px !important;
+  margin-bottom: 2px !important;
 }
 
 .detail-warning-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #b91c1c;
-  text-align: center;
-  margin: 2px 0;   /* juste un tout petit espace */
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
 }
     .detail-form-row {
       display: flex;
@@ -677,30 +673,32 @@ html {
 
 /* 1) Coller l'input "Documents ajoutés au dossier" avec la barre + texte rouge */
 #docs-group {
+  margin-top: 4px !important;
   margin-bottom: 0 !important;
 }
+#docs-group .file-list,
 #docs-ajoutes-buffer {
-  margin-top: 0 !important;   /* enlève le vide créé par la <ul> même vide */
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* 2) Coller la zone "Réponse au client" avec le titre "Pièces jointes..." */
 .detail-form-group.reponse-client {
   margin-bottom: 0 !important;
-  gap: 0 !important;          /* plus de petit espace interne en bas */
 }
 .detail-form-group.reponse-client textarea {
   margin-bottom: 0 !important;
 }
 #reponse-group {
-  margin-top: 0 !important;   /* colle le titre sur la zone de texte */
+  margin-top: 4px !important;   /* colle le titre juste sous la zone de texte */
 }
-
-/* 3) Coller l'input "Pièces jointes..." avec les boutons en bas */
+#reponse-group .file-list,
 #reponse-files-buffer {
-  margin-top: 0 !important;   /* pas d'espace si la liste est vide */
+  margin: 0 !important;
+  padding: 0 !important;
 }
 .detail-buttons {
-  margin-top: 0 !important;
+  margin-top: 4px !important;
 }
 
 </style>
