@@ -12,15 +12,15 @@
   <style>
     * { box-sizing: border-box; }
     body {
-  margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f3f4f7;
-  color: #123046;
-  font-size: 1.08rem;
-}
-html {
-  font-size: 17px;
-}
+	margin: 0;
+	font-family: "Segoe UI", Arial, sans-serif;
+	background: #f3f4f7;
+	color: #123046;
+	font-size: 1.08rem;
+	}
+	html {
+	font-size: 18px;
+	}
     .banner {
       width: 100%;
       background: linear-gradient(135deg, #0f3c5e, #176a9d);
@@ -276,7 +276,6 @@ html {
   border-radius: 12px;
   box-shadow: 0 2px 12px #0001;
   padding: 10px 10px 4px;
-  /* agrandit davantage la hauteur de la liste des dossiers pour afficher plus de lignes */
   max-height: calc(100vh - 80px);
   overflow: auto;
 }
@@ -286,7 +285,6 @@ html {
   border-bottom: 1px solid #eef1f5;
   cursor: pointer;
   display: grid;
-  /* colonne n° dossier | infos client | magasin/ID | statut */
   grid-template-columns: 90px 1fr auto auto;
   gap: 8px;
   align-items: center;
@@ -412,62 +410,6 @@ html {
       color: #234;
       word-break: break-word;
     }
-    .detail-form {
-  margin-top: 2px;
-  border-top: 1px solid #e2e6f0;
-  padding-top: 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.detail-separator {
-  margin-top: 4px !important;
-  margin-bottom: 2px !important;
-}
-
-.detail-warning-title {
-  margin-top: 0 !important;
-  margin-bottom: 6px !important;
-}
-    .detail-form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .detail-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1 1 170px;
-  font-size: 0.85rem;
-  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
-  margin: 0;
-}
-    .detail-form-group label {
-      font-weight: 600;
-      color: #345;
-    }
-    .detail-form-group select,
-    .detail-form-group input[type="text"],
-    .detail-form-group textarea,
-    .detail-form-group input[type="file"] {
-      font-size: 0.9rem;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #c4cfdd;
-      outline: none;
-      background: #fff;
-    }
-    .detail-form-group textarea {
-      resize: vertical;
-      min-height: 40px;
-    }
-    .detail-form-group input:focus,
-    .detail-form-group select:focus,
-    .detail-form-group textarea:focus {
-      border-color: #176a9d;
-      box-shadow: 0 0 0 1px #176a9d33;
-    }
     .detail-files-list {
       font-size: 0.85rem;
       color: #345;
@@ -533,8 +475,6 @@ html {
 .switch input:checked + .slider:before {
   transform: translateX(22px);
 }
-
-
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -613,6 +553,79 @@ html {
     .file-remove:hover {
       background: #a11610;
     }
+	    .detail-form {
+      margin-top: 8px;
+      border-top: 1px solid #e2e6f0;
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;              /* petit espace régulier entre les blocs */
+    }
+
+    /* ligne Numéro d'avoir / Attente MO */
+    .detail-form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 0;             /* pas de gros blanc supplémentaire */
+    }
+
+    .detail-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1 1 170px;
+      font-size: 0.85rem;
+      margin: 0 0 6px 0;     /* petit espace sous chaque champ */
+    }
+
+    .detail-separator {
+      display: block;
+      border: 0;
+      border-top: 1px solid #e2e6f0;
+      margin: 6px 0 4px 0;   /* rapproche la ligne du champ au-dessus */
+    }
+
+    .detail-warning-title {
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      color: #c00;
+      text-align: center;
+    }
+
+    /* bloc "Documents ajoutés au dossier" */
+    #docs-group {
+      margin-bottom: 0;      /* pas de blanc en plus sous l’input */
+    }
+
+    /* bloc "Réponse au client" */
+    .detail-form-group.reponse-client {
+      margin-bottom: 0;      /* colle la zone texte au bloc suivant */
+    }
+    .detail-form-group.reponse-client textarea {
+      margin: 0;
+    }
+
+    /* bloc "Pièces jointes pour le client (envoi mail)" */
+    #reponse-group {
+      margin-top: 4px;       /* très faible espace au-dessus du titre */
+    }
+
+    /* liste des fichiers (quand tu ajoutes des pièces jointes) */
+    .file-list {
+      margin: 2px 0 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    /* boutons en bas (Enregistrer / Imprimer / ...) */
+    .detail-buttons {
+      margin-top: 6px;       /* rapproche les boutons de l’input de pièces jointes */
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
@@ -669,18 +682,12 @@ html {
       margin-top: 20px;
       justify-content: center;
     }
-/* === Ajustements très précis des espaces dans le formulaire détail === */
-
-/* 1) Sous "Documents ajoutés au dossier (non envoyés au client)" */
 #docs-group {
   margin-bottom: 0 !important;
 }
 hr.detail-separator {
-  margin-top: -10px !important;    /* remonte la barre rouge vers l'input */
+  margin-top: -10px !important;
 }
-
-/* 2) Entre la zone "Réponse au client" et le titre
-      "Pièces jointes pour le client (envoi mail)" */
 .detail-form-group.reponse-client {
   margin-bottom: 0 !important;
 }
@@ -688,19 +695,16 @@ hr.detail-separator {
   margin-bottom: 0 !important;
 }
 #reponse-group {
-  margin-top: -6px !important;     /* rapproche le titre de la zone texte */
+  margin-top: -6px !important;
 }
 
-/* 3) Entre l'input "Pièces jointes..." et les boutons */
 #reponse-group input[type="file"] {
   margin-bottom: 0 !important;
 }
 .detail-buttons {
-  margin-top: -8px !important;     /* remonte légèrement le bloc de boutons */
+  margin-top: -8px !important;
 }
-/* ===== Corrige précisément les espaces dans le formulaire détail ===== */
 
-/* 1) Entre "Documents ajoutés au dossier (non envoyés au client)" et le texte rouge */
 #docs-group {
   margin-bottom: 0 !important;
 }
@@ -708,14 +712,12 @@ hr.detail-separator {
   display: block;
   border: 0;
   border-top: 1px solid #e2e6f0;
-  margin: 4px 0 2px 0 !important;  /* très peu d'espace */
+  margin: 4px 0 2px 0 !important;
 }
 .detail-warning-title {
   margin: 0 0 6px 0 !important;
 }
 
-/* 2) Entre la zone "Réponse au client" et le titre
-      "Pièces jointes pour le client (envoi mail)" */
 .detail-form-group.reponse-client {
   margin-bottom: 0 !important;
 }
@@ -723,10 +725,9 @@ hr.detail-separator {
   margin: 0 !important;
 }
 #reponse-group {
-  margin-top: 4px !important;   /* colle le titre juste sous la zone texte */
+  margin-top: 4px !important;
 }
 
-/* 3) Entre l'input "Pièces jointes..." et les boutons en bas */
 #reponse-group .file-list,
 #reponse-files-buffer {
   margin: 0 !important;
@@ -2046,7 +2047,6 @@ function initEvents() {
         });
       }
 
-      // Gestion des interactions de la fenêtre de modification de dossier
       const modAnnuler = document.getElementById('modifier-annuler');
       const editBackdrop = document.getElementById('edit-modal-backdrop');
       const modForm = document.getElementById('modifier-form');
@@ -2064,8 +2064,6 @@ function initEvents() {
 
     }
 
-    
-  // === Impression fiche dossier (hérité de l'ancien admin) ===
 function formatDateFRshort(val) {
     if (!val) return "";
     let d = typeof val === "string" ? new Date(val) : val;
