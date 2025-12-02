@@ -114,15 +114,18 @@ html {
       margin-bottom: 16px;
     }
     .top-left {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
     .top-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #0f3c5e;
-    }
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f3c5e;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
     .top-sub {
       font-size: 0.95rem;
       color: #567;
@@ -166,11 +169,12 @@ html {
 }
 
 .chip-role {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f3c5e;
+  background: transparent;
   padding: 0;
-  background: none;
   border-radius: 0;
-  font-size: 1em;
-  color: inherit;
 }
 
     .year-tabs {
@@ -807,19 +811,19 @@ html {
   </div>
 
   <div id="admin-content">
-    <div class="top-tools">
-      <div class="top-left">
-  <div class="top-title">Suivi des dossiers de garantie</div>
-  <div class="top-role">
-    <span id="role-chip" class="chip-role" style="display:none;"></span>
-  </div>
-</div>
-      <div class="top-right">
-        <button id="btn-export" class="btn" title="Exporter toutes les demandes en Excel">
-          📊 Export Excel
-        </button>
+  <div class="top-tools">
+    <div class="top-left">
+      <div class="top-title">
+        Suivi des dossiers de garantie
+        <span id="role-chip" class="chip-role" style="display:none;"></span>
       </div>
     </div>
+    <div class="top-right">
+      <button id="btn-export" class="btn" title="Exporter toutes les demandes en Excel">
+        📊 Export Excel
+      </button>
+    </div>
+  </div>
 
     <div class="year-tabs" id="year-tabs"></div>
 
@@ -1422,60 +1426,61 @@ const docsAjHtml = renderFilesList(
     "</div>" +
     "</div>" +
     '<div class="detail-body">' +
+
     '<div class="detail-grid">' +
-  '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
-  (d.produit_concerne || "") +
-  "</div></div>" +
-  '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
-  (d.marque_produit || "") +
-  "</div></div>" +
-  '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
-  (d.reference_piece || "") +
-  "</div></div>" +
-  '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
-  (d.immatriculation || "") +
-  "</div></div>" +
-  '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
-  (d.probleme_rencontre || "")
-    .replace(/\r\n/g, "<br>")
-    .replace(/\r/g, "<br>") +
-  "</div></div>" +
-  "</div>" +
-	
-	'<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Quantité posée</div><div class="detail-field-value">' +
-    (d.quantite_posee || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Marque véhicule</div><div class="detail-field-value">' +
-    (d.marque_vehicule || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Modèle véhicule</div><div class="detail-field-value">' +
-    (d.modele_vehicule || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Numéro de série</div><div class="detail-field-value">' +
-    (d.num_serie || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">1ère immatriculation</div><div class="detail-field-value">' +
-    (d.premiere_immat || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Date de pose</div><div class="detail-field-value">' +
-    (d.date_pose || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Date du constat</div><div class="detail-field-value">' +
-    (d.date_constat || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Kilométrage à la pose</div><div class="detail-field-value">' +
-    (d.km_pose || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Kilométrage au constat</div><div class="detail-field-value">' +
-    (d.km_constat || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">N° BL 1ère Vente</div><div class="detail-field-value">' +
-    (d.bl_pose || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">N° BL 2ème Vente</div><div class="detail-field-value">' +
-    (d.bl_constat || "") +
-    "</div></div>" +
+      '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
+        (d.produit_concerne || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
+        (d.marque_produit || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
+        (d.reference_piece || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
+        (d.immatriculation || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
+        (d.probleme_rencontre || "")
+          .replace(/\r\n/g, "<br>")
+          .replace(/\r/g, "<br>") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Quantité posée</div><div class="detail-field-value">' +
+        (d.quantite_posee || "") +
+      "</div></div>" +
+    "</div>" +
+
+    '<div class="detail-grid">' +
+      '<div><div class="detail-field-label">Marque véhicule</div><div class="detail-field-value">' +
+        (d.marque_vehicule || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Modèle véhicule</div><div class="detail-field-value">' +
+        (d.modele_vehicule || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Numéro de série</div><div class="detail-field-value">' +
+        (d.num_serie || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">1ère immatriculation</div><div class="detail-field-value">' +
+        (d.premiere_immat || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Date de pose</div><div class="detail-field-value">' +
+        (d.date_pose || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Date du constat</div><div class="detail-field-value">' +
+        (d.date_constat || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Kilométrage à la pose</div><div class="detail-field-value">' +
+        (d.km_pose || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">Kilométrage au constat</div><div class="detail-field-value">' +
+        (d.km_constat || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">N° BL 1ère Vente</div><div class="detail-field-value">' +
+        (d.bl_pose || "") +
+      "</div></div>" +
+      '<div><div class="detail-field-label">N° BL 2ème Vente</div><div class="detail-field-value">' +
+        (d.bl_constat || "") +
+      "</div></div>" +
     "</div>" +
 
     docsAjHtml +
