@@ -559,15 +559,14 @@
       padding-top: 8px;
       display: flex;
       flex-direction: column;
-      gap: 8px;              /* petit espace régulier entre les blocs */
+      gap: 8px;
     }
 
-    /* ligne Numéro d'avoir / Attente MO */
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin: 0;             /* pas de gros blanc supplémentaire */
+      margin: 0;
     }
 
     .detail-form-group {
@@ -576,14 +575,14 @@
       gap: 4px;
       flex: 1 1 170px;
       font-size: 0.85rem;
-      margin: 0 0 6px 0;     /* petit espace sous chaque champ */
+      margin: 0 0 6px 0;
     }
 
     .detail-separator {
       display: block;
       border: 0;
       border-top: 1px solid #e2e6f0;
-      margin: 6px 0 4px 0;   /* rapproche la ligne du champ au-dessus */
+      margin: 6px 0 4px 0;
     }
 
     .detail-warning-title {
@@ -593,150 +592,28 @@
       text-align: center;
     }
 
-    /* bloc "Documents ajoutés au dossier" */
-    #docs-group {
-      margin-bottom: 0;      /* pas de blanc en plus sous l’input */
-    }
+    /* === RÉDUCTION DES ESPACES DANS LE FORMULAIRE DÉTAIL === */
 
-    /* bloc "Réponse au client" */
-    .detail-form-group.reponse-client {
-      margin-bottom: 0;      /* colle la zone texte au bloc suivant */
-    }
-    .detail-form-group.reponse-client textarea {
-      margin: 0;
-    }
-
-    /* bloc "Pièces jointes pour le client (envoi mail)" */
-    #reponse-group {
-      margin-top: 4px;       /* très faible espace au-dessus du titre */
-    }
-
-    /* liste des fichiers (quand tu ajoutes des pièces jointes) */
-    .file-list {
-      margin: 2px 0 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    /* boutons en bas (Enregistrer / Imprimer / ...) */
-    .detail-buttons {
-      margin-top: 6px;       /* rapproche les boutons de l’input de pièces jointes */
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .detail-form-group.reponse-client + .detail-form-group {
-      margin-top: 0 !important;
-    }
-    #edit-modal-backdrop .modal {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px 22px;
-      max-width: 850px;
-      width: 95vw;
-      box-shadow: 0 8px 24px #0004;
-      font-size: 0.95rem;
-    }
-    #edit-modal-backdrop h3 {
-      color: #006e90;
-      font-size: 1.35rem;
-      margin: 0 0 20px;
-    }
-    #edit-modal-backdrop .modifier-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px 20px;
-    }
-    #edit-modal-backdrop .modifier-grid .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    #edit-modal-backdrop .modifier-grid .field.full {
-      grid-column: 1 / -1;
-    }
-    #edit-modal-backdrop .modifier-grid .field label {
-      font-weight: 600;
-      color: #195e7c;
-      margin-bottom: 3px;
-      font-size: 0.95rem;
-    }
-    #edit-modal-backdrop .modifier-grid .field input,
-    #edit-modal-backdrop .modifier-grid .field select,
-    #edit-modal-backdrop .modifier-grid .field textarea {
-      padding: 8px;
-      font-size: 0.95rem;
-      border: 1px solid #b4c8d8;
-      border-radius: 6px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    #edit-modal-backdrop .modifier-grid .field textarea {
-      resize: vertical;
-      min-height: 70px;
-    }
-    #edit-modal-backdrop .modal-buttons {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
-      justify-content: center;
-    }
-#docs-group {
-  margin-bottom: 0 !important;
-}
-hr.detail-separator {
-  margin-top: -10px !important;
-}
-.detail-form-group.reponse-client {
-  margin-bottom: 0 !important;
-}
-.detail-form-group.reponse-client textarea {
-  margin-bottom: 0 !important;
-}
-#reponse-group {
-  margin-top: -6px !important;
+/* on enlève le gros gap vertical entre chaque bloc du formulaire */
+.detail-form {
+  gap: 0 !important;
 }
 
-#reponse-group input[type="file"] {
-  margin-bottom: 0 !important;
-}
+/* on met des petites marges identiques autour des blocs importants */
+#docs-group,
+.detail-separator,
+.detail-warning-title,
+.detail-form-group.reponse-client,
+#reponse-group,
 .detail-buttons {
-  margin-top: -8px !important;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
 }
 
-#docs-group {
-  margin-bottom: 0 !important;
-}
-hr.detail-separator {
-  display: block;
-  border: 0;
-  border-top: 1px solid #e2e6f0;
-  margin: 4px 0 2px 0 !important;
-}
-.detail-warning-title {
-  margin: 0 0 6px 0 !important;
-}
-
-.detail-form-group.reponse-client {
-  margin-bottom: 0 !important;
-}
+/* pas de marge supplémentaire entre la zone de réponse et les PJ */
 .detail-form-group.reponse-client textarea {
   margin: 0 !important;
 }
-#reponse-group {
-  margin-top: 4px !important;
-}
-
-#reponse-group .file-list,
-#reponse-files-buffer {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-.detail-buttons {
-  margin-top: 4px !important;
-}
-
 
 </style>
 </head>
