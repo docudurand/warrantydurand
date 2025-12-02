@@ -6,12 +6,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background:#f9fafb; margin:0; }
-    .banniere { width: 100vw; max-width: 100%; margin: 0; padding: 0; display: block; object-fit: cover; min-height: 60px; max-height: 180px; background: #fff; box-shadow: 0 2px 18px #0001;}
+    /*
+     * Styles remis au goût du jour. Le corps utilise un fond clair et un texte sombre
+     * pour se rapprocher de la charte du nouveau tableau de bord. Les classes
+     * héritées (ex : .banniere) restent en place pour ne pas casser le JavaScript
+     * existant, mais leur usage a été remplacé par .banner dans le code HTML.
+     */
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f3f4f7; color: #123046; margin: 0; }
+    /* Ancienne bannière masquée en pratique, conservée pour compatibilité */
+    .banniere { display: none; }
+    /* Nouveau bandeau inspiré de la maquette admin */
+    .banner {
+      width: 100%;
+      background: linear-gradient(135deg, #0f3c5e, #176a9d);
+      color: #fff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 10px #0003;
+    }
+    .banner img {
+      height: 52px;
+      width: 52px;
+    }
+    .banner-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .banner-sub {
+      font-size: 0.9rem;
+      opacity: 0.85;
+    }
     .top-tools { width: 100vw; max-width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin-top: 30px; margin-bottom: 30px; padding-right: 2.5vw; }
     .top-tools button { background:#1780b0; color:#fff; border-radius:20px 0 0 20px; padding:8px 20px 8px 16px; border:none; box-shadow:0 2px 6px #0001; font-size:1.03em; cursor:pointer; display:block; transition: background 0.13s, color 0.13s;}
-    #login { max-width:380px; margin:90px auto; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001; padding:38px 28px; text-align:center;}
-    #admin-content { display:none; width: 99vw; max-width: 1920px; margin:34px auto 0 auto; background:#fff; border-radius:24px; box-shadow:0 3px 20px #0001; padding:54px 48px 48px 48px; box-sizing: border-box; overflow-x: auto; min-width: 320px;}
+    #login {
+      max-width: 420px;
+      margin: 70px auto;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px #0002;
+      padding: 34px 28px 38px;
+      text-align: center;
+    }
+    #login h2 {
+      margin: 0 0 20px;
+      font-size: 1.45rem;
+      text-align: center;
+      color: #0f3c5e;
+    }
+    #login input[type="password"] {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid #c5ced9;
+      font-size: 1rem;
+      outline: none;
+    }
+    #login input[type="password"]:focus {
+      border-color: #176a9d;
+      box-shadow: 0 0 0 1px #176a9d33;
+    }
+    #login button {
+      margin-top: 18px;
+      width: 100%;
+      padding: 10px 0;
+      border-radius: 8px;
+      border: none;
+      background: #176a9d;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    #login button:hover {
+      background: #115176;
+    }
+    #login-msg {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #b00020;
+      min-height: 18px;
+      text-align: center;
+    }
+    #admin-content {
+      display: none;
+      width: 95vw;
+      max-width: 1440px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 6px 18px #0001;
+      padding: 40px 36px 36px 36px;
+      box-sizing: border-box;
+      overflow-x: auto;
+      min-width: 320px;
+    }
     h2 { color:#006e90; font-size:2.28em; font-weight:bold; text-align:center; margin-bottom:20px; letter-spacing: 0.01em;}
     .filters-row { display: flex; gap: 18px; align-items: center; justify-content: flex-end; margin-bottom: 16px; flex-wrap: wrap;}
     .filters-row label { font-size: 1.06em; color: #195e7c; margin-right: 6px; }
@@ -36,11 +127,38 @@
     .counter-card .counter-label.purple { color: #7d3cff; }
     .counter-card .counter-value.purple { color: #7d3cff; }
 
-    table { width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;}
-    th, td { border:1px solid #e6edf1; padding:12px 7px; text-align:center; font-size:1.09em;}
-    td:nth-child(5), th:nth-child(5) { max-width: 120px;white-space: normal; overflow-wrap: break-word; word-break: normal;}
-    th { background:#006e90; color:#fff; font-size:1.12em; font-weight:600;}
-    tr:nth-child(even) td { background:#f4fafd;}
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      table-layout: fixed;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th,
+    td {
+      border: 1px solid #eef1f5;
+      padding: 12px 7px;
+      text-align: center;
+      font-size: 1.02em;
+    }
+    td:nth-child(5),
+    th:nth-child(5) {
+      max-width: 120px;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-break: normal;
+    }
+    th {
+      background: #176a9d;
+      color: #fff;
+      font-size: 1.12em;
+      font-weight: 600;
+    }
+    tr:nth-child(even) td {
+      background: #f8fbff;
+    }
     td.action, th.action { min-width: 215px; max-width: 330px; }
 
     .statut-select { padding:7px 13px; border-radius:5px; border:1px solid #b4c8d8; }
@@ -55,6 +173,15 @@
     .mini-form input[name="numero_avoir"] { min-width: 120px; padding: 6px 8px; font-size: 0.98em; border-radius:6px; border:1px solid #c3d2e0;}
     .mini-form select { font-size:0.97em;}
     .mini-form .bouton { margin-left:7px;}
+
+    /*
+     * Positionne la colonne de boutons (Mettre à jour / Annuler) en bas à droite du dossier.
+     * Le dernier élément d'une mini‑form est aligné à la fin et pousse les autres éléments sur la gauche.
+     */
+    .mini-form > div:last-child {
+      align-self: flex-end;
+      margin-left: auto;
+    }
     .mini-form .admin-msg { color:#259a54; font-size:0.98em;}
     .maj-btn { background: #1780b0; padding: 7px 12px;}
     .statut-chip { display:inline-flex; align-items:center; gap:6px; font-weight:600; font-size:1em;}
@@ -314,7 +441,14 @@
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/banniere.png" alt="Bannière Garantie Durand Services" class="banniere">
+  <!-- Bandeau d'en‑tête remanié pour s'inspirer du nouveau design admin -->
+  <div class="banner">
+    <img src="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png" alt="DSG">
+    <div>
+      <div class="banner-title">DURAND SERVICES GARANTIE</div>
+      <div class="banner-sub">Administration des dossiers de garantie</div>
+    </div>
+  </div>
   <div class="top-tools" id="top-tools" style="display:none;">
     <button id="btn-export-excel" title="Exporter les données au format Excel">⬇️ Export données</button>
   </div>
