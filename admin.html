@@ -787,7 +787,6 @@ html {
           <button type="submit" class="btn" id="modifier-valider">Valider</button>
         </div>
       </form>
-      <!-- datalist pour autocompléter les magasins -->
       <datalist id="magasins-list"></datalist>
     </div>
   </div>
@@ -873,7 +872,6 @@ html {
     </div>
   </div>
 
-  <!-- Modal fournisseur -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal">
       <h3>Envoyer le dossier au fournisseur</h3>
@@ -1297,7 +1295,7 @@ mid.innerHTML =
       renderListe();
     }
 
-    function renderFilesList(arr, title, section) {
+function renderFilesList(arr, title, section) {
   if (!arr || !arr.length) return "";
   let html = '<div class="detail-field-label">' + title + "</div>";
   html += '<div class="detail-files-list">';
@@ -1334,7 +1332,6 @@ function supprimerDocumentDossier(evt) {
 
   const url = pill.dataset.url;
   const section = pill.dataset.section || "documentsAjoutes";
-
   if (!url) return;
 
   if (!confirm("Supprimer ce document du dossier ?")) return;
