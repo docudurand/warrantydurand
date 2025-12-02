@@ -1189,6 +1189,42 @@ mid.innerHTML =
       .replace(/\r/g, "<br>") +
     "</div></div>" +
     "</div>" +
+	
+	'<div class="detail-grid">' +
+    '<div><div class="detail-field-label">Quantité posée</div><div class="detail-field-value">' +
+    (d.quantite_posee || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Marque véhicule</div><div class="detail-field-value">' +
+    (d.marque_vehicule || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Modèle véhicule</div><div class="detail-field-value">' +
+    (d.modele_vehicule || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Numéro de série</div><div class="detail-field-value">' +
+    (d.num_serie || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">1ère immatriculation</div><div class="detail-field-value">' +
+    (d.premiere_immat || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Date de pose</div><div class="detail-field-value">' +
+    (d.date_pose || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Date du constat</div><div class="detail-field-value">' +
+    (d.date_constat || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Kilométrage à la pose</div><div class="detail-field-value">' +
+    (d.km_pose || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Kilométrage au constat</div><div class="detail-field-value">' +
+    (d.km_constat || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">N° BL 1ère Vente</div><div class="detail-field-value">' +
+    (d.bl_pose || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">N° BL 2ème Vente</div><div class="detail-field-value">' +
+    (d.bl_constat || "") +
+    "</div></div>" +
+    "</div>" +
 
     // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
     '<div class="detail-grid">' +
