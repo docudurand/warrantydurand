@@ -16,8 +16,7 @@
   font-family: "Segoe UI", Arial, sans-serif;
   background: #f3f4f7;
   color: #123046;
-  /* Augmente davantage la taille globale de la police */
-  font-size: 1.08rem;
+  font-size: 1.14rem;
 }
 
     .banner {
@@ -1005,24 +1004,25 @@
     }
 
     function chargerDossiers() {
-      fetch("/api/admin/dossiers")
-        .then(r => r.json())
-        .then(data => {
-          if (!Array.isArray(data)) data = [];
-          data.forEach(normaliserStatut);
-          allDossiers = data;
-          construireOnglets();
-          majStatsEtListe();
-        })
-        .catch(err => {
-          console.error("Erreur chargement dossiers:", err);
-          const list = document.getElementById("dossier-list");
-          if (list) {
-            list.innerHTML =
-              '<div class="empty-msg">Erreur de chargement des dossiers.</div>';
-          }
-        });
-    }
+  return fetch("/api/admin/dossiers")
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data)) data = [];
+      data.forEach(normaliserStatut);
+      allDossiers = data;
+      construireOnglets();
+      majStatsEtListe();
+      return data; // pour chaîner si besoin
+    })
+    .catch(err => {
+      console.error("Erreur chargement dossiers:", err);
+      const list = document.getElementById("dossier-list");
+      if (list) {
+        list.innerHTML =
+          '<div class="empty-msg">Erreur de chargement des dossiers.</div>';
+      }
+    });
+}
 
     function construireOnglets() {
       const tabsEl = document.getElementById("year-tabs");
@@ -1656,14 +1656,34 @@ mid.innerHTML =
   })
     .then(r => r.json())
     .then(json => {
-      if (!json || !json.success) {
-        alert("Erreur lors de la mise à jour : " + (json && json.message ? json.message : ""));
-      } else {
-        alert("Enregistrement effectué.");
-        // Recharge toute la page après clic sur OK
-        window.location.reload();
+  if (!json || !json.success) {
+    alert("Erreur lors de la mise à jour : " + (json && json.message ? json.message : ""));
+  } else {
+    alert("Enregistrement effectué.");
+
+    const currentId = id;
+
+    // Recharge uniquement les données, sans repasser par la page de login
+    chargerDossiers().then(() => {
+      const updated = allDossiers.find(d => d.id === currentId);
+      if (updated) {
+        dossierSelectionne = updated;
+        afficherDetail(updated);
+
+        // remet la ligne en surbrillance dans la liste
+        const row = document.querySelector(
+          '.dossier-row[data-id="' + currentId + '"]'
+        );
+        if (row) {
+          document
+            .querySelectorAll(".dossier-row.active")
+            .forEach(r => r.classList.remove("active"));
+          row.classList.add("active");
+        }
       }
-    })
+    });
+  }
+})
     .catch(err => {
       console.error(err);
       alert("Erreur réseau lors de la mise à jour.");
@@ -1779,17 +1799,40 @@ mid.innerHTML =
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return resp.json().catch(() => { throw new Error('invalid_json'); });
         }).then(json => {
-    if (!json || !json.success) {
-      alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
-      return;
+  if (!json || !json.success) {
+    alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
+    return;
+  }
+
+  alert('Enregistrement effectué.');
+
+  const currentId = id;
+
+  // On ferme le popup
+  fermerModifierDossier();
+
+  // On recharge les dossiers sans repasser par la page de connexion
+  chargerDossiers().then(() => {
+    const updated = allDossiers.find(d => d.id === currentId);
+    if (updated) {
+      dossierSelectionne = updated;
+      afficherDetail(updated);
+
+      const row = document.querySelector(
+        '.dossier-row[data-id="' + currentId + '"]'
+      );
+      if (row) {
+        document
+          .querySelectorAll(".dossier-row.active")
+          .forEach(r => r.classList.remove("active"));
+        row.classList.add("active");
+      }
     }
-    // Succès : on affiche le message puis on recharge la page
-    alert('Enregistrement effectué.');
-    window.location.reload();
-  }).catch(err => {
-    console.error(err);
-    alert(err.message || 'Erreur réseau');
   });
+}).catch(err => {
+  console.error(err);
+  alert(err.message || 'Erreur réseau');
+});
 }
 
     function onSubmitFournisseurForm(e) {
