@@ -513,6 +513,11 @@
       box-shadow: 0 8px 24px #0004;
       font-size: 0.9rem;
     }
+    /* Larger modal variant used for full dossier edition */
+    .modal.large {
+      max-width: 800px;
+      width: 96vw;
+    }
     .modal h3 {
       margin: 0 0 8px;
       font-size: 1.05rem;
@@ -548,6 +553,13 @@
       gap: 8px;
       margin-top: 6px;
     }
+
+    /* Reduce spacing around documents upload areas and warning bar */
+    #docs-group,
+    #reponse-group {
+      margin-bottom: 2px !important;
+    }
+
   
     .file-list {
       margin: 4px 0 0 0;
@@ -589,6 +601,111 @@
     <div>
       <div class="banner-title">DURAND SERVICES GARANTIE</div>
       <div class="banner-sub">Administration des dossiers de garantie</div>
+    </div>
+  </div>
+
+  <!-- Modal de modification du dossier -->
+  <div class="modal-backdrop" id="edit-modal-backdrop">
+    <div class="modal large" id="edit-modal">
+      <h3>Modifier le dossier</h3>
+      <form id="modifier-dossier-form">
+        <!-- Les champs seront peuplés dynamiquement lors de l'ouverture -->
+        <div class="modal-row">
+          <label for="mod-nom">Nom du client</label>
+          <input type="text" id="mod-nom" name="nom">
+        </div>
+        <div class="modal-row">
+          <label for="mod-email">Email</label>
+          <input type="email" id="mod-email" name="email">
+        </div>
+        <div class="modal-row">
+          <label for="mod-magasin">Magasin</label>
+          <select id="mod-magasin" name="magasin">
+            <option value="">-- Choisir --</option>
+            <option value="Annemasse">Annemasse</option>
+            <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
+            <option value="Chasse-sur-Rhone">Chasse-sur-Rhone</option>
+            <option value="Chassieu">Chassieu</option>
+            <option value="Gleize">Gleize</option>
+            <option value="La Motte-Servolex">La Motte-Servolex</option>
+            <option value="Les Echets">Les Echets</option>
+            <option value="Pavi">Pavi</option>
+            <option value="Rives">Rives</option>
+            <option value="Saint-Egreve">Saint-Egreve</option>
+            <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
+            <option value="Saint-martin-d'heres">Saint-martin-d'heres</option>
+            <option value="Seynod">Seynod</option>
+          </select>
+        </div>
+        <div class="modal-row">
+          <label for="mod-marque-produit">Marque du produit</label>
+          <input type="text" id="mod-marque-produit" name="marque_produit">
+        </div>
+        <div class="modal-row">
+          <label for="mod-produit-concerne">Produit concerné</label>
+          <input type="text" id="mod-produit-concerne" name="produit_concerne">
+        </div>
+        <div class="modal-row">
+          <label for="mod-reference-piece">Référence de la pièce</label>
+          <input type="text" id="mod-reference-piece" name="reference_piece">
+        </div>
+        <div class="modal-row">
+          <label for="mod-quantite-posee">Quantité posée</label>
+          <input type="number" id="mod-quantite-posee" name="quantite_posee" min="0">
+        </div>
+        <div class="modal-row">
+          <label for="mod-immatriculation">Immatriculation</label>
+          <input type="text" id="mod-immatriculation" name="immatriculation">
+        </div>
+        <div class="modal-row">
+          <label for="mod-marque-vehicule">Marque du véhicule</label>
+          <input type="text" id="mod-marque-vehicule" name="marque_vehicule">
+        </div>
+        <div class="modal-row">
+          <label for="mod-modele-vehicule">Modèle du véhicule</label>
+          <input type="text" id="mod-modele-vehicule" name="modele_vehicule">
+        </div>
+        <div class="modal-row">
+          <label for="mod-num-serie">Numéro de série</label>
+          <input type="text" id="mod-num-serie" name="num_serie">
+        </div>
+        <div class="modal-row">
+          <label for="mod-premiere-immat">1ère immatriculation</label>
+          <input type="date" id="mod-premiere-immat" name="premiere_immat">
+        </div>
+        <div class="modal-row">
+          <label for="mod-date-pose">Date de pose</label>
+          <input type="date" id="mod-date-pose" name="date_pose">
+        </div>
+        <div class="modal-row">
+          <label for="mod-date-constat">Date du constat</label>
+          <input type="date" id="mod-date-constat" name="date_constat">
+        </div>
+        <div class="modal-row">
+          <label for="mod-km-pose">Kilométrage à la pose</label>
+          <input type="number" id="mod-km-pose" name="km_pose" min="0">
+        </div>
+        <div class="modal-row">
+          <label for="mod-km-constat">Kilométrage au constat</label>
+          <input type="number" id="mod-km-constat" name="km_constat" min="0">
+        </div>
+        <div class="modal-row">
+          <label for="mod-bl-pose">N° BL 1ère Vente</label>
+          <input type="text" id="mod-bl-pose" name="bl_pose">
+        </div>
+        <div class="modal-row">
+          <label for="mod-bl-constat">N° BL 2ème Vente</label>
+          <input type="text" id="mod-bl-constat" name="bl_constat">
+        </div>
+        <div class="modal-row">
+          <label for="mod-probleme">Problème rencontré</label>
+          <textarea id="mod-probleme" name="probleme_rencontre" rows="3"></textarea>
+        </div>
+        <div class="modal-buttons">
+          <button type="submit" class="btn">💾 Enregistrer</button>
+          <button type="button" class="btn secondary" id="btn-modifier-cancel">Annuler</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1113,12 +1230,20 @@ mid.innerHTML =
       html += '<div class="detail-files-list">';
       arr.forEach(f => {
         const name = f.original || f.url || "fichier";
-        html +=
-          '<a class="file-pill" href="/download/' +
-          encodeURIComponent(f.url) +
-          '" target="_blank" title="Télécharger">' +
-          name +
-          "</a>";
+        const urlEnc = encodeURIComponent(f.url || "");
+        // For documents added to the dossier we include a remove button
+        if (title === "Documents ajoutés au dossier") {
+          html +=
+            '<span class="file-pill">' +
+            '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' + name + '</a>' +
+            ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(\'' + urlEnc + '\')" title="Supprimer">✕</button>' +
+            '</span>';
+        } else {
+          html +=
+            '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+            name +
+            "</a>";
+        }
       });
       html += "</div>";
       return html;
@@ -1226,15 +1351,7 @@ mid.innerHTML =
     "</div></div>" +
     "</div>" +
 
-    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
-    '<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
-    (d.numero_avoir || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
-    attenteMoTexte +
-    "</div></div>" +
-    "</div>" +
+    // 🔹 (Numéro d'avoir et Attente MO masqués dans le résumé)
 
     // 🔹 Puis Documents ajoutés au dossier
     docsAjHtml +
@@ -1420,6 +1537,7 @@ mid.innerHTML =
         '<div class="detail-buttons">' +
         '<button type="submit" class="btn">💾 Enregistrer</button>' +
         '<button type="button" class="btn secondary" id="btn-imprimer-dossier">🖨️ Imprimer</button>' +
+        '<button type="button" class="btn secondary" id="btn-modifier-dossier">✏️ Modifier dossier</button>' +
         ((isSuperAdmin || isAdmin)
           ? '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>'
           : "") +
@@ -1501,6 +1619,147 @@ mid.innerHTML =
           console.error(err);
           alert("Erreur réseau lors de la suppression.");
         });
+    }
+
+    // Supprime un document ajouté au dossier (fichiers dans "Documents ajoutés au dossier")
+    function supprimerDocumentDossier(urlEnc) {
+      if (!dossierSelectionne) return;
+      const dossierId = dossierSelectionne.id;
+      if (!dossierId) return;
+      if (!urlEnc) return;
+      if (!confirm("Supprimer ce document du dossier ?")) return;
+      // Endpoint hypothétique pour supprimer un document du dossier
+      // On envoie l'URL encodée pour identifier le fichier à supprimer
+      fetch('/api/admin/dossier/' + encodeURIComponent(dossierId) + '/document/' + urlEnc, {
+        method: 'DELETE'
+      }).then(r => r.json())
+        .then(json => {
+          if (!json || !json.success) {
+            alert("Erreur lors de la suppression : " + (json && json.message ? json.message : ""));
+          } else {
+            // Recharger les dossiers pour mettre à jour l'affichage
+            chargerDossiers();
+            // Réafficher le détail actuel si toujours sélectionné
+            if (dossierSelectionne) {
+              // Trouver le dossier dans la liste mise à jour
+              const d = allDossiers.find(x => x.id === dossierSelectionne.id);
+              if (d) {
+                dossierSelectionne = d;
+                afficherDetail(d);
+              }
+            }
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          alert("Erreur réseau lors de la suppression du document.");
+        });
+    }
+
+    // Ouvre la fenêtre de modification complète du dossier et préremplit les champs
+    function ouvrirModifierDossier() {
+      if (!dossierSelectionne) return;
+      const modalBack = document.getElementById('edit-modal-backdrop');
+      if (!modalBack) return;
+      // Pré-remplir tous les champs avec les valeurs du dossier
+      const d = dossierSelectionne;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+      };
+      setVal('mod-nom', d.nom);
+      setVal('mod-email', d.email);
+      setVal('mod-magasin', d.magasin);
+      setVal('mod-marque-produit', d.marque_produit);
+      setVal('mod-produit-concerne', d.produit_concerne);
+      setVal('mod-reference-piece', d.reference_piece);
+      setVal('mod-quantite-posee', d.quantite_posee);
+      setVal('mod-immatriculation', d.immatriculation);
+      setVal('mod-marque-vehicule', d.marque_vehicule);
+      setVal('mod-modele-vehicule', d.modele_vehicule);
+      setVal('mod-num-serie', d.num_serie);
+      // Dates : s'assurer qu'elles sont au format yyyy-MM-dd pour l'input type=date
+      function toDateInput(val) {
+        if (!val) return '';
+        const dt = new Date(val);
+        if (isNaN(dt)) return '';
+        const y = dt.getFullYear();
+        const m = ('0' + (dt.getMonth() + 1)).slice(-2);
+        const d2 = ('0' + dt.getDate()).slice(-2);
+        return `${y}-${m}-${d2}`;
+      }
+      setVal('mod-premiere-immat', toDateInput(d.premiere_immat));
+      setVal('mod-date-pose', toDateInput(d.date_pose));
+      setVal('mod-date-constat', toDateInput(d.date_constat));
+      setVal('mod-km-pose', d.km_pose);
+      setVal('mod-km-constat', d.km_constat);
+      setVal('mod-bl-pose', d.bl_pose);
+      setVal('mod-bl-constat', d.bl_constat);
+      setVal('mod-probleme', d.probleme_rencontre);
+      // Afficher la modale
+      modalBack.style.display = 'flex';
+    }
+
+    // Ferme la fenêtre de modification du dossier
+    function fermerModifierDossier() {
+      const modalBack = document.getElementById('edit-modal-backdrop');
+      if (modalBack) modalBack.style.display = 'none';
+    }
+
+    // Soumission du formulaire de modification du dossier complet
+    async function onSubmitModifierForm(e) {
+      e.preventDefault();
+      if (!dossierSelectionne) return;
+      const id = dossierSelectionne.id;
+      const fd = new FormData();
+      const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+      };
+      // Ajouter les champs dans la FormData
+      fd.append('nom', getVal('mod-nom'));
+      fd.append('email', getVal('mod-email'));
+      fd.append('magasin', getVal('mod-magasin'));
+      fd.append('marque_produit', getVal('mod-marque-produit'));
+      fd.append('produit_concerne', getVal('mod-produit-concerne'));
+      fd.append('reference_piece', getVal('mod-reference-piece'));
+      fd.append('quantite_posee', getVal('mod-quantite-posee'));
+      fd.append('immatriculation', getVal('mod-immatriculation'));
+      fd.append('marque_vehicule', getVal('mod-marque-vehicule'));
+      fd.append('modele_vehicule', getVal('mod-modele-vehicule'));
+      fd.append('num_serie', getVal('mod-num-serie'));
+      fd.append('premiere_immat', getVal('mod-premiere-immat'));
+      fd.append('date_pose', getVal('mod-date-pose'));
+      fd.append('date_constat', getVal('mod-date-constat'));
+      fd.append('km_pose', getVal('mod-km-pose'));
+      fd.append('km_constat', getVal('mod-km-constat'));
+      fd.append('bl_pose', getVal('mod-bl-pose'));
+      fd.append('bl_constat', getVal('mod-bl-constat'));
+      fd.append('probleme_rencontre', getVal('mod-probleme'));
+      // Envoyer la requête de mise à jour
+      try {
+        const resp = await fetch('/api/admin/dossier/' + encodeURIComponent(id), {
+          method: 'POST',
+          body: fd
+        });
+        const json = await resp.json();
+        if (!json || !json.success) {
+          alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
+        } else {
+          alert('Dossier mis à jour.');
+          fermerModifierDossier();
+          chargerDossiers();
+          // Sélectionner à nouveau le dossier pour rafraîchir le détail
+          const d = allDossiers.find(x => x.id === id);
+          if (d) {
+            dossierSelectionne = d;
+            afficherDetail(d);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Erreur réseau lors de la mise à jour du dossier.');
+      }
     }
 
     function ouvrirModalFournisseur() {
@@ -1673,6 +1932,9 @@ function initEvents() {
             if (dossierSelectionne && dossierSelectionne.id) {
               voirDossier(dossierSelectionne.id);
             }
+          } else if (t.id === "btn-modifier-dossier") {
+            // Ouvrir la fenêtre d'édition complète
+            ouvrirModifierDossier();
           }
         });
 
@@ -1706,6 +1968,27 @@ function initEvents() {
           e.preventDefault();
           ouvrirFormulaireFournisseur();
         });
+      }
+
+      // === Listeners pour la modale de modification du dossier ===
+      const modCancel = document.getElementById('btn-modifier-cancel');
+      if (modCancel) {
+        modCancel.addEventListener('click', (e) => {
+          e.preventDefault();
+          fermerModifierDossier();
+        });
+      }
+      const editBackdrop = document.getElementById('edit-modal-backdrop');
+      if (editBackdrop) {
+        editBackdrop.addEventListener('click', e => {
+          if (e.target && e.target.id === 'edit-modal-backdrop') {
+            fermerModifierDossier();
+          }
+        });
+      }
+      const modForm = document.getElementById('modifier-dossier-form');
+      if (modForm) {
+        modForm.addEventListener('submit', onSubmitModifierForm);
       }
 
     }
@@ -1822,7 +2105,6 @@ function voirDossier(id) {
           <tr><th>Problème rencontré</th><td>${d.probleme_rencontre||""}</td></tr>
           <tr class="hide-print"><th>Statut</th><td>${statutChip(d.statut)}</td></tr>
           <tr><th>Réponse</th><td>${d.reponse ? d.reponse.replace(/\n/g,"<br>") : ""}</td></tr>
-          <tr><th>Numéro d'avoir (interne)</th><td>${d.numero_avoir||""}</td></tr>
           <tr class="hide-print"><th>Documents ajoutés</th>
             <td>${
               fichiersDocs.length ? fichiersDocs.map(f=>{
