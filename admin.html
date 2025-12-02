@@ -158,13 +158,20 @@ html {
     .btn:hover {
       filter: brightness(1.05);
     }
-    .chip-role {
-      padding: 2px 9px;
-      background: #0f3c5e;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      color: #fff;
-    }
+    .top-role {
+  margin-top: 4px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f3c5e;
+}
+
+.chip-role {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  font-size: 1em;
+  color: inherit;
+}
 
     .year-tabs {
       display: flex;
@@ -802,12 +809,11 @@ html {
   <div id="admin-content">
     <div class="top-tools">
       <div class="top-left">
-        <div class="top-title">Suivi des dossiers de garantie</div>
-        <div class="top-sub">
-          Filtrez, mettez à jour les dossiers et exportez les données.
-          <span id="role-chip" class="chip-role" style="display:none;"></span>
-        </div>
-      </div>
+  <div class="top-title">Suivi des dossiers de garantie</div>
+  <div class="top-role">
+    <span id="role-chip" class="chip-role" style="display:none;"></span>
+  </div>
+</div>
       <div class="top-right">
         <button id="btn-export" class="btn" title="Exporter toutes les demandes en Excel">
           📊 Export Excel
@@ -1417,27 +1423,24 @@ const docsAjHtml = renderFilesList(
     "</div>" +
     '<div class="detail-body">' +
     '<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
-    (d.magasin || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
-    (d.produit_concerne || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
-    (d.marque_produit || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
-    (d.reference_piece || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
-    (d.immatriculation || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
-    (d.probleme_rencontre || "")
-      .replace(/\r\n/g, "<br>")
-      .replace(/\r/g, "<br>") +
-    "</div></div>" +
-    "</div>" +
+  '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
+  (d.produit_concerne || "") +
+  "</div></div>" +
+  '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
+  (d.marque_produit || "") +
+  "</div></div>" +
+  '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
+  (d.reference_piece || "") +
+  "</div></div>" +
+  '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
+  (d.immatriculation || "") +
+  "</div></div>" +
+  '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
+  (d.probleme_rencontre || "")
+    .replace(/\r\n/g, "<br>")
+    .replace(/\r/g, "<br>") +
+  "</div></div>" +
+  "</div>" +
 	
 	'<div class="detail-grid">' +
     '<div><div class="detail-field-label">Quantité posée</div><div class="detail-field-value">' +
