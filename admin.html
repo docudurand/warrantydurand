@@ -9,18 +9,18 @@
     type="image/png"
     href="https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png"
   />
-  <style>
+<style>
     * { box-sizing: border-box; }
     body {
-	margin: 0;
-	font-family: "Segoe UI", Arial, sans-serif;
-	background: #f3f4f7;
-	color: #123046;
-	font-size: 1.08rem;
-	}
-	html {
-	font-size: 18px;
-	}
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f3f4f7;
+  color: #123046;
+  font-size: 1.08rem;
+}
+html {
+  font-size: 18px;   /* au lieu des ~16px par défaut */
+}
     .banner {
       width: 100%;
       background: linear-gradient(135deg, #0f3c5e, #176a9d);
@@ -276,6 +276,7 @@
   border-radius: 12px;
   box-shadow: 0 2px 12px #0001;
   padding: 10px 10px 4px;
+  /* agrandit davantage la hauteur de la liste des dossiers pour afficher plus de lignes */
   max-height: calc(100vh - 80px);
   overflow: auto;
 }
@@ -285,6 +286,7 @@
   border-bottom: 1px solid #eef1f5;
   cursor: pointer;
   display: grid;
+  /* colonne n° dossier | infos client | magasin/ID | statut */
   grid-template-columns: 90px 1fr auto auto;
   gap: 8px;
   align-items: center;
@@ -410,6 +412,62 @@
       color: #234;
       word-break: break-word;
     }
+    .detail-form {
+  margin-top: 2px;
+  border-top: 1px solid #e2e6f0;
+  padding-top: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.detail-separator {
+  margin-top: 4px !important;
+  margin-bottom: 2px !important;
+}
+
+.detail-warning-title {
+  margin-top: 0 !important;
+  margin-bottom: 6px !important;
+}
+    .detail-form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .detail-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 170px;
+  font-size: 0.85rem;
+  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
+  margin: 0;
+}
+    .detail-form-group label {
+      font-weight: 600;
+      color: #345;
+    }
+    .detail-form-group select,
+    .detail-form-group input[type="text"],
+    .detail-form-group textarea,
+    .detail-form-group input[type="file"] {
+      font-size: 0.9rem;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #c4cfdd;
+      outline: none;
+      background: #fff;
+    }
+    .detail-form-group textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
+    .detail-form-group input:focus,
+    .detail-form-group select:focus,
+    .detail-form-group textarea:focus {
+      border-color: #176a9d;
+      box-shadow: 0 0 0 1px #176a9d33;
+    }
     .detail-files-list {
       font-size: 0.85rem;
       color: #345;
@@ -475,6 +533,8 @@
 .switch input:checked + .slider:before {
   transform: translateX(22px);
 }
+
+
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -553,66 +613,92 @@
     .file-remove:hover {
       background: #a11610;
     }
-	    .detail-form {
-      margin-top: 8px;
-      border-top: 1px solid #e2e6f0;
-      padding-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .detail-form-group.reponse-client + .detail-form-group {
+      margin-top: 0 !important;
     }
-
-    .detail-form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 0;
+    #edit-modal-backdrop .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px 22px;
+      max-width: 850px;
+      width: 95vw;
+      box-shadow: 0 8px 24px #0004;
+      font-size: 0.95rem;
     }
-
-    .detail-form-group {
+    #edit-modal-backdrop h3 {
+      color: #006e90;
+      font-size: 1.35rem;
+      margin: 0 0 20px;
+    }
+    #edit-modal-backdrop .modifier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px 20px;
+    }
+    #edit-modal-backdrop .modifier-grid .field {
       display: flex;
       flex-direction: column;
       gap: 4px;
-      flex: 1 1 170px;
-      font-size: 0.85rem;
-      margin: 0 0 6px 0;
     }
-
-    .detail-separator {
-      display: block;
-      border: 0;
-      border-top: 1px solid #e2e6f0;
-      margin: 6px 0 4px 0;
+    #edit-modal-backdrop .modifier-grid .field.full {
+      grid-column: 1 / -1;
     }
-
-    .detail-warning-title {
-      margin: 0 0 8px 0;
-      font-weight: 700;
-      color: #c00;
-      text-align: center;
+    #edit-modal-backdrop .modifier-grid .field label {
+      font-weight: 600;
+      color: #195e7c;
+      margin-bottom: 3px;
+      font-size: 0.95rem;
     }
+    #edit-modal-backdrop .modifier-grid .field input,
+    #edit-modal-backdrop .modifier-grid .field select,
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      padding: 8px;
+      font-size: 0.95rem;
+      border: 1px solid #b4c8d8;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #edit-modal-backdrop .modifier-grid .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    #edit-modal-backdrop .modal-buttons {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+	/* === Ajustement des espaces demandés dans le formulaire détail === */
 
-    /* === RÉDUCTION DES ESPACES DANS LE FORMULAIRE DÉTAIL === */
-
-/* on enlève le gros gap vertical entre chaque bloc du formulaire */
-.detail-form {
-  gap: 0 !important;
+/* 1) Coller l'input "Documents ajoutés au dossier" avec la barre + texte rouge */
+#docs-group {
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
+}
+#docs-group .file-list,
+#docs-ajoutes-buffer {
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-/* on met des petites marges identiques autour des blocs importants */
-#docs-group,
-.detail-separator,
-.detail-warning-title,
-.detail-form-group.reponse-client,
-#reponse-group,
+/* 2) Coller la zone "Réponse au client" avec le titre "Pièces jointes..." */
+.detail-form-group.reponse-client {
+  margin-bottom: 0 !important;
+}
+.detail-form-group.reponse-client textarea {
+  margin-bottom: 0 !important;
+}
+#reponse-group {
+  margin-top: 4px !important;   /* colle le titre juste sous la zone de texte */
+}
+#reponse-group .file-list,
+#reponse-files-buffer {
+  margin: 0 !important;
+  padding: 0 !important;
+}
 .detail-buttons {
   margin-top: 4px !important;
-  margin-bottom: 4px !important;
-}
-
-/* pas de marge supplémentaire entre la zone de réponse et les PJ */
-.detail-form-group.reponse-client textarea {
-  margin: 0 !important;
 }
 
 </style>
