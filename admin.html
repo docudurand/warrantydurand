@@ -1104,67 +1104,102 @@ mid.innerHTML =
       const attenteMoTexte =
         d.attente_mo || d.statut === "Attente MO" ? "Oui" : "Non";
 
-      content.innerHTML =
-        '<div class="detail-header">' +
-        '<div>' +
-        '<div class="detail-header-title">Dossier ' +
-        (numero ? "#" + numero : "") +
-        "</div>" +
-        '<div class="detail-header-sub">' +
-        (d.nom || "Client") +
-        (d.email ? " — " + d.email : "") +
-        (dateStr ? " — Créé le " + dateStr : "") +
-        "</div>" +
-        "</div>" +
-        '<div>' +
-        statutHtml +
-        "</div>" +
-        "</div>" +
-        '<div class="detail-body">' +
-        // 🔹 Infos dossier
-        '<div class="detail-grid">' +
-        '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
-        (d.magasin || "") +
-        "</div></div>" +
-        '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
-        (d.produit_concerne || "") +
-        "</div></div>" +
-        '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
-(d.marque_produit || "") +
-"</div></div>" +
-        '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
-        (d.reference_piece || "") +
-        "</div></div>" +
-        '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
-        (d.immatriculation || "") +
-        "</div></div>" +
-        '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
-        (d.probleme_rencontre || "")
-          .replace(/\r\n/g, "<br>")
-          .replace(/\r/g, "<br>") +
-        "</div></div>" +
-        "</div>" +
+  content.innerHTML =
+    '<div class="detail-header">' +
+    '<div>' +
+    '<div class="detail-header-title">Dossier ' +
+    (numero ? "#" + numero : "") +
+    "</div>" +
+    '<div class="detail-header-sub">' +
+    (d.nom || "Client") +
+    (d.email ? " — " + d.email : "") +
+    (dateStr ? " — Créé le " + dateStr : "") +
+    "</div>" +
+    "</div>" +
+    '<div>' +
+    statutHtml +
+    "</div>" +
+    "</div>" +
+    '<div class="detail-body">' +
+    // 🔹 Infos dossier
+    '<div class="detail-grid">' +
+    '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
+    (d.magasin || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
+    (d.produit_concerne || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
+    (d.marque_produit || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
+    (d.reference_piece || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
+    (d.immatriculation || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
+    (d.probleme_rencontre || "")
+      .replace(/\r\n/g, "<br>")
+      .replace(/\r/g, "<br>") +
+    "</div></div>" +
+    "</div>" +
 
-        // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
-        '<div class="detail-grid">' +
-        '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
-        (d.numero_avoir || "") +
-        "</div></div>" +
-        '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
-        attenteMoTexte +
-        "</div></div>" +
-        "</div>" +
+    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
+    '<div class="detail-grid">' +
+    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
+    (d.numero_avoir || "") +
+    "</div></div>" +
+    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
+    attenteMoTexte +
+    "</div></div>" +
+    "</div>" +
 
-        // 🔹 Puis Documents ajoutés au dossier
-        docsAjHtml +
+    // 🔹 Puis Documents ajoutés au dossier
+    docsAjHtml +
 
-        // (on garde quand même les PJ de base & docs déjà envoyés pour info)
-        filesHtml +
-        repFilesHtml +
-        "</div>" +
-        // 🔹 Formulaire d’édition (nouvelle disposition)
-        construireFormulaireEdition(d);
+    // (on garde quand même les PJ de base & docs déjà envoyés pour info)
+    filesHtml +
+    repFilesHtml +
+    "</div>" +
+    // 🔹 Formulaire d’édition (nouvelle disposition)
+    construireFormulaireEdition(d);
+
+  // === LIAISON BOUTON "ATTENTE MO" <-> STATUT (même logique que l'ancien site) ===
+  const editForm = document.getElementById("edit-form");
+  if (editForm) {
+    const attToggle = editForm.querySelector("input[name='attente_mo']");
+    const statutSelIn = editForm.querySelector("select[name='statut']");
+
+    if (attToggle && statutSelIn) {
+      // Quand on clique sur la case "Attente MO"
+      attToggle.addEventListener("change", () => {
+        if (attToggle.checked) {
+          // Si coché, le statut passe automatiquement à "Attente MO"
+          statutSelIn.value = "Attente MO";
+        } else {
+          // Si décoché et que le statut était "Attente MO",
+          // on repasse en "enregistré" (comme dans l'ancien code)
+          if (statutSelIn.value === "Attente MO") {
+            statutSelIn.value = "enregistré";
+          }
+        }
+      });
+
+      // Quand on change le statut à la main
+      statutSelIn.addEventListener("change", () => {
+        if (statutSelIn.value === "Attente MO") {
+          // Si on choisit "Attente MO", on coche la case
+          attToggle.checked = true;
+        } else if (statutSelIn.value === "accepté") {
+          // Si le statut devient "accepté", on décoche la case
+          attToggle.checked = false;
+        }
+      });
     }
+  }
+}
+
 
     function construireFormulaireEdition(d) {
       const selectedEnr = d.statut === "enregistré";
