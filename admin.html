@@ -1650,24 +1650,25 @@ mid.innerHTML =
         fd.append("reponseFiles", f);
       });
 
-      fetch("/api/admin/dossier/" + encodeURIComponent(id), {
-        method: "POST",
-        body: fd
-      })
-        .then(r => r.json())
-        .then(json => {
-          if (!json || !json.success) {
-            alert("Erreur lors de la mise à jour : " + (json && json.message ? json.message : ""));
-          } else {
-            alert("Enregistrement effectué.");
-          }
-          chargerDossiers();
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Erreur réseau lors de la mise à jour.");
-        });
-    }
+       fetch("/api/admin/dossier/" + encodeURIComponent(id), {
+    method: "POST",
+    body: fd
+  })
+    .then(r => r.json())
+    .then(json => {
+      if (!json || !json.success) {
+        alert("Erreur lors de la mise à jour : " + (json && json.message ? json.message : ""));
+      } else {
+        alert("Enregistrement effectué.");
+        // Recharge toute la page après clic sur OK
+        window.location.reload();
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Erreur réseau lors de la mise à jour.");
+    });
+}
 
     function supprimerDossier() {
       if (!dossierSelectionne) return;
@@ -1777,26 +1778,19 @@ mid.innerHTML =
       }).then(resp => {
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
         return resp.json().catch(() => { throw new Error('invalid_json'); });
-      }).then(json => {
-        if (!json || !json.success) {
-          alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
-          return;
-        }
-        // rafraîchit
-        fermerModifierDossier();
-        chargerDossiers();
-        setTimeout(() => {
-          const d = allDossiers.find(x => x.id === id);
-          if (d) {
-            dossierSelectionne = d;
-            afficherDetail(d);
-          }
-        }, 200);
-      }).catch(err => {
-        console.error(err);
-        alert(err.message || 'Erreur réseau');
-      });
+        }).then(json => {
+    if (!json || !json.success) {
+      alert('Erreur lors de la mise à jour : ' + (json && json.message ? json.message : ''));
+      return;
     }
+    // Succès : on affiche le message puis on recharge la page
+    alert('Enregistrement effectué.');
+    window.location.reload();
+  }).catch(err => {
+    console.error(err);
+    alert(err.message || 'Erreur réseau');
+  });
+}
 
     function onSubmitFournisseurForm(e) {
       e.preventDefault();
