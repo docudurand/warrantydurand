@@ -586,28 +586,28 @@ app.post("/api/admin/dossier/:id",
       if (repRecue !== undefined) dossier.reponse = repRecue;
       if (nbAvoir !== undefined) dossier.numero_avoir = nbAvoir;
 
-      dossier.reponseFiles = dossier.reponseFiles || [];
-      dossier.documentsAjoutes = dossier.documentsAjoutes || [];
+dossier.reponseFiles = dossier.reponseFiles || [];
+dossier.documentsAjoutes = dossier.documentsAjoutes || [];
 
-      if (req.files && req.files.reponseFiles) {
-        for (const f of req.files.reponseFiles) {
-          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
-          await uploadFileToFTP(f.path, "uploads", remoteName);
-          dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
-          dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-          try { fs.unlinkSync(f.path); } catch {}
-        }
-      }
-      if (req.files && req.files.documentsAjoutes) {
-        for (const f of req.files.documentsAjoutes) {
-          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-          const remoteName = `${Date.now()}-${Math.round(Math.random()*1e8)}-${cleanedOriginal}`;
-          await uploadFileToFTP(f.path, "uploads", remoteName);
-          dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-          try { fs.unlinkSync(f.path); } catch {}
-        }
-      }
+if (req.files && req.files.reponseFiles) {
+  for (const f of req.files.reponseFiles) {
+    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+    const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
+    await uploadFileToFTP(f.path, "uploads", remoteName);
+    dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
+    try { fs.unlinkSync(f.path); } catch {}
+  }
+}
+
+if (req.files && req.files.documentsAjoutes) {
+  for (const f of req.files.documentsAjoutes) {
+    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+    const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
+    await uploadFileToFTP(f.path, "uploads", remoteName);
+    dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+    try { fs.unlinkSync(f.path); } catch {}
+  }
+}
 
       if (typeof dossier.attente_mo !== "boolean") dossier.attente_mo = false;
       let suppressNotif = false;
@@ -839,9 +839,16 @@ app.get("/download/:file", async (req, res) => {
   try {
     const raw = req.params.file;
     const fileParam = decodeURIComponent(raw || "");
-    if (!fileParam || fileParam.includes("/") || fileParam.includes("\\") || fileParam.includes("..") || fileParam.includes("\0")) {
+
+    if (
+      !fileParam ||
+      fileParam.includes("/") ||
+      fileParam.includes("\\") ||
+      fileParam.includes("\0")
+    ) {
       return res.status(400).send("Bad filename");
     }
+
     const remotePath = path.posix.join(UPLOADS_FTP, fileParam);
     await streamFTPFileToRes(res, remotePath, fileParam);
   } catch (err) {
