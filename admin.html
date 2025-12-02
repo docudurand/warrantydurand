@@ -413,7 +413,7 @@ html {
       word-break: break-word;
     }
     .detail-form {
-  gap: 4px;          /* avant 8px */
+  gap: 6px;
 }
 .detail-separator {
   margin-top: 4px !important;
@@ -425,18 +425,18 @@ html {
   margin-bottom: 2px !important;
 }
     .detail-form-row {
-  gap: 8px;          /* avant 12px */
+  gap: 8px;
 }
    .detail-form-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;          /* espace interne label / champ */
+  gap: 2px;
   font-size: 0.85rem;
-  margin: 0 0 2px 0; /* petit espace sous chaque bloc */
-  flex: 0 0 auto;    /* important : ne plus prendre toute la hauteur dispo */
+  margin: 0 0 6px 0;   /* <- remonter un peu l'espace (6 ou 8 px) */
+  flex: 0 0 auto;
 }
 .detail-form-row .detail-form-group {
-  flex: 1 1 160px;   /* tu peux jouer sur 140 / 160 / 180 pour la largeur */
+  flex: 1 1 160px;
 }
     .detail-form-group label {
       font-weight: 600;
