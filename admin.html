@@ -36,7 +36,6 @@
       font-weight: 700;
       letter-spacing: 0.03em;
     }
-	
     .banner-sub {
       font-size: 0.9rem;
       opacity: 0.85;
@@ -407,9 +406,9 @@
       word-break: break-word;
     }
     .detail-form {
-      margin-top: 2px;
+      margin-top: 0;
+      padding-top: 0;
       border-top: 1px solid #e2e6f0;
-      padding-top: 2px;
       display: flex;
       flex-direction: column;
       gap: 0;
@@ -440,9 +439,17 @@
       font-size: 0.85rem;
       margin: 0 0 2px 0;
     }
-    /* Réduit encore l'espace juste sous "Documents ajoutés au dossier" */
-    .detail-form > .detail-form-group:first-of-type {
+
+    /* Groupe "Documents ajoutés au dossier" très serré avec la barre rouge */
+    .detail-form-group.docs-ajoutes {
+      margin: 0;
+      gap: 0;
+    }
+    .detail-form-group.docs-ajoutes label {
       margin-bottom: 0;
+    }
+    .detail-form-group.docs-ajoutes input[type="file"] {
+      margin-top: 2px;
     }
 
     .detail-form-group label {
@@ -718,7 +725,7 @@
       if (s === "refusé") {
         return '<span class="statut-chip"><span class="statut-dot refuse"></span>Refusé</span>';
       }
-      if (s === "avoir commercial" || s === "en attente d'info") {
+      if (s === "avoir commercial" || s === "en attente d\'info") {
         return '<span class="statut-chip"><span class="statut-dot info"></span>Avoir Commercial</span>';
       }
       if (s === "attente mo") {
@@ -1167,11 +1174,7 @@
           });
 
           statutSelIn.addEventListener("change", () => {
-            if (statutSelIn.value === "Attente MO") {
-              attToggle.checked = true;
-            } else if (statutSelIn.value === "accepté") {
-              attToggle.checked = false;
-            }
+            attToggle.checked = (statutSelIn.value === "Attente MO");
           });
         }
       }
@@ -1190,8 +1193,9 @@
       const reponseValue = d.reponse
         ? String(d.reponse).replace(/</g, "&lt;").replace(/>/g, "&gt;")
         : "";
-      const attenteMoChecked =
-        (d.attente_mo || d.statut === "Attente MO") ? " checked" : "";
+
+      /* La case est cochée uniquement si le statut actuel est "Attente MO" */
+      const attenteMoChecked = (d.statut === "Attente MO") ? " checked" : "";
 
       return (
         '<form class="detail-form" id="edit-form">' +
@@ -1213,7 +1217,7 @@
         "</div>" +
         "</div>" +
 
-        '<div class="detail-form-group">' +
+        '<div class="detail-form-group docs-ajoutes">' +
         "<label>Documents ajoutés au dossier (non envoyés au client)</label>" +
         '<input type="file" name="documentsAjoutes" multiple>' +
         "</div>" +
