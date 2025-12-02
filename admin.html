@@ -412,13 +412,13 @@ html {
       color: #234;
       word-break: break-word;
     }
-    .detail-form {
-  margin-top: 2px;
+   .detail-form {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
   border-top: 1px solid #e2e6f0;
-  padding-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0 !important;
 }
 .detail-separator {
   border: 0;
@@ -427,25 +427,24 @@ html {
 }
 
 .detail-warning-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #b91c1c;
-  text-align: center;
-  margin: 2px 0;   /* juste un tout petit espace */
+  margin: 2px 0 4px 0 !important;
+}
+#docs-group {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+hr.detail-separator {
+  border: 0;
+  border-top: 1px solid #e2e6f0;
+  margin: 0 !important;
 }
     .detail-form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+  margin: 0 !important;
+}
     .detail-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1 1 170px;
-  font-size: 0.85rem;
-  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
-  margin: 0;
+  margin: 0 !important;
 }
     .detail-form-group label {
       font-weight: 600;
@@ -628,13 +627,18 @@ html {
     }
 	
     .detail-form-group.reponse-client {
-      margin-bottom: 0px !important;
-    }
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
 	.detail-form-group.reponse-client textarea {
-  margin-bottom: 0;   /* supprime l'espace sous la zone de texte */
+  margin: 0 !important;
+}
+#reponse-group {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
     #edit-modal-backdrop .modal {
       background: #fff;
