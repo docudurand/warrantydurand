@@ -669,20 +669,18 @@ html {
       margin-top: 20px;
       justify-content: center;
     }
-	/* === Ajustement des espaces demandés dans le formulaire détail === */
+/* === Ajustements très précis des espaces dans le formulaire détail === */
 
-/* 1) Coller l'input "Documents ajoutés au dossier" avec la barre + texte rouge */
+/* 1) Sous "Documents ajoutés au dossier (non envoyés au client)" */
 #docs-group {
-  margin-top: 4px !important;
   margin-bottom: 0 !important;
 }
-#docs-group .file-list,
-#docs-ajoutes-buffer {
-  margin: 0 !important;
-  padding: 0 !important;
+hr.detail-separator {
+  margin-top: -10px !important;    /* remonte la barre rouge vers l'input */
 }
 
-/* 2) Coller la zone "Réponse au client" avec le titre "Pièces jointes..." */
+/* 2) Entre la zone "Réponse au client" et le titre
+      "Pièces jointes pour le client (envoi mail)" */
 .detail-form-group.reponse-client {
   margin-bottom: 0 !important;
 }
@@ -690,16 +688,17 @@ html {
   margin-bottom: 0 !important;
 }
 #reponse-group {
-  margin-top: 4px !important;   /* colle le titre juste sous la zone de texte */
+  margin-top: -6px !important;     /* rapproche le titre de la zone texte */
 }
-#reponse-group .file-list,
-#reponse-files-buffer {
-  margin: 0 !important;
-  padding: 0 !important;
+
+/* 3) Entre l'input "Pièces jointes..." et les boutons */
+#reponse-group input[type="file"] {
+  margin-bottom: 0 !important;
 }
 .detail-buttons {
-  margin-top: 4px !important;
+  margin-top: -8px !important;     /* remonte légèrement le bloc de boutons */
 }
+
 
 </style>
 </head>
