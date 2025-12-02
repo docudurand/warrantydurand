@@ -722,6 +722,10 @@ html {
             <label>Nom du client</label>
             <input type="text" name="nom" required>
           </div>
+		  <div class="field">
+            <label>Numéro Compte Client</label>
+            <input type="text" name="numero_compte_client">
+          </div>
           <div class="field">
             <label>Email</label>
             <input type="email" name="email" required>
@@ -849,7 +853,6 @@ html {
           <option value="Rives">Rives</option>
           <option value="Saint-Egreve">Saint-Egreve</option>
           <option value="Saint-Jean-Bonnefonds">Saint-Jean-Bonnefonds</option>
-          <option value="Saint-martin-d'heres">Saint-martin-d'heres</option>
           <option value="Seynod">Seynod</option>
         </select>
       </div>
@@ -1780,8 +1783,9 @@ const docsAjHtml = renderFilesList(
       const back = document.getElementById('edit-modal-backdrop');
       const form = document.getElementById('modifier-form');
       if (!back || !form) return;
-      const d = dossierSelectionne;
+       const d = dossierSelectionne;
       form.nom.value = d.nom || '';
+      form.numero_compte_client.value = d.numero_compte_client || '';
       form.email.value = d.email || '';
       form.magasin.value = d.magasin || '';
       form.marque_produit.value = d.marque_produit || '';

@@ -772,8 +772,8 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     const dossier = data.find(x => x.id === id);
     if (!dossier) return res.json({ success:false, message:"Dossier introuvable" });
 
-    const editableFields = [
-      "nom","email","magasin","marque_produit","produit_concerne",
+        const editableFields = [
+      "nom","numero_compte_client","email","magasin","marque_produit","produit_concerne",
       "reference_piece","quantite_posee","immatriculation",
       "marque_vehicule","modele_vehicule","num_serie",
       "premiere_immat","date_pose","date_constat","km_pose",
