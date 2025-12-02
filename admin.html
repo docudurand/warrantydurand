@@ -12,13 +12,14 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f3f4f7;
-      color: #123046;
-      /* Augmente légèrement la taille globale de la police */
-      font-size: 1.02rem;
-    }
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f3f4f7;
+  color: #123046;
+  /* Augmente davantage la taille globale de la police */
+  font-size: 1.08rem;
+}
+
     .banner {
       width: 100%;
       background: linear-gradient(135deg, #0f3c5e, #176a9d);
@@ -492,12 +493,59 @@
 }
 
     .attente-mo-check {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.85rem;
-      margin-top: 2px;
-    }
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* Bouton curseur ON/OFF pour Attente MO */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.2s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #fff;
+  transition: 0.2s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: #176a9d;
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
 
     .modal-backdrop {
       position: fixed;
@@ -1260,29 +1308,20 @@ mid.innerHTML =
     }
 
     function renderFilesList(arr, title) {
-      if (!arr || !arr.length) return "";
-      let html = '<div class="detail-field-label">' + title + "</div>";
-      html += '<div class="detail-files-list">';
-      arr.forEach(f => {
-        const name = f.original || f.url || "fichier";
-        const urlEnc = encodeURIComponent(f.url || "");
-        if (title === "Documents ajoutés au dossier") {
-          // Ajoute un bouton pour supprimer visuellement le document
-          html +=
-            '<span class="file-pill">' +
-            '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' + name + '</a>' +
-            ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(event, \'' + urlEnc + '\')" title="Supprimer">✕</button>' +
-            '</span>';
-        } else {
-          html +=
-            '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
-            name +
-            '</a>';
-        }
-      });
-      html += "</div>";
-      return html;
-    }
+  if (!arr || !arr.length) return "";
+  let html = '<div class="detail-field-label">' + title + "</div>";
+  html += '<div class="detail-files-list">';
+  arr.forEach(f => {
+    const name = f.original || f.url || "fichier";
+    const urlEnc = encodeURIComponent(f.url || "");
+    html +=
+      '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+      name +
+      "</a>";
+  });
+  html += "</div>";
+  return html;
+}
 
     function afficherDetail(d) {
       const empty = document.getElementById("detail-empty");
@@ -1386,17 +1425,6 @@ mid.innerHTML =
     "</div></div>" +
     "</div>" +
 
-    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
-    '<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
-    (d.numero_avoir || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
-    attenteMoTexte +
-    "</div></div>" +
-    "</div>" +
-
-    // 🔹 Puis Documents ajoutés au dossier
     docsAjHtml +
 
     // (on garde quand même les PJ de base & docs déjà envoyés pour info)
@@ -1517,14 +1545,17 @@ mid.innerHTML =
         '">' +
         "</div>" +
         '<div class="detail-form-group">' +
-        "<label>Attente MO</label>" +
-        '<div class="attente-mo-check">' +
-        '<input type="checkbox" id="attente_mo" name="attente_mo"' +
-        attenteMoChecked +
-        ">" +
-        '<label for="attente_mo">Dossier en "Attente MO"</label>' +
-        "</div>" +
-        "</div>" +
+"<label>Attente MO</label>" +
+'<div class="attente-mo-check">' +
+  '<label class="switch">' +
+    '<input type="checkbox" id="attente_mo" name="attente_mo"' +
+    attenteMoChecked +
+    ">" +
+    '<span class="slider"></span>' +
+  "</label>" +
+  '<span>Dossier en "Attente MO"</span>' +
+"</div>" +
+"</div>" +
         "</div>" +
 
         '<div class="detail-form-group" id="docs-group">' +
@@ -1662,23 +1693,6 @@ mid.innerHTML =
           console.error(err);
           alert("Erreur réseau lors de la suppression.");
         });
-    }
-
-    /**
-     * Supprime visuellement un document ajouté au dossier. En l'absence d'API
-     * serveur pour réellement supprimer le fichier, cette fonction retire la
-     * pastille de la liste et avertit l'utilisateur.
-     * @param {Event} evt Événement click du bouton de suppression
-     * @param {string} urlEnc Nom de fichier encodé
-     */
-    function supprimerDocumentDossier(evt, urlEnc) {
-      if (!confirm('Supprimer ce document ?')) return;
-      // retire la pastille de la liste
-      if (evt && evt.target) {
-        const pill = evt.target.closest('.file-pill');
-        if (pill) pill.remove();
-      }
-      alert("La suppression de documents n'est pas prise en charge par le serveur.");
     }
 
     function ouvrirModalFournisseur() {
