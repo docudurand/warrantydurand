@@ -486,13 +486,6 @@ html {
       font-size: 0.8rem;
       color: #234;
     }
-    .detail-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
-}
-
     .attente-mo-check {
   display: flex;
   align-items: center;
@@ -500,8 +493,6 @@ html {
   font-size: 0.9rem;
   margin-top: 4px;
 }
-
-/* Bouton curseur ON/OFF pour Attente MO */
 .switch {
   position: relative;
   display: inline-block;
@@ -626,16 +617,9 @@ html {
     .file-remove:hover {
       background: #a11610;
     }
-	
-    .detail-form-group.reponse-client {
-      margin-bottom: 0px !important;
-    }
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
-	.detail-form-group.reponse-client textarea {
-  margin-bottom: 0;   /* supprime l'espace sous la zone de texte */
-}
     #edit-modal-backdrop .modal {
       background: #fff;
       border-radius: 12px;
@@ -689,6 +673,36 @@ html {
       margin-top: 20px;
       justify-content: center;
     }
+	/* === Ajustement des espaces demandés dans le formulaire détail === */
+
+/* 1) Coller l'input "Documents ajoutés au dossier" avec la barre + texte rouge */
+#docs-group {
+  margin-bottom: 0 !important;
+}
+#docs-ajoutes-buffer {
+  margin-top: 0 !important;   /* enlève le vide créé par la <ul> même vide */
+}
+
+/* 2) Coller la zone "Réponse au client" avec le titre "Pièces jointes..." */
+.detail-form-group.reponse-client {
+  margin-bottom: 0 !important;
+  gap: 0 !important;          /* plus de petit espace interne en bas */
+}
+.detail-form-group.reponse-client textarea {
+  margin-bottom: 0 !important;
+}
+#reponse-group {
+  margin-top: 0 !important;   /* colle le titre sur la zone de texte */
+}
+
+/* 3) Coller l'input "Pièces jointes..." avec les boutons en bas */
+#reponse-files-buffer {
+  margin-top: 0 !important;   /* pas d'espace si la liste est vide */
+}
+.detail-buttons {
+  margin-top: 0 !important;
+}
+
 </style>
 </head>
 <body>
@@ -1316,13 +1330,32 @@ mid.innerHTML =
   arr.forEach(f => {
     const name = f.original || f.url || "fichier";
     const urlEnc = encodeURIComponent(f.url || "");
-    html +=
-      '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
-      name +
-      "</a>";
+
+    if (title === "Documents ajoutés au dossier") {
+      // ✕ seulement visuel, n'appelle pas le serveur
+      html +=
+        '<span class="file-pill">' +
+          '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+            name +
+          "</a>" +
+          ' <button type="button" class="file-remove" onclick="supprimerDocumentLocal(event)" title="Retirer de l\'affichage">✕</button>' +
+        "</span>";
+    } else {
+      // autres listes : juste lien
+      html +=
+        '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+          name +
+        "</a>";
+    }
   });
   html += "</div>";
   return html;
+}
+function supprimerDocumentLocal(evt) {
+  const pill = evt.target.closest('.file-pill');
+  if (pill) {
+    pill.remove(); // suppression purement visuelle
+  }
 }
 
     function afficherDetail(d) {
