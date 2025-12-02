@@ -413,9 +413,9 @@ html {
       word-break: break-word;
     }
     .detail-form {
-  margin-top: 1px;
+  margin-top: 2px;
   border-top: 1px solid #e2e6f0;
-  padding-top: 1px;
+  padding-top: 2px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -427,18 +427,20 @@ html {
 
 .detail-warning-title {
   margin-top: 0 !important;
-  margin-bottom: 2px !important;
+  margin-bottom: 6px !important;
 }
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
-      margin: 0 !important;
+      gap: 10px;
     }
     .detail-form-group {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
+  flex: 1 1 170px;
   font-size: 0.85rem;
+  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
   margin: 0;
 }
     .detail-form-group label {
@@ -671,7 +673,7 @@ html {
 
 /* 1) Coller l'input "Documents ajoutés au dossier" avec la barre + texte rouge */
 #docs-group {
-  margin-top: 2px !important;
+  margin-top: 4px !important;
   margin-bottom: 0 !important;
 }
 #docs-group .file-list,
@@ -688,7 +690,7 @@ html {
   margin-bottom: 0 !important;
 }
 #reponse-group {
-  margin-top: 2px !important;   /* colle le titre juste sous la zone de texte */
+  margin-top: 4px !important;   /* colle le titre juste sous la zone de texte */
 }
 #reponse-group .file-list,
 #reponse-files-buffer {
