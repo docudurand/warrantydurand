@@ -413,12 +413,7 @@ html {
       word-break: break-word;
     }
     .detail-form {
-  margin-top: 1px;
-  border-top: 1px solid #e2e6f0;
-  padding-top: 1px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  gap: 4px;          /* avant 8px */
 }
 .detail-separator {
   margin-top: 4px !important;
@@ -430,19 +425,18 @@ html {
   margin-bottom: 2px !important;
 }
     .detail-form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .detail-form-group {
+  gap: 8px;          /* avant 12px */
+}
+   .detail-form-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2px;          /* espace interne label / champ */
   font-size: 0.85rem;
-  margin: 0;
+  margin: 0 0 2px 0; /* petit espace sous chaque bloc */
+  flex: 0 0 auto;    /* important : ne plus prendre toute la hauteur dispo */
 }
 .detail-form-row .detail-form-group {
-  flex: 1 1 170px;
+  flex: 1 1 160px;   /* tu peux jouer sur 140 / 160 / 180 pour la largeur */
 }
     .detail-form-group label {
       font-weight: 600;
