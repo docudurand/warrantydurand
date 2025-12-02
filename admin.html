@@ -1297,37 +1297,82 @@ mid.innerHTML =
       renderListe();
     }
 
-    function renderFilesList(arr, title) {
+    function renderFilesList(arr, title, section) {
   if (!arr || !arr.length) return "";
   let html = '<div class="detail-field-label">' + title + "</div>";
   html += '<div class="detail-files-list">';
   arr.forEach(f => {
     const name = f.original || f.url || "fichier";
-    const urlEnc = encodeURIComponent(f.url || "");
+    const fileUrl = f.url || "";
+    const urlEnc = encodeURIComponent(fileUrl);
 
-    if (title === "Documents ajoutés au dossier") {
+    if (section === "documentsAjoutes") {
       html +=
-        '<span class="file-pill">' +
+        '<span class="file-pill" data-section="' + section + '" data-url="' + fileUrl + '">' +
           '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
             name +
-          "</a>" +
-          ' <button type="button" class="file-remove" onclick="supprimerDocumentLocal(event)" title="Retirer de l\'affichage">✕</button>' +
-        "</span>";
+          '</a>' +
+          ' <button type="button" class="file-remove" onclick="supprimerDocumentDossier(event)" title="Supprimer du dossier">✕</button>' +
+        '</span>';
     } else {
       html +=
         '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
           name +
-        "</a>";
+        '</a>';
     }
   });
   html += "</div>";
   return html;
 }
-function supprimerDocumentLocal(evt) {
-  const pill = evt.target.closest('.file-pill');
-  if (pill) {
-    pill.remove();
-  }
+
+function supprimerDocumentDossier(evt) {
+  evt.stopPropagation();
+  if (!dossierSelectionne) return;
+
+  const pill = evt.target.closest(".file-pill");
+  if (!pill) return;
+
+  const url = pill.dataset.url;
+  const section = pill.dataset.section || "documentsAjoutes";
+
+  if (!url) return;
+
+  if (!confirm("Supprimer ce document du dossier ?")) return;
+
+  const dossierId = dossierSelectionne.id;
+
+  fetch("/api/admin/dossier/" + encodeURIComponent(dossierId) + "/delete-file", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ section, url })
+  })
+    .then(r => r.json())
+    .then(json => {
+      if (!json || !json.success) {
+        alert("Erreur lors de la suppression : " + (json && json.message ? json.message : ""));
+        return;
+      }
+
+      chargerDossiers().then(() => {
+        const updated = allDossiers.find(d => d.id === dossierId);
+        if (updated) {
+          dossierSelectionne = updated;
+          afficherDetail(updated);
+
+          const row = document.querySelector('.dossier-row[data-id="' + dossierId + '"]');
+          if (row) {
+            document
+              .querySelectorAll(".dossier-row.active")
+              .forEach(r => r.classList.remove("active"));
+            row.classList.add("active");
+          }
+        }
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Erreur réseau lors de la suppression du document.");
+    });
 }
 
     function afficherDetail(d) {
@@ -1343,15 +1388,17 @@ function supprimerDocumentLocal(evt) {
       const numero = d.numero_dossier || "";
       const statutHtml = statutChip(d.statut);
 
-      const filesHtml = renderFilesList(d.files, "Pièces jointes client");
-      const repFilesHtml = renderFilesList(
-        d.reponseFiles,
-        "Documents envoyés au client"
-      );
-      const docsAjHtml = renderFilesList(
-        d.documentsAjoutes,
-        "Documents ajoutés au dossier"
-      );
+      const filesHtml = renderFilesList(d.files, "Pièces jointes client", "files");
+const repFilesHtml = renderFilesList(
+  d.reponseFiles,
+  "Documents envoyés au client",
+  "reponseFiles"
+);
+const docsAjHtml = renderFilesList(
+  d.documentsAjoutes,
+  "Documents ajoutés au dossier",
+  "documentsAjoutes"
+);
 
       const attenteMoTexte = ((d.statut || "").toLowerCase() === "attente mo") ? "Oui" : "Non";
 

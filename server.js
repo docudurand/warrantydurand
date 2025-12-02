@@ -889,6 +889,47 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
     res.json({ success:false, message: err.message });
   }
 });
+app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { section, url } = req.body || {};
+
+    if (!section || !url) {
+      return res.json({ success: false, message: "Paramètres manquants." });
+    }
+
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+
+    const dossier = data.find(d => d.id === id);
+    if (!dossier) {
+      return res.json({ success: false, message: "Dossier introuvable." });
+    }
+
+    const allowed = ["files", "reponseFiles", "documentsAjoutes"];
+    if (!allowed.includes(section)) {
+      return res.json({ success: false, message: "Section invalide." });
+    }
+
+    const arr = Array.isArray(dossier[section]) ? dossier[section] : [];
+    const idx = arr.findIndex(f => f && f.url === url);
+    if (idx === -1) {
+      return res.json({ success: false, message: "Fichier introuvable dans le dossier." });
+    }
+
+    const removed = arr.splice(idx, 1)[0];
+    dossier[section] = arr;
+
+    await writeDataFTP(data);
+
+    await deleteFilesFromFTP([removed.url]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur /api/admin/dossier/:id/delete-file :", err.message || err);
+    res.json({ success: false, message: err.message || "Erreur interne." });
+  }
+});
 
 app.get("/api/admin/export-excel", async (req, res) => {
   try {
