@@ -218,10 +218,10 @@
       box-shadow: 0 0 0 1px #176a9d33;
     }
     #search-input {
-  min-width: 160px;
-  max-width: 260px;
-  width: 100%;
-}
+      min-width: 160px;
+      max-width: 260px;
+      width: 100%;
+    }
 
     .stats-row {
       display: flex;
@@ -256,11 +256,11 @@
     .stat-red { border-top-color: #f44336; }
 
     .layout-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
-  gap: 14px;
-  align-items: flex-start;
-}
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 14px;
+      align-items: flex-start;
+    }
     @media (max-width: 1000px) {
       .layout-main {
         grid-template-columns: 1fr;
@@ -268,31 +268,30 @@
     }
 
     .dossier-list {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px #0001;
-  padding: 10px 10px 4px;
-  max-height: calc(100vh - 200px); /* au lieu de 260px */
-  overflow: auto;
-}
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #0001;
+      padding: 10px 10px 4px;
+      max-height: calc(100vh - 200px);
+      overflow: auto;
+    }
 
-   .dossier-row {
-  padding: 8px 4px;
-  border-bottom: 1px solid #eef1f5;
-  cursor: pointer;
-  display: grid;
-  /* colonne n° dossier | infos client | magasin/ID | statut */
-  grid-template-columns: 90px 1fr auto auto;
-  gap: 8px;
-  align-items: center;
-}
-.dossier-num {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: #123046;
-  text-align: center;
-  white-space: nowrap;
-}
+    .dossier-row {
+      padding: 8px 4px;
+      border-bottom: 1px solid #eef1f5;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 90px 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .dossier-num {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #123046;
+      text-align: center;
+      white-space: nowrap;
+    }
     .dossier-row:last-child {
       border-bottom: none;
     }
@@ -408,39 +407,44 @@
       word-break: break-word;
     }
     .detail-form {
-  margin-top: 2px;
-  border-top: 1px solid #e2e6f0;
-  padding-top: 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.detail-separator {
-  border: 0;
-  border-top: 1px solid #e2e6f0;
-  margin: 0;       /* collé aux éléments */
-}
+      margin-top: 2px;
+      border-top: 1px solid #e2e6f0;
+      padding-top: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .detail-separator {
+      border: 0;
+      border-top: 1px solid #e2e6f0;
+      margin: 0;
+    }
 
-.detail-warning-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #b91c1c;
-  text-align: center;
-  margin: 2px 0;   /* juste un tout petit espace */
-}
+    .detail-warning-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #b91c1c;
+      text-align: center;
+      margin: 2px 0;
+    }
     .detail-form-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
     }
     .detail-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1 1 170px;
-  font-size: 0.85rem;
-  margin: 0 0 2px 0;  /* micro marge uniquement en bas */
-}
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1 1 170px;
+      font-size: 0.85rem;
+      margin: 0 0 2px 0;
+    }
+    /* Réduit encore l'espace juste sous "Documents ajoutés au dossier" */
+    .detail-form > .detail-form-group:first-of-type {
+      margin-bottom: 0;
+    }
+
     .detail-form-group label {
       font-weight: 600;
       color: #345;
@@ -481,11 +485,11 @@
       color: #234;
     }
     .detail-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
-}
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 2px;
+    }
 
     .attente-mo-check {
       display: flex;
@@ -592,8 +596,8 @@
         <input type="month" id="month-filter">
       </div>
       <div class="filter-group" id="magasin-filter-group">
-  <label for="magasin-filter">Magasin</label>
-  <select id="magasin-filter">
+        <label for="magasin-filter">Magasin</label>
+        <select id="magasin-filter">
           <option value="">Tous</option>
           <option value="Annemasse">Annemasse</option>
           <option value="Bourgoin-Jallieu">Bourgoin-Jallieu</option>
@@ -622,9 +626,9 @@
         </select>
       </div>
       <div class="filter-group" style="flex:0 0 260px;">
-  <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
-  <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
-</div>
+        <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
+        <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
+      </div>
     </div>
 
     <div class="stats-row" id="stats-row"></div>
@@ -724,34 +728,32 @@
     }
 
     function toggleSuperAdminUI() {
-  const chip = document.getElementById("role-chip");
-  if (chip) {
-    if (isSuperAdmin) {
-      chip.style.display = "inline-flex";
-      chip.textContent = "Super Admin";
-    } else if (isAdmin) {
-      chip.style.display = "inline-flex";
-      chip.textContent = "Admin";
-    } else if (magasinAdmin) {
-      chip.style.display = "inline-flex";
-      chip.textContent = "Magasin : " + magasinAdmin;
-    } else {
-      chip.style.display = "none";
-      chip.textContent = "";
-    }
-  }
+      const chip = document.getElementById("role-chip");
+      if (chip) {
+        if (isSuperAdmin) {
+          chip.style.display = "inline-flex";
+          chip.textContent = "Super Admin";
+        } else if (isAdmin) {
+          chip.style.display = "inline-flex";
+          chip.textContent = "Admin";
+        } else if (magasinAdmin) {
+          chip.style.display = "inline-flex";
+          chip.textContent = "Magasin : " + magasinAdmin;
+        } else {
+          chip.style.display = "none";
+          chip.textContent = "";
+        }
+      }
 
-  // 🔹 Gestion de l'affichage du filtre magasin
-  const magGroup = document.getElementById("magasin-filter-group");
-  if (magGroup) {
-    // Si c'est un compte magasin (magasinAdmin défini, mais pas admin ni super admin)
-    if (!isSuperAdmin && !isAdmin && magasinAdmin) {
-      magGroup.style.display = "none";   // on cache le choix de magasin
-    } else {
-      magGroup.style.display = "";       // visible pour admin et super admin
+      const magGroup = document.getElementById("magasin-filter-group");
+      if (magGroup) {
+        if (!isSuperAdmin && !isAdmin && magasinAdmin) {
+          magGroup.style.display = "none";
+        } else {
+          magGroup.style.display = "";
+        }
+      }
     }
-  }
-}
 
     function normaliserStatut(d) {
       if (d && d.statut === "en attente d'info") {
@@ -961,102 +963,90 @@
       });
     }
 
-function renderListe() {
-  const list = document.getElementById("dossier-list");
-  if (!list) return;
-  const filtered = filtrerDossiers();
-  afficherCompteurs(filtered);
+    function renderListe() {
+      const list = document.getElementById("dossier-list");
+      if (!list) return;
+      const filtered = filtrerDossiers();
+      afficherCompteurs(filtered);
 
-  if (!filtered.length) {
-    list.innerHTML =
-      '<div class="empty-msg">Aucun dossier ne correspond à vos filtres.</div>';
-    return;
-  }
+      if (!filtered.length) {
+        list.innerHTML =
+          '<div class="empty-msg">Aucun dossier ne correspond à vos filtres.</div>';
+        return;
+      }
 
-  const frag = document.createDocumentFragment();
-  filtered.forEach(d => {
-    const row = document.createElement("div");
-    row.className =
-      "dossier-row" +
-      (dossierSelectionne && dossierSelectionne.id === d.id
-        ? " active"
-        : "");
-    row.dataset.id = d.id;
+      const frag = document.createDocumentFragment();
+      filtered.forEach(d => {
+        const row = document.createElement("div");
+        row.className =
+          "dossier-row" +
+          (dossierSelectionne && dossierSelectionne.id === d.id
+            ? " active"
+            : "");
+        row.dataset.id = d.id;
 
-    // 🔹 Colonne numéro de dossier (à gauche)
-    const colNum = document.createElement("div");
-    colNum.className = "dossier-num";
-    colNum.textContent = d.numero_dossier || "-";
+        const colNum = document.createElement("div");
+        colNum.className = "dossier-num";
+        colNum.textContent = d.numero_dossier || "-";
 
-    // 🔹 Bloc principal (nom + date + produit + réf)
-    const left = document.createElement("div");
-    left.className = "dossier-main";
+        const left = document.createElement("div");
+        left.className = "dossier-main";
 
-    const title = document.createElement("div");
-    title.className = "dossier-title";
-    const dateStr = d.date
-      ? new Date(d.date).toLocaleDateString("fr-FR")
-      : "";
-    title.textContent =
-      (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
+        const title = document.createElement("div");
+        title.className = "dossier-title";
+        const dateStr = d.date
+          ? new Date(d.date).toLocaleDateString("fr-FR")
+          : "";
+        title.textContent =
+          (d.nom || "Client") + (dateStr ? " — " + dateStr : "");
 
-    const sub = document.createElement("div");
-sub.className = "dossier-sub";
+        const sub = document.createElement("div");
+        sub.className = "dossier-sub";
 
-const parts = [];
+        const parts = [];
+        if (d.produit_concerne) {
+          parts.push("Produit : " + d.produit_concerne);
+        }
+        if (d.marque_produit) {
+          parts.push("Marque du produit : " + d.marque_produit);
+        }
+        if (d.reference_piece) {
+          parts.push("Réf : " + d.reference_piece);
+        }
+        sub.textContent = parts.join(" — ");
 
-// Produit
-if (d.produit_concerne) {
-  parts.push("Produit : " + d.produit_concerne);
-}
+        left.appendChild(title);
+        left.appendChild(sub);
 
-// Marque du produit
-if (d.marque_produit) {
-  parts.push("Marque du produit : " + d.marque_produit);
-}
+        const mid = document.createElement("div");
+        mid.innerHTML =
+          '<span class="badge-magasin">' +
+          (d.magasin || "—") +
+          "</span>";
 
-// Référence
-if (d.reference_piece) {
-  parts.push("Réf : " + d.reference_piece);
-}
+        const right = document.createElement("div");
+        right.innerHTML = statutChip(d.statut);
 
-sub.textContent = parts.join(" — ");
+        row.appendChild(colNum);
+        row.appendChild(left);
+        row.appendChild(mid);
+        row.appendChild(right);
 
-    left.appendChild(title);
-    left.appendChild(sub);
+        row.addEventListener("click", () => {
+          dossierSelectionne = d;
+          document
+            .querySelectorAll(".dossier-row.active")
+            .forEach(r => r.classList.remove("active"));
+          row.classList.add("active");
+          afficherDetail(d);
+        });
 
-    // 🔹 Colonne magasin + ID
-    const mid = document.createElement("div");
-mid.innerHTML =
-  '<span class="badge-magasin">' +
-  (d.magasin || "—") +
-  "</span>";
+        frag.appendChild(row);
+      });
 
-    // 🔹 Colonne statut
-    const right = document.createElement("div");
-    right.innerHTML = statutChip(d.statut);
-
-    // 🔹 Ordre des colonnes dans la ligne
-    row.appendChild(colNum); // n° dossier
-    row.appendChild(left);   // infos client/produit
-    row.appendChild(mid);    // magasin + ID
-    row.appendChild(right);  // statut
-
-    row.addEventListener("click", () => {
-      dossierSelectionne = d;
-      document
-        .querySelectorAll(".dossier-row.active")
-        .forEach(r => r.classList.remove("active"));
-      row.classList.add("active");
-      afficherDetail(d);
-    });
-
-    frag.appendChild(row);
-  });
-
-  list.innerHTML = "";
-  list.appendChild(frag);
-}
+      list.innerHTML = "";
+      list.appendChild(frag);
+    }
 
     function majStatsEtListe() {
       renderListe();
@@ -1103,104 +1093,89 @@ mid.innerHTML =
       );
 
       const attenteMoTexte =
-        d.attente_mo || d.statut === "Attente MO" ? "Oui" : "Non";
+        d.statut === "Attente MO" ? "Oui" : "Non";
 
-  content.innerHTML =
-    '<div class="detail-header">' +
-    '<div>' +
-    '<div class="detail-header-title">Dossier ' +
-    (numero ? "#" + numero : "") +
-    "</div>" +
-    '<div class="detail-header-sub">' +
-    (d.nom || "Client") +
-    (d.email ? " — " + d.email : "") +
-    (dateStr ? " — Créé le " + dateStr : "") +
-    "</div>" +
-    "</div>" +
-    '<div>' +
-    statutHtml +
-    "</div>" +
-    "</div>" +
-    '<div class="detail-body">' +
-    // 🔹 Infos dossier
-    '<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
-    (d.magasin || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
-    (d.produit_concerne || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
-    (d.marque_produit || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
-    (d.reference_piece || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
-    (d.immatriculation || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
-    (d.probleme_rencontre || "")
-      .replace(/\r\n/g, "<br>")
-      .replace(/\r/g, "<br>") +
-    "</div></div>" +
-    "</div>" +
+      content.innerHTML =
+        '<div class="detail-header">' +
+        '<div>' +
+        '<div class="detail-header-title">Dossier ' +
+        (numero ? "#" + numero : "") +
+        "</div>" +
+        '<div class="detail-header-sub">' +
+        (d.nom || "Client") +
+        (d.email ? " — " + d.email : "") +
+        (dateStr ? " — Créé le " + dateStr : "") +
+        "</div>" +
+        "</div>" +
+        '<div>' +
+        statutHtml +
+        "</div>" +
+        "</div>" +
+        '<div class="detail-body">' +
+        '<div class="detail-grid">' +
+        '<div><div class="detail-field-label">Magasin</div><div class="detail-field-value">' +
+        (d.magasin || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Produit</div><div class="detail-field-value">' +
+        (d.produit_concerne || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Marque du produit</div><div class="detail-field-value">' +
+        (d.marque_produit || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Référence pièce</div><div class="detail-field-value">' +
+        (d.reference_piece || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Immatriculation</div><div class="detail-field-value">' +
+        (d.immatriculation || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Problème rencontré</div><div class="detail-field-value">' +
+        (d.probleme_rencontre || "")
+          .replace(/\r\n/g, "<br>")
+          .replace(/\r/g, "<br>") +
+        "</div></div>" +
+        "</div>" +
 
-    // 🔹 Sous les infos dossier : Numéro avoir + Attente MO
-    '<div class="detail-grid">' +
-    '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
-    (d.numero_avoir || "") +
-    "</div></div>" +
-    '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
-    attenteMoTexte +
-    "</div></div>" +
-    "</div>" +
+        '<div class="detail-grid">' +
+        '<div><div class="detail-field-label">Numéro d\'avoir</div><div class="detail-field-value">' +
+        (d.numero_avoir || "") +
+        "</div></div>" +
+        '<div><div class="detail-field-label">Attente MO</div><div class="detail-field-value">' +
+        attenteMoTexte +
+        "</div></div>" +
+        "</div>" +
 
-    // 🔹 Puis Documents ajoutés au dossier
-    docsAjHtml +
+        docsAjHtml +
+        filesHtml +
+        repFilesHtml +
+        "</div>" +
+        construireFormulaireEdition(d);
 
-    // (on garde quand même les PJ de base & docs déjà envoyés pour info)
-    filesHtml +
-    repFilesHtml +
-    "</div>" +
-    // 🔹 Formulaire d’édition (nouvelle disposition)
-    construireFormulaireEdition(d);
+      const editForm = document.getElementById("edit-form");
+      if (editForm) {
+        const attToggle = editForm.querySelector("input[name='attente_mo']");
+        const statutSelIn = editForm.querySelector("select[name='statut']");
 
-  // === LIAISON BOUTON "ATTENTE MO" <-> STATUT (même logique que l'ancien site) ===
-  const editForm = document.getElementById("edit-form");
-  if (editForm) {
-    const attToggle = editForm.querySelector("input[name='attente_mo']");
-    const statutSelIn = editForm.querySelector("select[name='statut']");
+        if (attToggle && statutSelIn) {
+          attToggle.addEventListener("change", () => {
+            if (attToggle.checked) {
+              statutSelIn.value = "Attente MO";
+            } else {
+              if (statutSelIn.value === "Attente MO") {
+                statutSelIn.value = "enregistré";
+              }
+            }
+          });
 
-    if (attToggle && statutSelIn) {
-      // Quand on clique sur la case "Attente MO"
-      attToggle.addEventListener("change", () => {
-        if (attToggle.checked) {
-          // Si coché, le statut passe automatiquement à "Attente MO"
-          statutSelIn.value = "Attente MO";
-        } else {
-          // Si décoché et que le statut était "Attente MO",
-          // on repasse en "enregistré" (comme dans l'ancien code)
-          if (statutSelIn.value === "Attente MO") {
-            statutSelIn.value = "enregistré";
-          }
+          statutSelIn.addEventListener("change", () => {
+            if (statutSelIn.value === "Attente MO") {
+              attToggle.checked = true;
+            } else if (statutSelIn.value === "accepté") {
+              attToggle.checked = false;
+            }
+          });
         }
-      });
-
-      // Quand on change le statut à la main
-      statutSelIn.addEventListener("change", () => {
-        if (statutSelIn.value === "Attente MO") {
-          // Si on choisit "Attente MO", on coche la case
-          attToggle.checked = true;
-        } else if (statutSelIn.value === "accepté") {
-          // Si le statut devient "accepté", on décoche la case
-          attToggle.checked = false;
-        }
-      });
+      }
     }
-  }
-}
-
 
     function construireFormulaireEdition(d) {
       const selectedEnr = d.statut === "enregistré";
@@ -1215,11 +1190,11 @@ mid.innerHTML =
       const reponseValue = d.reponse
         ? String(d.reponse).replace(/</g, "&lt;").replace(/>/g, "&gt;")
         : "";
-      const attenteMoChecked = d.attente_mo ? " checked" : "";
+      const attenteMoChecked =
+        (d.attente_mo || d.statut === "Attente MO") ? " checked" : "";
 
       return (
         '<form class="detail-form" id="edit-form">' +
-        // 🔹 Partie "infos dossier" modifiable : Numéro d'avoir + Attente MO + docs ajoutés
         '<div class="detail-form-row">' +
         '<div class="detail-form-group">' +
         "<label>Numéro d'avoir</label>" +
@@ -1243,11 +1218,9 @@ mid.innerHTML =
         '<input type="file" name="documentsAjoutes" multiple>' +
         "</div>" +
 
-        // 🔹 Trait + titre rouge
         '<hr class="detail-separator">' +
         '<div class="detail-warning-title">⚠️TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT⚠️</div>' +
 
-        // 🔹 Statut
         '<div class="detail-form-row">' +
         '<div class="detail-form-group">' +
         "<label>Statut</label>" +
@@ -1271,7 +1244,6 @@ mid.innerHTML =
         "</div>" +
         "</div>" +
 
-        // 🔹 Réponse au client
         '<div class="detail-form-group">' +
         "<label>Réponse au client</label>" +
         '<textarea name="reponse" placeholder="Texte de réponse au client...">' +
@@ -1279,13 +1251,11 @@ mid.innerHTML =
         "</textarea>" +
         "</div>" +
 
-        // 🔹 Pièces jointes pour le client
         '<div class="detail-form-group">' +
         "<label>Pièces jointes pour le client (envoi mail)</label>" +
         '<input type="file" name="reponseFiles" multiple>' +
         "</div>" +
 
-        // 🔹 Boutons
         '<div class="detail-buttons">' +
         '<button type="submit" class="btn">💾 Enregistrer</button>' +
         '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>' +
@@ -1302,6 +1272,17 @@ mid.innerHTML =
       if (!dossierSelectionne) return;
       const form = e.target;
       const id = dossierSelectionne.id;
+
+      const attCheckbox = form.querySelector("input[name='attente_mo']");
+      const statutSel = form.querySelector("select[name='statut']");
+      if (attCheckbox && statutSel) {
+        if (attCheckbox.checked) {
+          statutSel.value = "Attente MO";
+        } else if (statutSel.value === "Attente MO") {
+          statutSel.value = "enregistré";
+        }
+      }
+
       const fd = new FormData(form);
       fetch("/api/admin/dossier/" + encodeURIComponent(id), {
         method: "POST",
@@ -1389,7 +1370,6 @@ mid.innerHTML =
       window.location.href = "/api/admin/export-excel";
     }
 
-    
     function ouvrirFormulaireFournisseur() {
       const fournisseurSelect = document.getElementById("fournisseur-select");
       if (!fournisseurSelect) return;
@@ -1412,7 +1392,7 @@ mid.innerHTML =
         "NGK":        { type: "pdf", file: "Formulaire_ngk.pdf" },
         "NRF":        { type: "pdf", file: "Formulaire_nrf.pdf" },
         "SEIM":       { type: "pdf", file: "Formulaire_SEIM.pdf" },
-        "SCHAEFFLER": { 
+        "SCHAEFFLER": {
           type: "url",
           link: "https://docs.google.com/spreadsheets/d/15mXFV5Xz-lo0Yg7ba4pAZdfPTGJxbZzY/edit?pli=1&gid=156879081#gid=156879081"
         }
@@ -1441,8 +1421,7 @@ mid.innerHTML =
       }
     }
 
-
-function initEvents() {
+    function initEvents() {
       const loginBtn = document.getElementById("login-btn");
       const loginInput = document.getElementById("admin-password");
       const loginMsg = document.getElementById("login-msg");
@@ -1529,6 +1508,7 @@ function initEvents() {
       document
         .getElementById("fournisseur-form")
         .addEventListener("submit", onSubmitFournisseurForm);
+
       const fournisseurSelect = document.getElementById("fournisseur-select");
       const formulaireBtn = document.getElementById("btn-voir-formulaire");
       if (fournisseurSelect && formulaireBtn) {
