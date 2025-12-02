@@ -413,12 +413,12 @@ html {
       word-break: break-word;
     }
    .detail-form {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+  margin-top: 12px !important;
+  padding-top: 12px !important;
   border-top: 1px solid #e2e6f0;
   display: flex;
   flex-direction: column;
-  gap: 0 !important;
+  gap: 10px !important;   /* petit espace entre les blocs */
 }
 .detail-separator {
   border: 0;
@@ -427,13 +427,11 @@ html {
 }
 
 .detail-warning-title {
-  margin: 2px 0 4px 0 !important;
+  margin: 0 0 8px 0 !important;
 }
 #docs-group {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
 }
 hr.detail-separator {
   border: 0;
@@ -441,10 +439,18 @@ hr.detail-separator {
   margin: 0 !important;
 }
     .detail-form-row {
-  margin: 0 !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0 0 8px 0 !important;
+}
+.detail-separator,
+hr.detail-separator {
+  margin: 8px 0 6px 0 !important;
 }
     .detail-form-group {
-  margin: 0 !important;
+  flex: 1 1 220px;
+  margin: 0 0 8px 0 !important;  /* espace sous chaque champ */
 }
     .detail-form-group label {
       font-weight: 600;
@@ -486,10 +492,7 @@ hr.detail-separator {
       color: #234;
     }
     .detail-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
+  margin-top: 8px !important;
 }
 
     .attente-mo-check {
@@ -627,18 +630,17 @@ hr.detail-separator {
     }
 	
     .detail-form-group.reponse-client {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
 }
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
 	.detail-form-group.reponse-client textarea {
-  margin: 0 !important;
+  margin-top: 4px !important;
 }
 #reponse-group {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+  margin-top: 4px !important;
 }
     #edit-modal-backdrop .modal {
       background: #fff;
@@ -1320,13 +1322,32 @@ mid.innerHTML =
   arr.forEach(f => {
     const name = f.original || f.url || "fichier";
     const urlEnc = encodeURIComponent(f.url || "");
-    html +=
-      '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
-      name +
-      "</a>";
+
+    if (title === "Documents ajoutés au dossier") {
+      // ✕ seulement visuel, n'appelle pas le serveur
+      html +=
+        '<span class="file-pill">' +
+          '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+            name +
+          "</a>" +
+          ' <button type="button" class="file-remove" onclick="supprimerDocumentLocal(event)" title="Retirer de l\'affichage">✕</button>' +
+        "</span>";
+    } else {
+      // autres listes : juste lien
+      html +=
+        '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+          name +
+        "</a>";
+    }
   });
   html += "</div>";
   return html;
+}
+function supprimerDocumentLocal(evt) {
+  const pill = evt.target.closest('.file-pill');
+  if (pill) {
+    pill.remove(); // suppression purement visuelle
+  }
 }
 
     function afficherDetail(d) {
