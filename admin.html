@@ -256,11 +256,11 @@
     .stat-red { border-top-color: #f44336; }
 
     .layout-main {
-      display: grid;
-      grid-template-columns: minmax(0, 2.2fr) minmax(0, 0.9fr);
-      gap: 14px;
-      align-items: flex-start;
-    }
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+  gap: 14px;
+  align-items: flex-start;
+}
     @media (max-width: 1000px) {
       .layout-main {
         grid-template-columns: 1fr;
@@ -268,13 +268,14 @@
     }
 
     .dossier-list {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px #0001;
-      padding: 10px 10px 4px;
-      max-height: calc(100vh - 260px);
-      overflow: auto;
-    }
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px #0001;
+  padding: 10px 10px 4px;
+  max-height: calc(100vh - 200px); /* au lieu de 260px */
+  overflow: auto;
+}
+
    .dossier-row {
   padding: 8px 4px;
   border-bottom: 1px solid #eef1f5;
