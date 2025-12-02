@@ -412,13 +412,13 @@ html {
       color: #234;
       word-break: break-word;
     }
-   .detail-form {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+    .detail-form {
+  margin-top: 2px;
   border-top: 1px solid #e2e6f0;
+  padding-top: 2px;
   display: flex;
   flex-direction: column;
-  gap: 0 !important;
+  gap: 0;
 }
 .detail-separator {
   border: 0;
@@ -427,24 +427,25 @@ html {
 }
 
 .detail-warning-title {
-  margin: 2px 0 4px 0 !important;
-}
-#docs-group {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-hr.detail-separator {
-  border: 0;
-  border-top: 1px solid #e2e6f0;
-  margin: 0 !important;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #b91c1c;
+  text-align: center;
+  margin: 2px 0;   /* juste un tout petit espace */
 }
     .detail-form-row {
-  margin: 0 !important;
-}
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     .detail-form-group {
-  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 170px;
+  font-size: 0.85rem;
+  /* supprime toute marge verticale pour coller les éléments les uns aux autres */
+  margin: 0;
 }
     .detail-form-group label {
       font-weight: 600;
@@ -627,18 +628,13 @@ hr.detail-separator {
     }
 	
     .detail-form-group.reponse-client {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
+      margin-bottom: 0px !important;
+    }
     .detail-form-group.reponse-client + .detail-form-group {
       margin-top: 0 !important;
     }
 	.detail-form-group.reponse-client textarea {
-  margin: 0 !important;
-}
-#reponse-group {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+  margin-bottom: 0;   /* supprime l'espace sous la zone de texte */
 }
     #edit-modal-backdrop .modal {
       background: #fff;
@@ -1320,32 +1316,13 @@ mid.innerHTML =
   arr.forEach(f => {
     const name = f.original || f.url || "fichier";
     const urlEnc = encodeURIComponent(f.url || "");
-
-    if (title === "Documents ajoutés au dossier") {
-      // ✕ seulement visuel, n'appelle pas le serveur
-      html +=
-        '<span class="file-pill">' +
-          '<a href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
-            name +
-          "</a>" +
-          ' <button type="button" class="file-remove" onclick="supprimerDocumentLocal(event)" title="Retirer de l\'affichage">✕</button>' +
-        "</span>";
-    } else {
-      // autres listes : juste lien
-      html +=
-        '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
-          name +
-        "</a>";
-    }
+    html +=
+      '<a class="file-pill" href="/download/' + urlEnc + '" target="_blank" title="Télécharger">' +
+      name +
+      "</a>";
   });
   html += "</div>";
   return html;
-}
-function supprimerDocumentLocal(evt) {
-  const pill = evt.target.closest('.file-pill');
-  if (pill) {
-    pill.remove(); // suppression purement visuelle
-  }
 }
 
     function afficherDetail(d) {
