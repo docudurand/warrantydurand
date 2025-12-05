@@ -875,9 +875,9 @@ app.post("/api/admin/login", (req, res) => {
       isAdmin: false,
       magasin: null,
       multiMagasins: [
-        "Saint-Egreve",
-        "Rives",
-        "Bourgoin-Jallieu"
+        "Chassieu",
+		"Gleize",
+        "Les Echets"
       ]
     });
   }
