@@ -868,7 +868,7 @@ app.post("/api/admin/login", (req, res) => {
     return res.json({ success:true, isSuper:false, isAdmin:true });
   }
 
-  if (pw === process.env["remond-pass"]) {
+  if (pw === process.env["magasin-Remond-pass"]) {
     return res.json({
       success: true,
       isSuper: false,
