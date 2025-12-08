@@ -943,6 +943,7 @@ html {
     let isAdmin = false;
     let magasinAdmin = null;
     let multiMagasins = null;
+	let isLimited = false;
 
     let allDossiers = [];
     let ongletActif = "global";
@@ -1408,7 +1409,7 @@ function supprimerDocumentDossier(evt) {
     })
     .catch(err => {
       console.error(err);
-      alert("Erreur réseau lors de la suppression du document.");
+      alert("Erreur réseau lors de la suppression du document.");const selectedAvoir = d.statut === "Avoir Commercial";
     });
 }
 
@@ -1597,11 +1598,11 @@ const docsAjHtml = renderFilesList(
 
 
     function construireFormulaireEdition(d) {
-      const selectedEnr = d.statut === "enregistré";
-      const selectedAcc = d.statut === "accepté";
-      const selectedRef = d.statut === "refusé";
+      const selectedEnr   = d.statut === "enregistré";
+      const selectedAcc   = d.statut === "accepté";
+      const selectedRef   = d.statut === "refusé";
       const selectedAvoir = d.statut === "Avoir Commercial";
-      const selectedMO = d.statut === "Attente MO";
+      const selectedMO    = d.statut === "Attente MO";
 
       const numeroAvoirValue = d.numero_avoir
         ? String(d.numero_avoir).replace(/"/g, "&quot;")
@@ -1609,89 +1610,122 @@ const docsAjHtml = renderFilesList(
       const reponseValue = d.reponse
         ? String(d.reponse).replace(/</g, "&lt;").replace(/>/g, "&gt;")
         : "";
-      const attenteMoChecked = ((d.statut || "").toLowerCase() === "attente mo") ? " checked" : "";
+      const attenteMoChecked =
+        ((d.statut || "").toLowerCase() === "attente mo") ? " checked" : "";
 
-      return (
-        '<form class="detail-form" id="edit-form">' +
-        '<div class="detail-form-row">' +
+      const limited = isLimited && !isSuperAdmin && !isAdmin;
+
+      let html = '';
+
+      html += '<form class="detail-form" id="edit-form">';
+
+      html += '<div class="detail-form-row">';
+
+      html +=
         '<div class="detail-form-group">' +
-        "<label>Numéro d'avoir</label>" +
-        '<input type="text" name="numero_avoir" value="' +
-        numeroAvoirValue +
-        '">' +
-        "</div>" +
-        '<div class="detail-form-group">' +
-"<label>Attente MO</label>" +
-'<div class="attente-mo-check">' +
-  '<label class="switch">' +
-    '<input type="checkbox" id="attente_mo" name="attente_mo"' +
-    attenteMoChecked +
-    ">" +
-    '<span class="slider"></span>' +
-  "</label>" +
-  '<span>Dossier en "Attente MO"</span>' +
-"</div>" +
-"</div>" +
-        "</div>" +
+          "<label>Numéro d'avoir</label>" +
+          '<input type="text" name="numero_avoir" value="' +
+            numeroAvoirValue +
+          '">' +
+        "</div>";
 
-        '<div class="detail-form-group" id="docs-group">' +
-        "<label>Documents ajoutés au dossier (non envoyés au client)</label>" +
-        '<input type="file" name="documentsAjoutes" multiple>' +
-        '<ul class="file-list" id="docs-ajoutes-buffer"></ul>' +
-        "</div>" +
+      if (!limited) {
+        html +=
+          '<div class="detail-form-group">' +
+            "<label>Attente MO</label>" +
+            '<div class="attente-mo-check">' +
+              '<label class="switch">' +
+                '<input type="checkbox" id="attente_mo" name="attente_mo"' +
+                  attenteMoChecked +
+                ">" +
+                '<span class="slider"></span>' +
+              "</label>" +
+              '<span>Dossier en "Attente MO"</span>' +
+            "</div>" +
+          "</div>";
+      }
 
-        '<hr class="detail-separator">' +
-        '<div class="detail-warning-title">⚠️TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT⚠️</div>' +
+      html += "</div>";
 
-        '<div class="detail-form-row">' +
-        '<div class="detail-form-group">' +
-        "<label>Statut</label>" +
-        '<select name="statut">' +
-        '<option value="enregistré"' +
-        (selectedEnr ? " selected" : "") +
-        ">Enregistré</option>" +
-        '<option value="accepté"' +
-        (selectedAcc ? " selected" : "") +
-        ">Accepté</option>" +
-        '<option value="refusé"' +
-        (selectedRef ? " selected" : "") +
-        ">Refusé</option>" +
-        '<option value="Avoir Commercial"' +
-        (selectedAvoir ? " selected" : "") +
-        ">Avoir Commercial</option>" +
-        '<option value="Attente MO"' +
-        (selectedMO ? " selected" : "") +
-        ">Attente MO</option>" +
-        "</select>" +
-        "</div>" +
-        "</div>" +
+      if (!limited) {
+        html +=
+          '<div class="detail-form-group" id="docs-group">' +
+            "<label>Documents ajoutés au dossier (non envoyés au client)</label>" +
+            '<input type="file" name="documentsAjoutes" multiple>' +
+            '<ul class="file-list" id="docs-ajoutes-buffer"></ul>' +
+          "</div>";
 
-        '<div class="detail-form-group reponse-client">' +
-        "<label>Réponse au client</label>" +
-        '<textarea name="reponse" placeholder="Texte de réponse au client...">' +
-        reponseValue +
-        "</textarea>" +
-        "</div>" +
+        html +=
+          '<hr class="detail-separator">' +
+          '<div class="detail-warning-title">' +
+          '⚠️TOUTE MODIFICATION DANS CE CADRE EST ENVOYÉE PAR MAIL AU CLIENT⚠️' +
+          "</div>";
 
-        '<div class="detail-form-group" id="reponse-group">' +
-        "<label>Pièces jointes pour le client (envoi mail)</label>" +
-        '<input type="file" name="reponseFiles" multiple>' +
-        '<ul class="file-list" id="reponse-files-buffer"></ul>' +
-        "</div>" +
+        html +=
+          '<div class="detail-form-row">' +
+            '<div class="detail-form-group">' +
+              "<label>Statut</label>" +
+              '<select name="statut">' +
+                '<option value="enregistré"' +
+                  (selectedEnr ? " selected" : "") +
+                ">Enregistré</option>" +
+                '<option value="accepté"' +
+                  (selectedAcc ? " selected" : "") +
+                ">Accepté</option>" +
+                '<option value="refusé"' +
+                  (selectedRef ? " selected" : "") +
+                ">Refusé</option>" +
+                '<option value="Avoir Commercial"' +
+                  (selectedAvoir ? " selected" : "") +
+                ">Avoir Commercial</option>" +
+                '<option value="Attente MO"' +
+                  (selectedMO ? " selected" : "") +
+                ">Attente MO</option>" +
+              "</select>" +
+            "</div>" +
+          "</div>";
 
-        '<div class="detail-buttons">' +
-        '<button type="submit" class="btn">💾 Enregistrer</button>' +
-        '<button type="button" class="btn secondary" id="btn-imprimer-dossier">🖨️ Imprimer</button>' +
-        '<button type="button" class="btn secondary" id="btn-modifier-dossier">📝 Modifier dossier</button>' +
-        ((isSuperAdmin || isAdmin)
-          ? '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>'
-          : "") +
-        (isSuperAdmin
-          ? '<button type="button" class="btn danger" id="btn-supprimer-dossier">🗑️ Supprimer le dossier</button>'
-          : "") +
-        "</div>" +
-        "</form>"
-      );
+        html +=
+          '<div class="detail-form-group reponse-client">' +
+            "<label>Réponse au client</label>" +
+            '<textarea name="reponse" placeholder="Texte de réponse au client...">' +
+              reponseValue +
+            "</textarea>" +
+          "</div>";
+
+        html +=
+          '<div class="detail-form-group" id="reponse-group">' +
+            "<label>Pièces jointes pour le client (envoi mail)</label>" +
+            '<input type="file" name="reponseFiles" multiple>' +
+            '<ul class="file-list" id="reponse-files-buffer"></ul>' +
+          "</div>";
+      }
+
+      html += '<div class="detail-buttons">';
+
+      if (!limited) {
+        html +=
+          '<button type="submit" class="btn">💾 Enregistrer</button>' +
+          '<button type="button" class="btn secondary" id="btn-imprimer-dossier">🖨️ Imprimer</button>' +
+          '<button type="button" class="btn secondary" id="btn-modifier-dossier">📝 Modifier dossier</button>';
+
+        if (isSuperAdmin || isAdmin) {
+          html +=
+            '<button type="button" class="btn secondary" id="btn-envoyer-fournisseur">📤 Envoyer au fournisseur</button>';
+        }
+        if (isSuperAdmin) {
+          html +=
+            '<button type="button" class="btn danger" id="btn-supprimer-dossier">🗑️ Supprimer le dossier</button>';
+        }
+      } else {
+        html +=
+          '<button type="button" class="btn secondary" id="btn-imprimer-dossier">🖨️ Imprimer</button>';
+      }
+
+      html += "</div>";
+      html += "</form>";
+
+      return html;
     }
 
     function onSubmitEditForm(e) {
@@ -1985,13 +2019,13 @@ function initEvents() {
           },
           body: JSON.stringify({ password: pw })
         })
-          .then(r => r.json())
           .then(json => {
             if (json && json.success) {
               isSuperAdmin = !!json.isSuper;
               isAdmin = !!json.isAdmin;
               magasinAdmin = json.magasin || null;
               multiMagasins = json.multiMagasins || null;
+              isLimited = !!json.isLimited;
 
               document.getElementById("login").style.display = "none";
               document.getElementById("admin-content").style.display = "block";

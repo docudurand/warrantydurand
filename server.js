@@ -868,15 +868,16 @@ app.post("/api/admin/login", (req, res) => {
     return res.json({ success:true, isSuper:false, isAdmin:true });
   }
 
-  if (pw === process.env["magasin-Remond-pass"]) {
+  if (pw === process.env["magasin-Remond-limited"]) {
     return res.json({
       success: true,
       isSuper: false,
       isAdmin: false,
+      isLimited: true,
       magasin: null,
       multiMagasins: [
         "Chassieu",
-		"Gleize",
+        "Gleize",
         "Les Echets"
       ]
     });
