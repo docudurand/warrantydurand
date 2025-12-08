@@ -809,12 +809,32 @@ html {
   </div>
 
   <div id="login">
-    <h2>Accès administration</h2>
+  <h2>Accès administration</h2>
+  <form id="login-form" autocomplete="on">
     <label for="admin-password">Mot de passe</label>
-    <input type="password" id="admin-password" autocomplete="current-password">
-    <button id="login-btn">Se connecter</button>
-    <div id="login-msg"></div>
-  </div>
+
+    <input
+      type="text"
+      id="admin-username"
+      name="username"
+      autocomplete="username"
+      value="admin"
+      style="position:absolute;left:-9999px;opacity:0;height:0;width:0;border:0;padding:0;margin:0;"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+
+    <input
+      type="password"
+      id="admin-password"
+      name="password"
+      autocomplete="current-password"
+    >
+
+    <button type="submit" id="login-btn">Se connecter</button>
+  </form>
+  <div id="login-msg"></div>
+</div>
 
   <div id="admin-content">
   <div class="top-tools">
@@ -1989,49 +2009,47 @@ function construireFormulaireEdition(d) {
 
 
 function initEvents() {
-      const loginBtn = document.getElementById("login-btn");
-      const loginInput = document.getElementById("admin-password");
-      const loginMsg = document.getElementById("login-msg");
+  const loginForm  = document.getElementById("login-form");
+  const loginInput = document.getElementById("admin-password");
+  const loginMsg   = document.getElementById("login-msg");
 
-      function tryLogin() {
-        const pw = loginInput.value;
-        loginMsg.textContent = "";
-        fetch("/api/admin/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ password: pw })
-        })
-          .then(r => r.json())
-           .then(json => {
-            if (json && json.success) {
-              isSuperAdmin = !!json.isSuper;
-              isAdmin = !!json.isAdmin;
-              isLimited = !!json.isLimited;
-              magasinAdmin = json.magasin || null;
-              multiMagasins = json.multiMagasins || null;
+  function tryLogin(evt) {
+    if (evt) evt.preventDefault();          // on garde la main mais le navigateur voit un submit
+    const pw = loginInput.value;
+    loginMsg.textContent = "";
 
+    fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pw })
+    })
+      .then(r => r.json())
+      .then(json => {
+        if (json && json.success) {
+          isSuperAdmin   = !!json.isSuper;
+          isAdmin        = !!json.isAdmin;
+          isLimited      = !!json.isLimited;
+          magasinAdmin   = json.magasin || null;
+          multiMagasins  = json.multiMagasins || null;
 
-              document.getElementById("login").style.display = "none";
-              document.getElementById("admin-content").style.display = "block";
-              toggleSuperAdminUI();
-              chargerDossiers();
-            } else {
-              loginMsg.textContent =
-                (json && json.message) || "Mot de passe incorrect.";
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            loginMsg.textContent = "Erreur réseau.";
-          });
-      }
-
-      loginBtn.addEventListener("click", tryLogin);
-      loginInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") tryLogin();
+          document.getElementById("login").style.display = "none";
+          document.getElementById("admin-content").style.display = "block";
+          toggleSuperAdminUI();
+          chargerDossiers();
+        } else {
+          loginMsg.textContent =
+            (json && json.message) || "Mot de passe incorrect.";
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        loginMsg.textContent = "Erreur réseau.";
       });
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", tryLogin);
+  }
 
       document.getElementById("btn-export").addEventListener("click", exportExcel);
 
