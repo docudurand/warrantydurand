@@ -586,28 +586,28 @@ app.post("/api/admin/dossier/:id",
       if (repRecue !== undefined) dossier.reponse = repRecue;
       if (nbAvoir !== undefined) dossier.numero_avoir = nbAvoir;
 
-      dossier.reponseFiles = dossier.reponseFiles || [];
-      dossier.documentsAjoutes = dossier.documentsAjoutes || [];
+dossier.reponseFiles = dossier.reponseFiles || [];
+dossier.documentsAjoutes = dossier.documentsAjoutes || [];
 
-      if (req.files && req.files.reponseFiles) {
-        for (const f of req.files.reponseFiles) {
-          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-          const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
-          await uploadFileToFTP(f.path, "uploads", remoteName);
-          dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
-          try { fs.unlinkSync(f.path); } catch {}
-        }
-      }
+if (req.files && req.files.reponseFiles) {
+  for (const f of req.files.reponseFiles) {
+    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+    const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
+    await uploadFileToFTP(f.path, "uploads", remoteName);
+    dossier.reponseFiles.push({ url: remoteName, original: f.originalname });
+    try { fs.unlinkSync(f.path); } catch {}
+  }
+}
 
-      if (req.files && req.files.documentsAjoutes) {
-        for (const f of req.files.documentsAjoutes) {
-          const cleanedOriginal = f.originalname.replace(/\s/g, "_");
-          const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
-          await uploadFileToFTP(f.path, "uploads", remoteName);
-          dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
-          try { fs.unlinkSync(f.path); } catch {}
-        }
-      }
+if (req.files && req.files.documentsAjoutes) {
+  for (const f of req.files.documentsAjoutes) {
+    const cleanedOriginal = f.originalname.replace(/\s/g, "_");
+    const remoteName = `${Date.now()}-${Math.round(Math.random() * 1e8)}-${cleanedOriginal}`;
+    await uploadFileToFTP(f.path, "uploads", remoteName);
+    dossier.documentsAjoutes.push({ url: remoteName, original: f.originalname });
+    try { fs.unlinkSync(f.path); } catch {}
+  }
+}
 
       if (typeof dossier.attente_mo !== "boolean") dossier.attente_mo = false;
       let suppressNotif = false;
@@ -772,7 +772,7 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     const dossier = data.find(x => x.id === id);
     if (!dossier) return res.json({ success:false, message:"Dossier introuvable" });
 
-    const editableFields = [
+        const editableFields = [
       "nom","numero_compte_client","email","magasin","marque_produit","produit_concerne",
       "reference_piece","quantite_posee","immatriculation",
       "marque_vehicule","modele_vehicule","num_serie",
@@ -861,64 +861,35 @@ app.post("/api/admin/login", (req, res) => {
   const pw = (req.body && req.body.password) ? req.body.password : "";
 
   if (pw === process.env["superadmin-pass"]) {
-    return res.json({ success:true, isSuper:true,  isAdmin:true });
+    return res.json({ success: true, isSuper: true,  isAdmin: true });
   }
-
   if (pw === process.env["admin-pass"]) {
-    return res.json({ success:true, isSuper:false, isAdmin:true });
+    return res.json({ success: true, isSuper: false, isAdmin: true });
   }
 
-    if (pw === process.env["magasin-Remond-limited"]) {
+  if (process.env["magasin-Remond-limited"] &&
+      pw === process.env["magasin-Remond-limited"]) {
     return res.json({
       success: true,
       isSuper: false,
       isAdmin: false,
-      magasin: null,
-      multiMagasins: [
-        "Chassieu",
-        "Gleize",
-        "Les Echets"
-      ],
       isLimited: true
     });
   }
 
-
   for (const magasin of MAGASINS) {
     const key = "magasin-" + magasin.replace(/[^\w]/g, "-") + "-pass";
     if (process.env[key] && pw === process.env[key]) {
-      return res.json({ success:true, isSuper:false, isAdmin:false, magasin });
+      return res.json({
+        success: true,
+        isSuper: false,
+        isAdmin: false,
+        magasin
+      });
     }
   }
 
-  res.json({ success:false, message:"Mot de passe incorrect" });
-});
-
-app.delete("/api/admin/dossier/:id", async (req, res) => {
-  try {
-    if (!req.headers["x-superadmin"]) return res.json({ success:false, message:"Non autorisé" });
-    const { id } = req.params;
-    let data = await readDataFTP();
-    if (!Array.isArray(data)) data = [];
-    const idx = data.findIndex(x => x.id === id);
-    if (idx === -1) return res.json({ success:false, message:"Introuvable" });
-
-    const dossier = data[idx];
-
-    const allUrls = [];
-    if (dossier.files)            allUrls.push(...dossier.files.map(f => f.url));
-    if (dossier.reponseFiles)     allUrls.push(...dossier.reponseFiles.map(f => f.url));
-    if (dossier.documentsAjoutes) allUrls.push(...dossier.documentsAjoutes.map(f => f.url));
-
-    await deleteFilesFromFTP(allUrls);
-
-    data.splice(idx, 1);
-    await writeDataFTP(data);
-    res.json({ success:true });
-  } catch (err) {
-    console.error("Erreur /api/admin/dossier/:id (DELETE) :", err.message || err);
-    res.json({ success:false, message: err.message });
-  }
+  res.json({ success: false, message: "Mot de passe incorrect" });
 });
 
 app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
