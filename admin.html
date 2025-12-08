@@ -2012,34 +2012,35 @@ function initEvents() {
       function tryLogin() {
         const pw = loginInput.value;
         loginMsg.textContent = "";
-        fetch("/api/admin/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ password: pw })
-        })
-          .then(json => {
-            if (json && json.success) {
-              isSuperAdmin = !!json.isSuper;
-              isAdmin = !!json.isAdmin;
-              magasinAdmin = json.magasin || null;
-              multiMagasins = json.multiMagasins || null;
-              isLimited = !!json.isLimited;
+fetch("/api/admin/login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ password: pw })
+})
+  .then(r => r.json())
+  .then(json => {
+    if (json && json.success) {
+      isSuperAdmin = !!json.isSuper;
+      isAdmin = !!json.isAdmin;
+      magasinAdmin = json.magasin || null;
+      multiMagasins = json.multiMagasins || null;
+      isLimited = !!json.isLimited;
 
-              document.getElementById("login").style.display = "none";
-              document.getElementById("admin-content").style.display = "block";
-              toggleSuperAdminUI();
-              chargerDossiers();
-            } else {
-              loginMsg.textContent =
-                (json && json.message) || "Mot de passe incorrect.";
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            loginMsg.textContent = "Erreur réseau.";
-          });
+      document.getElementById("login").style.display = "none";
+      document.getElementById("admin-content").style.display = "block";
+      toggleSuperAdminUI();
+      chargerDossiers();
+    } else {
+      loginMsg.textContent =
+        (json && json.message) || "Mot de passe incorrect.";
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    loginMsg.textContent = "Erreur réseau.";
+  });
       }
 
       loginBtn.addEventListener("click", tryLogin);
