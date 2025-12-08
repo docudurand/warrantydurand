@@ -861,19 +861,48 @@ app.post("/api/admin/login", (req, res) => {
   const pw = (req.body && req.body.password) ? req.body.password : "";
 
   if (pw === process.env["superadmin-pass"]) {
-    return res.json({ success: true, isSuper: true,  isAdmin: true });
+    return res.json({
+      success:   true,
+      isSuper:   true,
+      isAdmin:   true,
+      isLimited: false,
+      magasin:   null,
+      multiMagasins: null
+    });
   }
+
   if (pw === process.env["admin-pass"]) {
-    return res.json({ success: true, isSuper: false, isAdmin: true });
+    return res.json({
+      success:   true,
+      isSuper:   false,
+      isAdmin:   true,
+      isLimited: false,
+      magasin:   null,
+      multiMagasins: null
+    });
   }
 
   if (process.env["magasin-Remond-limited"] &&
       pw === process.env["magasin-Remond-limited"]) {
     return res.json({
-      success: true,
-      isSuper: false,
-      isAdmin: false,
-      isLimited: true
+      success:   true,
+      isSuper:   false,
+      isAdmin:   false,
+      isLimited: true,
+      magasin:   null,
+      multiMagasins: ["Gleize", "Les Echets", "Chassieu"]
+    });
+  }
+
+  if (process.env["magasin-Barret-limited"] &&
+      pw === process.env["magasin-Barret-limited"]) {
+    return res.json({
+      success:   true,
+      isSuper:   false,
+      isAdmin:   false,
+      isLimited: true,
+      magasin:   "Gleize",
+      multiMagasins: null
     });
   }
 
@@ -881,15 +910,17 @@ app.post("/api/admin/login", (req, res) => {
     const key = "magasin-" + magasin.replace(/[^\w]/g, "-") + "-pass";
     if (process.env[key] && pw === process.env[key]) {
       return res.json({
-        success: true,
-        isSuper: false,
-        isAdmin: false,
-        magasin
+        success:   true,
+        isSuper:   false,
+        isAdmin:   false,
+        isLimited: false,
+        magasin,
+        multiMagasins: null
       });
     }
   }
 
-  res.json({ success: false, message: "Mot de passe incorrect" });
+  return res.json({ success: false, message: "Mot de passe incorrect" });
 });
 
 app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
