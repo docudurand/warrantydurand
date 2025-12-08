@@ -868,20 +868,21 @@ app.post("/api/admin/login", (req, res) => {
     return res.json({ success:true, isSuper:false, isAdmin:true });
   }
 
-  if (pw === process.env["magasin-Remond-limited"]) {
+    if (pw === process.env["magasin-Remond-limited"]) {
     return res.json({
       success: true,
       isSuper: false,
       isAdmin: false,
-      isLimited: true,
       magasin: null,
       multiMagasins: [
         "Chassieu",
         "Gleize",
         "Les Echets"
-      ]
+      ],
+      isLimited: true
     });
   }
+
 
   for (const magasin of MAGASINS) {
     const key = "magasin-" + magasin.replace(/[^\w]/g, "-") + "-pass";
