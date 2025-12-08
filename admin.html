@@ -1170,10 +1170,15 @@ html {
       if (magVal) {
         liste = liste.filter(d => d.magasin === magVal);
       } else if (!isSuperAdmin && !isAdmin && multiMagasins && Array.isArray(multiMagasins)) {
-        liste = liste.filter(d => multiMagasins.includes(d.magasin));
-      } else if (!isSuperAdmin && !isAdmin && magasinAdmin) {
-        liste = liste.filter(d => d.magasin === magasinAdmin);
-      }
+  const allowed = multiMagasins.map(m => (m || "").toLowerCase());
+  liste = liste.filter(d => {
+    const mag = (d.magasin || "").toLowerCase();
+    return allowed.includes(mag);
+  });
+} else if (!isSuperAdmin && !isAdmin && magasinAdmin) {
+  const magRef = (magasinAdmin || "").toLowerCase();
+  liste = liste.filter(d => (d.magasin || "").toLowerCase() === magRef);
+}
 
       const statutSel = document.getElementById("statut-filter");
       const statutVal = statutSel ? statutSel.value : "";
