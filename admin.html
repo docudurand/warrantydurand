@@ -1520,14 +1520,15 @@ const docsAjHtml = renderFilesList(
         (d.num_serie || "") +
       "</div></div>" +
       '<div><div class="detail-field-label">1ère immatriculation</div><div class="detail-field-value">' +
-        (d.premiere_immat || "") +
-      "</div></div>" +
-      '<div><div class="detail-field-label">Date de pose</div><div class="detail-field-value">' +
-        (d.date_pose || "") +
-      "</div></div>" +
-      '<div><div class="detail-field-label">Date du constat</div><div class="detail-field-value">' +
-        (d.date_constat || "") +
-      "</div></div>" +
+  formatDateFRshort(d.premiere_immat) +
+"</div></div>" +
+'<div><div class="detail-field-label">Date de pose</div><div class="detail-field-value">' +
+  formatDateFRshort(d.date_pose) +
+"</div></div>" +
+'<div><div class="detail-field-label">Date du constat</div><div class="detail-field-value">' +
+  formatDateFRshort(d.date_constat) +
+"</div></div>" +
+
       '<div><div class="detail-field-label">Kilométrage à la pose</div><div class="detail-field-value">' +
         (d.km_pose || "") +
       "</div></div>" +
@@ -2144,20 +2145,21 @@ function initEvents() {
     }
 
 function formatDateFRshort(val) {
-    if (!val) return "";
-    let d = typeof val === "string" ? new Date(val) : val;
-    if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
-      let [y, m, d2] = val.split("-");
-      return `${d2}/${m}/${y.slice(2)}`;
-    }
-    if (!isNaN(d)) {
-      let day = ("0"+d.getDate()).slice(-2);
-      let month = ("0"+(d.getMonth()+1)).slice(-2);
-      let year = d.getFullYear().toString().slice(-2);
-      return `${day}/${month}/${year}`;
-    }
-    return val;
+  if (!val) return "";
+  if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    let [y, m, d2] = val.split("-");
+    return `${d2}/${m}/${y}`; // JJ/MM/AAAA
   }
+
+  let d = typeof val === "string" ? new Date(val) : val;
+  if (!isNaN(d)) {
+    let day = ("0" + d.getDate()).slice(-2);
+    let month = ("0" + (d.getMonth() + 1)).slice(-2);
+    let year = d.getFullYear(); // 4 chiffres
+    return `${day}/${month}/${year}`;
+  }
+  return val;
+}
 
 function voirDossier(id) {
     let d = allDossiers.find(x=>x.id===id);
