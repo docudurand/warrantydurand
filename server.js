@@ -965,6 +965,57 @@ app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
   }
 });
 
+app.delete("/api/admin/dossier/:id", async (req, res) => {
+  try {
+    const isSuper = req.headers["x-superadmin"] === "1";
+    if (!isSuper) {
+      return res.status(403).json({
+        success: false,
+        message: "Suppression autorisée uniquement pour le super admin."
+      });
+    }
+
+    const { id } = req.params;
+    let data = await readDataFTP();
+    if (!Array.isArray(data)) data = [];
+
+    const index = data.findIndex(d => d.id === id);
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Dossier introuvable."
+      });
+    }
+
+    const dossier = data[index];
+
+    const filesToDelete = [];
+    (dossier.files || []).forEach(f => f && f.url && filesToDelete.push(f.url));
+    (dossier.reponseFiles || []).forEach(f => f && f.url && filesToDelete.push(f.url));
+    (dossier.documentsAjoutes || []).forEach(f => f && f.url && filesToDelete.push(f.url));
+
+    data.splice(index, 1);
+
+    await writeDataFTP(data);
+
+    if (filesToDelete.length) {
+      try {
+        await deleteFilesFromFTP(filesToDelete);
+      } catch (err) {
+        console.warn("[DELETE DOSSIER] Erreur pendant deleteFilesFromFTP :", err.message || err);
+      }
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Erreur /api/admin/dossier/:id (DELETE) :", err.message || err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Erreur interne lors de la suppression."
+    });
+  }
+});
+
 app.get("/api/admin/export-excel", async (req, res) => {
   try {
     const data = await readDataFTP();
