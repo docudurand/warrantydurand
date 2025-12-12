@@ -825,11 +825,11 @@ html {
     >
 
     <input
-      type="password"
-      id="admin-password"
-      name="password"
-      autocomplete="current-password"
-    >
+  type="password"
+  id="password"
+  name="password"
+  autocomplete="current-password"
+/>
 
     <button type="submit" id="login-btn">Se connecter</button>
   </form>
@@ -964,6 +964,7 @@ html {
     let magasinAdmin = null;
     let multiMagasins = null;
 	let isLimited = false;
+	let defaultMagasin = null;
 
     let allDossiers = [];
     let ongletActif = "global";
@@ -2016,11 +2017,11 @@ function construireFormulaireEdition(d) {
 
 function initEvents() {
   const loginForm  = document.getElementById("login-form");
-  const loginInput = document.getElementById("admin-password");
+  const loginInput = document.getElementById("password");
   const loginMsg   = document.getElementById("login-msg");
 
   function tryLogin(evt) {
-    if (evt) evt.preventDefault();          // on garde la main mais le navigateur voit un submit
+    if (evt) evt.preventDefault();
     const pw = loginInput.value;
     loginMsg.textContent = "";
 
@@ -2037,11 +2038,20 @@ function initEvents() {
           isLimited      = !!json.isLimited;
           magasinAdmin   = json.magasin || null;
           multiMagasins  = json.multiMagasins || null;
+		  defaultMagasin = json.defaultMagasin || null;
 
           document.getElementById("login").style.display = "none";
           document.getElementById("admin-content").style.display = "block";
           toggleSuperAdminUI();
-          chargerDossiers();
+
+chargerDossiers().then(() => {
+  const magSelect = document.getElementById("magasin-filter");
+  if (magSelect && defaultMagasin) {
+    magSelect.value = defaultMagasin;
+  }
+  majStatsEtListe();
+});
+
         } else {
           loginMsg.textContent =
             (json && json.message) || "Mot de passe incorrect.";
