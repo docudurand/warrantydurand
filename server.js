@@ -893,17 +893,19 @@ app.post("/api/admin/login", (req, res) => {
       multiMagasins: ["Gleize", "Les Echets", "Chassieu"]
     });
   }
-  if (process.env["magasin-Casty-limited"] &&
-    pw === process.env["magasin-Casty-limited"]) {
-  return res.json({
-    success:   true,
-    isSuper:   false,
-    isAdmin:   false,
-    isLimited: true,
-    magasin:   null,
-    multiMagasins: ["Gleize", "Les Echets"]
-  });
-}
+    if (process.env["magasin-Casty-limited"] &&
+      pw === process.env["magasin-Casty-limited"]) {
+    return res.json({
+      success: true,
+      isSuper: false,
+      isAdmin: false,
+      isLimited: true,
+      magasin: null,
+      multiMagasins: ["Gleize", "Les Echets"],
+      defaultMagasin: "Les Echets"
+    });
+  }
+
 
   if (process.env["magasin-Barret-limited"] &&
       pw === process.env["magasin-Barret-limited"]) {
