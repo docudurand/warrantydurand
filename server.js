@@ -4,7 +4,6 @@ import cors from "cors";
 import fs from "fs";
 import path from "path";
 import cookieParser from "cookie-parser";
-// Remove direct nodemailer import; use shared mailer instead
 import { transporter, fromEmail } from "./mailer.js";
 import mime from "mime-types";
 import ftp from "basic-ftp";
@@ -13,12 +12,10 @@ import PDFDocument from "pdfkit";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
-// The __dirname workaround for ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enumerations and constants
 const STATUTS = {
   ENREGISTRE: "enregistré",
   ACCEPTE: "accepté",
@@ -83,7 +80,6 @@ const FOURNISSEUR_PDFS = {
   "SEIM": "Formulaire_SEIM.pdf"
 };
 
-// FTP configuration from environment
 const FTP_HOST = process.env.FTP_HOST;
 const FTP_PORT = Number(process.env.FTP_PORT || 21);
 const FTP_USER = process.env.FTP_USER;
@@ -92,20 +88,14 @@ const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegarde
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
 const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
 
-// Middleware setup
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 
-// Local temporary upload directory for multer
 const TEMP_UPLOAD_DIR = path.join(__dirname, "temp_uploads");
 try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
 const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
-/**
- * Helper to obtain an FTP client with TLS.  The caller must ensure
- * client.close() is called.
- */
 async function getFTPClient() {
   const client = new ftp.Client(10000);
   client.ftp.verbose = false;
@@ -126,10 +116,6 @@ async function getFTPClient() {
   }
 }
 
-/**
- * Reads the demandes.json file from the FTP server and returns it as an
- * array.  Automatically normalises old status strings.
- */
 async function readDataFTP() {
   let client;
   try {
@@ -172,11 +158,6 @@ async function readDataFTP() {
   return json;
 }
 
-/**
- * Writes the provided data array back to demandes.json on the FTP server.
- *
- * @param {Array} data
- */
 async function writeDataFTP(data) {
   let client;
   try {
@@ -205,9 +186,6 @@ async function writeDataFTP(data) {
   }
 }
 
-/**
- * Uploads a file from local path to the FTP server under the given subfolder.
- */
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   let client;
   try {
@@ -235,9 +213,6 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   }
 }
 
-/**
- * Deletes a list of files from the FTP server.  Ignores errors and continues.
- */
 async function deleteFilesFromFTP(urls = []) {
   if (!urls.length) return;
   let client;
@@ -267,10 +242,6 @@ async function deleteFilesFromFTP(urls = []) {
   }
 }
 
-/**
- * Streams a remote FTP file to the Express response.  Handles errors and
- * downloads gracefully.
- */
 async function streamFTPFileToRes(res, remotePath, fileName) {
   let client;
   try {
@@ -316,10 +287,6 @@ async function streamFTPFileToRes(res, remotePath, fileName) {
   }
 }
 
-/**
- * Downloads a list of attachments from the FTP to local temp directory and
- * returns an array of objects with filename and path for nodemailer.
- */
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   let client;
@@ -354,9 +321,6 @@ async function fetchFilesFromFTP(fileObjs) {
   return files;
 }
 
-/**
- * Deletes local temporary files used for attachments.
- */
 function cleanupFiles(arr) {
   if (!arr || !arr.length) return;
   for (const f of arr) {
@@ -366,18 +330,12 @@ function cleanupFiles(arr) {
   }
 }
 
-/**
- * Downloads the logo from GitHub for PDF generation and returns a Buffer.
- */
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data, "binary");
 }
 
-/**
- * Format dates into DD/MM/YYYY.  Accepts ISO strings or Date objects.
- */
 function formatDateJJMMAAAA(input) {
   if (!input) return "";
   const s = String(input).trim();
@@ -392,14 +350,6 @@ function formatDateJJMMAAAA(input) {
   return `${String(d).padStart(2,"0")}/${String(mo).padStart(2,"0")}/${String(y)}`;
 }
 
-/**
- * Generates a PDF Buffer representing a warranty request.  The PDF is built
- * on-the-fly with pdfkit using the provided dossier data.
- *
- * @param {object} d Dossier data
- * @param {string} nomFichier File name used in logs (not used in PDF itself)
- * @returns {Promise<Buffer>}
- */
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -489,14 +439,6 @@ async function creerPDFDemande(d, nomFichier) {
   });
 }
 
-// Routes
-
-/**
- * Endpoint to create a new warranty request.  Handles uploads, writes the
- * dossier to FTP storage, generates a PDF summary, and sends email
- * notifications to the client and the store.  Uses the shared transporter
- * from mailer.js; if no transporter is configured an error is returned.
- */
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
@@ -533,7 +475,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     }
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
-    // Send confirmation to client if email provided
     if (d.email) {
       if (!transporter) {
         console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
@@ -547,7 +488,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
         });
       }
     }
-    // Send dossier to magasin responsible
     const respMail = MAGASIN_MAILS[d.magasin] || "";
     if (respMail) {
       const attachments = await fetchFilesFromFTP(d.files);
@@ -571,11 +511,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
   }
 });
 
-/**
- * Admin endpoint to update a dossier.  Handles file uploads, status updates
- * and sends notification emails when certain fields change.  Uses
- * transporter from mailer.js.
- */
 app.post("/api/admin/dossier/:id",
   upload.fields([{ name: "reponseFiles", maxCount: 10 }, { name: "documentsAjoutes", maxCount: 10 }]),
   async (req, res) => {
@@ -627,7 +562,6 @@ app.post("/api/admin/dossier/:id",
           dossier.statut = STATUTS.ATTENTE_MO;
           suppressNotif = true;
         } else {
-          // leaving empty; status may be changed separately below
         }
       }
       if (statutRecu) {
@@ -697,10 +631,6 @@ app.post("/api/admin/dossier/:id",
   }
 );
 
-/**
- * Admin endpoint to send dossier information to supplier.  Includes attachments
- * and PDF summary.  Uses shared transporter.
- */
 app.post("/api/admin/envoyer-fournisseur/:id",
   upload.fields([{ name: "fichiers", maxCount: 20 }, { name: "formulaire", maxCount: 1 }]),
   async (req, res) => {
@@ -773,9 +703,6 @@ app.post("/api/admin/envoyer-fournisseur/:id",
   }
 );
 
-/**
- * Admin endpoint to complete dossier (update editable fields).  No email.
- */
 app.post("/api/admin/completer-dossier/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -802,9 +729,6 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
     res.json({ success:false, message: err.message });
   }
 });
-
-// Remaining route definitions unchanged (templates, admin login, export, front-end files, etc.).
-// For brevity, we leave these endpoints as they were in the original project.
 
 app.get("/templates/:name", (req, res) => {
   const allowed = {
