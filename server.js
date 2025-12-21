@@ -931,9 +931,27 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   }
 });
 
-app.get("/api/admin/export-excel", async (_req, res) => {
+app.get("/api/admin/export-excel", async (req, res) => {
   try {
-    const data = await readDataFTP();
+    const dataAll = await readDataFTP();
+
+    // Filtre par année (sur la date de création du dossier)
+    // Exemple : /api/admin/export-excel?year=2025
+    const yearParam = (req.query.year || "").toString().trim();
+    let year = null;
+    if (yearParam && yearParam.toLowerCase() !== "all") {
+      const y = parseInt(yearParam, 10);
+      if (!Number.isNaN(y) && y >= 1970 && y <= 3000) year = y;
+    }
+
+    const data = year
+      ? (dataAll || []).filter(d => {
+          if (!d || !d.date) return false;
+          const dt = new Date(d.date);
+          if (Number.isNaN(dt.getTime())) return false;
+          return dt.getFullYear() === year;
+        })
+      : (dataAll || []);
     const columns = [
       { header: "Date", key: "date" },
       { header: "Magasin", key: "magasin" },
@@ -961,7 +979,8 @@ app.get("/api/admin/export-excel", async (_req, res) => {
       ws.addRow(obj);
     });
     res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
+    const fname = year ? `dossiers-globales-${year}.xlsx` : "dossiers-globales.xlsx";
+    res.setHeader("Content-Disposition", `attachment; filename="${fname}"`);
     await wb.xlsx.write(res);
     res.end();
   } catch (err) {
