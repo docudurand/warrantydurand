@@ -135,6 +135,21 @@ html {
       gap: 8px;
       align-items: center;
     }
+
+    .select-export-year {
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid #cdd8e4;
+      background: #fff;
+      font-weight: 600;
+      color: #0f3c5e;
+      outline: none;
+    }
+    .select-export-year:focus {
+      border-color: #176a9d;
+      box-shadow: 0 0 0 3px rgba(23, 106, 157, 0.15);
+    }
     .btn {
       border-radius: 999px;
       border: none;
@@ -182,7 +197,20 @@ html {
       gap: 6px;
       margin-bottom: 10px;
     }
-    .year-tab {
+    
+.year-tabs-inline{
+  margin-bottom: 0;
+  align-items: center;
+}
+.year-tabs-inline .year-tab{
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+.year-tabs-group{
+  min-width: auto;
+  flex: 0 0 auto;
+}
+.year-tab {
       padding: 5px 10px;
       border-radius: 999px;
       cursor: pointer;
@@ -838,14 +866,14 @@ html {
       </div>
     </div>
     <div class="top-right">
+      <select id="export-year" class="select-export-year" title="Année à exporter">
+        <option value="all">Toutes</option>
+      </select>
       <button id="btn-export" class="btn" title="Exporter toutes les demandes en Excel">
         📊 Export Excel
       </button>
     </div>
   </div>
-
-    <div class="year-tabs" id="year-tabs"></div>
-
     <div class="filters">
       <div class="filter-group">
         <label for="month-filter">Mois</label>
@@ -883,6 +911,11 @@ html {
       <div class="filter-group" style="flex:0 0 260px;">
   <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
   <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
+</div>
+
+<div class="filter-group year-tabs-group">
+  <label aria-hidden="true">&nbsp;</label>
+  <div class="year-tabs year-tabs-inline" id="year-tabs"></div>
 </div>
     </div>
 
@@ -1033,11 +1066,14 @@ html {
       }
 
       const exportBtn = document.getElementById("btn-export");
+      const exportSel = document.getElementById("export-year");
       if (exportBtn) {
         if (isSuperAdmin || isAdmin) {
           exportBtn.style.display = "inline-flex";
+          if (exportSel) exportSel.style.display = "";
         } else {
           exportBtn.style.display = "none";
+          if (exportSel) exportSel.style.display = "none";
         }
       }
     }
@@ -1081,6 +1117,31 @@ html {
         if (!isNaN(dt)) yearsSet.add(dt.getFullYear());
       });
       const years = Array.from(yearsSet).sort();
+
+      // Remplit la liste déroulante d'export (basée sur la date de création)
+      const exportSelect = document.getElementById("export-year");
+      if (exportSelect) {
+        exportSelect.innerHTML = '<option value="all">Toutes</option>';
+        years
+          .slice()
+          .sort((a, b) => b - a) // plus récent en premier
+          .forEach(y => {
+            const opt = document.createElement("option");
+            opt.value = String(y);
+            opt.textContent = String(y);
+            exportSelect.appendChild(opt);
+          });
+
+        // Par défaut : année courante si dispo, sinon la plus récente
+        const currentYear = new Date().getFullYear();
+        if (years.includes(currentYear)) {
+          exportSelect.value = String(currentYear);
+        } else if (years.length) {
+          exportSelect.value = String(Math.max(...years));
+        } else {
+          exportSelect.value = "all";
+        }
+      }
 
       const frag = document.createDocumentFragment();
 
@@ -1952,7 +2013,12 @@ function construireFormulaireEdition(d) {
     }
 
     function exportExcel() {
-      window.location.href = "/api/admin/export-excel";
+      const sel = document.getElementById("export-year");
+      const year = sel ? (sel.value || "").trim() : "";
+      const url = year && year !== "all"
+        ? ("/api/admin/export-excel?year=" + encodeURIComponent(year))
+        : "/api/admin/export-excel";
+      window.location.href = url;
     }
 
     
