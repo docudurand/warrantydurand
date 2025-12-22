@@ -29,41 +29,75 @@ const MAGASINS = [
   "Les Echets", "Pavi", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
 ];
 
-const MAGASIN_MAILS = {
-  "Annemasse": "respmagannemasse@durandservices.fr, magvl5annemasse@durandservices.fr",
-  "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
-  "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
-  "Chassieu": "respmagchassieu@durandservices.fr",
-  "Gleize": "magvl4gleize@durandservices.fr",
-  "La Motte-Servolex": "respmaglms@durandservices.fr",
-  "Les Echets": "magvlmiribel@durandservices.fr",
-  "Rives": "magvl3rives@durandservices.fr",
-  "Saint-Egreve": "magvlstegreve@durandservices.fr",
-  "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
-  "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
-  "Seynod": "respmagseynod@durandservices.fr",
-  "Pavi": "adv@plateformepavi.fr"
-};
+// Chargement dynamique des adresses de magasin.
+// Par défaut, on fournit les valeurs historiques afin de conserver la compatibilité.
+// Si la variable d'environnement MAGASIN_MAILS_JSON est définie (au format JSON),
+// elle est utilisée à la place pour permettre de gérer les adresses de manière sécurisée.
+const MAGASIN_MAILS = (() => {
+  try {
+    const raw = process.env.MAGASIN_MAILS_JSON;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("[CONF] Impossible de parser MAGASIN_MAILS_JSON :", err && err.message ? err.message : err);
+  }
+  // Valeurs par défaut (anciennes).
+  return {
+    "Annemasse": "respmagannemasse@durandservices.fr, magvl5annemasse@durandservices.fr",
+    "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
+    "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
+    "Chassieu": "respmagchassieu@durandservices.fr",
+    "Gleize": "magvl4gleize@durandservices.fr",
+    "La Motte-Servolex": "respmaglms@durandservices.fr",
+    "Les Echets": "magvlmiribel@durandservices.fr",
+    "Rives": "magvl3rives@durandservices.fr",
+    "Saint-Egreve": "magvlstegreve@durandservices.fr",
+    "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
+    "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
+    "Seynod": "respmagseynod@durandservices.fr",
+    "Pavi": "adv@plateformepavi.fr"
+  };
+})();
 
-const FOURNISSEUR_MAILS = {
-  "FEBI": "documentsdurand@gmail.com",
-  "METELLI": "magvl4gleize@durandservices.fr",
-  "EFI": "sophie.pierret@efiautomotive.com",
-  "MAGNETI": "adv.france@marelli.com",
-  "QH": "commandes@quintonhazell.fr",
-  "RIAL": "celine.loridant@pap-sud.fr",
-  "AUTOGAMMA": "retours@autogamma.com",
-  "DELPHI": "uklea.warranty@delphi.com",
-  "MS MOTORS": "Lionel.Doutre@fr.rheinmetall.com",
-  "NGK": "ngk-service-technique@ngkntk.fr",
-  "NRF": "litiges@nrf.eu",
-  "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
-  "CORTECO": "frederic.jannet@corteco.fr",
-  "KYB": "s.mainetti@kyb-europe.com",
-  "VERNET": "coste@vernet.fr",
-  "SEIM": "distribution@akwel-automotive.com",
-  "SCHAEFFLER": "magvl4gleize@durandservices.fr",
-};
+// Chargement dynamique des adresses des fournisseurs.
+// Utilise la variable d'environnement FOURNISSEUR_MAILS_JSON si elle est définie.
+const FOURNISSEUR_MAILS = (() => {
+  try {
+    const raw = process.env.FOURNISSEUR_MAILS_JSON;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn("[CONF] Impossible de parser FOURNISSEUR_MAILS_JSON :", err && err.message ? err.message : err);
+  }
+  // Valeurs par défaut (anciennes).
+  return {
+    "FEBI": "documentsdurand@gmail.com",
+    "METELLI": "magvl4gleize@durandservices.fr",
+    "EFI": "sophie.pierret@efiautomotive.com",
+    "MAGNETI": "adv.france@marelli.com",
+    "QH": "commandes@quintonhazell.fr",
+    "RIAL": "celine.loridant@pap-sud.fr",
+    "AUTOGAMMA": "retours@autogamma.com",
+    "DELPHI": "uklea.warranty@delphi.com",
+    "MS MOTORS": "Lionel.Doutre@fr.rheinmetall.com",
+    "NGK": "ngk-service-technique@ngkntk.fr",
+    "NRF": "litiges@nrf.eu",
+    "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
+    "CORTECO": "frederic.jannet@corteco.fr",
+    "KYB": "s.mainetti@kyb-europe.com",
+    "VERNET": "coste@vernet.fr",
+    "SEIM": "distribution@akwel-automotive.com",
+    "SCHAEFFLER": "magvl4gleize@durandservices.fr",
+  };
+})();
 
 const FOURNISSEUR_PDFS = {
   "FEBI": "FICHE_GARANTIE_FEBI.pdf",
@@ -931,27 +965,9 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   }
 });
 
-app.get("/api/admin/export-excel", async (req, res) => {
+app.get("/api/admin/export-excel", async (_req, res) => {
   try {
-    const dataAll = await readDataFTP();
-
-    // Filtre par année (sur la date de création du dossier)
-    // Exemple : /api/admin/export-excel?year=2025
-    const yearParam = (req.query.year || "").toString().trim();
-    let year = null;
-    if (yearParam && yearParam.toLowerCase() !== "all") {
-      const y = parseInt(yearParam, 10);
-      if (!Number.isNaN(y) && y >= 1970 && y <= 3000) year = y;
-    }
-
-    const data = year
-      ? (dataAll || []).filter(d => {
-          if (!d || !d.date) return false;
-          const dt = new Date(d.date);
-          if (Number.isNaN(dt.getTime())) return false;
-          return dt.getFullYear() === year;
-        })
-      : (dataAll || []);
+    const data = await readDataFTP();
     const columns = [
       { header: "Date", key: "date" },
       { header: "Magasin", key: "magasin" },
@@ -979,8 +995,7 @@ app.get("/api/admin/export-excel", async (req, res) => {
       ws.addRow(obj);
     });
     res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    const fname = year ? `dossiers-globales-${year}.xlsx` : "dossiers-globales.xlsx";
-    res.setHeader("Content-Disposition", `attachment; filename="${fname}"`);
+    res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
     await wb.xlsx.write(res);
     res.end();
   } catch (err) {
