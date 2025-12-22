@@ -29,74 +29,34 @@ const MAGASINS = [
   "Les Echets", "Pavi", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
 ];
 
-// Chargement dynamique des adresses de magasin.
-// Par défaut, on fournit les valeurs historiques afin de conserver la compatibilité.
-// Si la variable d'environnement MAGASIN_MAILS_JSON est définie (au format JSON),
-// elle est utilisée à la place pour permettre de gérer les adresses de manière sécurisée.
 const MAGASIN_MAILS = (() => {
+  const raw = (process.env.MAGASIN_MAILS_JSON || "").trim();
+  if (!raw) {
+    console.warn("[CONF] MAGASIN_MAILS_JSON est vide : aucune adresse magasin ne sera utilisée.");
+    return {};
+  }
   try {
-    const raw = process.env.MAGASIN_MAILS_JSON;
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        return parsed;
-      }
-    }
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed;
   } catch (err) {
     console.warn("[CONF] Impossible de parser MAGASIN_MAILS_JSON :", err && err.message ? err.message : err);
   }
-  // Valeurs par défaut (anciennes).
-  return {
-    "Annemasse": "respmagannemasse@durandservices.fr, magvl5annemasse@durandservices.fr",
-    "Bourgoin-Jallieu": "magasin5bourgoin@durandservices.fr",
-    "Chasse-sur-Rhone": "magvl5chasse@durandservices.fr",
-    "Chassieu": "respmagchassieu@durandservices.fr",
-    "Gleize": "magvl4gleize@durandservices.fr",
-    "La Motte-Servolex": "respmaglms@durandservices.fr",
-    "Les Echets": "magvlmiribel@durandservices.fr",
-    "Rives": "magvl3rives@durandservices.fr",
-    "Saint-Egreve": "magvlstegreve@durandservices.fr",
-    "Saint-Jean-Bonnefonds": "respmagsjb@durandservices.fr",
-    "Saint-martin-d'heres": "magvl1smdh@durandservices.fr",
-    "Seynod": "respmagseynod@durandservices.fr",
-    "Pavi": "adv@plateformepavi.fr"
-  };
+  return {};
 })();
 
-// Chargement dynamique des adresses des fournisseurs.
-// Utilise la variable d'environnement FOURNISSEUR_MAILS_JSON si elle est définie.
-const FOURNISSEUR_MAILS = (() => {
-  try {
-    const raw = process.env.FOURNISSEUR_MAILS_JSON;
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.warn("[CONF] Impossible de parser FOURNISSEUR_MAILS_JSON :", err && err.message ? err.message : err);
+const MAGASIN_MAILS = (() => {
+  const raw = (process.env.MAGASIN_MAILS_JSON || "").trim();
+  if (!raw) {
+    console.warn("[CONF] MAGASIN_MAILS_JSON est vide : aucune adresse magasin ne sera utilisée.");
+    return {};
   }
-  // Valeurs par défaut (anciennes).
-  return {
-    "FEBI": "documentsdurand@gmail.com",
-    "METELLI": "magvl4gleize@durandservices.fr",
-    "EFI": "sophie.pierret@efiautomotive.com",
-    "MAGNETI": "adv.france@marelli.com",
-    "QH": "commandes@quintonhazell.fr",
-    "RIAL": "celine.loridant@pap-sud.fr",
-    "AUTOGAMMA": "retours@autogamma.com",
-    "DELPHI": "uklea.warranty@delphi.com",
-    "MS MOTORS": "Lionel.Doutre@fr.rheinmetall.com",
-    "NGK": "ngk-service-technique@ngkntk.fr",
-    "NRF": "litiges@nrf.eu",
-    "BOSCH FREINAGE": "magvl4gleize@durandservices.fr",
-    "CORTECO": "frederic.jannet@corteco.fr",
-    "KYB": "s.mainetti@kyb-europe.com",
-    "VERNET": "coste@vernet.fr",
-    "SEIM": "distribution@akwel-automotive.com",
-    "SCHAEFFLER": "magvl4gleize@durandservices.fr",
-  };
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object") return parsed;
+  } catch (err) {
+    console.warn("[CONF] Impossible de parser MAGASIN_MAILS_JSON :", err && err.message ? err.message : err);
+  }
+  return {};
 })();
 
 const FOURNISSEUR_PDFS = {
