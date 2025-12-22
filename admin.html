@@ -204,28 +204,7 @@ html {
       align-items: flex-end;
       margin-bottom: 12px;
     }
-    
-    .filters-top{
-      align-items: flex-end;
-    }
-    .filters-top .year-tabs{
-      margin-bottom: 0;
-    }
-    .filters-top .year-group{
-      min-width: 220px;
-    }
-    .sr-only{
-      position:absolute;
-      width:1px;
-      height:1px;
-      padding:0;
-      margin:-1px;
-      overflow:hidden;
-      clip:rect(0,0,0,0);
-      white-space:nowrap;
-      border:0;
-    }
-.filter-group {
+    .filter-group {
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -865,24 +844,13 @@ html {
     </div>
   </div>
 
-    <div class="filters filters-top">
-      <div class="filter-group" style="flex:1 1 340px;">
-        <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
-        <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
-      </div>
+    <div class="year-tabs" id="year-tabs"></div>
 
+    <div class="filters">
       <div class="filter-group">
         <label for="month-filter">Mois</label>
         <input type="month" id="month-filter">
       </div>
-
-      <div class="filter-group year-group">
-        <span class="sr-only">Année</span>
-        <div class="year-tabs" id="year-tabs"></div>
-      </div>
-    </div>
-
-    <div class="filters">
       <div class="filter-group" id="magasin-filter-group">
   <label for="magasin-filter">Magasin</label>
   <select id="magasin-filter">
@@ -901,7 +869,6 @@ html {
           <option value="Seynod">Seynod</option>
         </select>
       </div>
-
       <div class="filter-group">
         <label for="statut-filter">Statut</label>
         <select id="statut-filter">
@@ -913,6 +880,10 @@ html {
           <option value="Attente MO">Attente MO</option>
         </select>
       </div>
+      <div class="filter-group" style="flex:0 0 260px;">
+  <label for="search-input">Recherche (client, mail, produit, réf, n° dossier...)</label>
+  <input type="text" id="search-input" placeholder="Tapez pour filtrer...">
+</div>
     </div>
 
     <div class="stats-row" id="stats-row"></div>
