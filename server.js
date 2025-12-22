@@ -44,20 +44,21 @@ const MAGASIN_MAILS = (() => {
   return {};
 })();
 
-const MAGASIN_MAILS = (() => {
-  const raw = (process.env.MAGASIN_MAILS_JSON || "").trim();
+const FOURNISSEUR_MAILS = (() => {
+  const raw = (process.env.FOURNISSEUR_MAILS_JSON || "").trim();
   if (!raw) {
-    console.warn("[CONF] MAGASIN_MAILS_JSON est vide : aucune adresse magasin ne sera utilisée.");
+    console.warn("[CONF] FOURNISSEUR_MAILS_JSON est vide : aucune adresse fournisseur ne sera utilisée.");
     return {};
   }
   try {
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object") return parsed;
   } catch (err) {
-    console.warn("[CONF] Impossible de parser MAGASIN_MAILS_JSON :", err && err.message ? err.message : err);
+    console.warn("[CONF] Impossible de parser FOURNISSEUR_MAILS_JSON :", err && err.message ? err.message : err);
   }
   return {};
 })();
+
 
 const FOURNISSEUR_PDFS = {
   "FEBI": "FICHE_GARANTIE_FEBI.pdf",
