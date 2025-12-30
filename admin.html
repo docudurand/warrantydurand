@@ -700,21 +700,48 @@ html {
   gap: 10px;
 }
 
-html, body { height: auto !important; overflow: hidden !important; }
+
+
+
+
+/* DSG: iframe — éviter double scroll SANS couper la page */
+html.dsg-in-iframe, html.dsg-in-iframe body {
+  height: auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important; /* fallback si le parent ne resize pas */
+}
 
 </style>
 </head>
 <body>
+<!-- DSG iframe auto-resize -->
 <script>
 (function () {
+  // Marqueur : on est dans une iframe ?
+  try {
+    if (window.self !== window.top) {
+      document.documentElement.classList.add("dsg-in-iframe");
+    }
+  } catch (e) {
+    document.documentElement.classList.add("dsg-in-iframe");
+  }
+
   function heightNow() {
+    const b = document.body;
+    const d = document.documentElement;
     return Math.max(
-      document.documentElement.scrollHeight || 0,
-      document.body ? document.body.scrollHeight : 0
+      d ? d.scrollHeight : 0,
+      d ? d.offsetHeight : 0,
+      d ? d.clientHeight : 0,
+      b ? b.scrollHeight : 0,
+      b ? b.offsetHeight : 0,
+      b ? b.clientHeight : 0
     );
   }
+
   function send() {
-    parent.postMessage({ type: "dsg-iframe-size", height: heightNow() }, "*");
+    // petite marge pour éviter la coupe (ombres, marges, fonts)
+    parent.postMessage({ type: "dsg-iframe-size", height: heightNow() + 24 }, "*");
   }
 
   window.addEventListener("load", send, { once: true });
@@ -731,14 +758,13 @@ html, body { height: auto !important; overflow: hidden !important; }
   let n = 0;
   const it = setInterval(() => {
     send();
-    if (++n >= 12) clearInterval(it);
-  }, 400);
+    if (++n >= 20) clearInterval(it);
+  }, 300);
 })();
 </script>
 
 
-
-  <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
+<div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
     <div class="modal">
       <h3>Modifier le dossier</h3>
       <form id="modifier-form">
