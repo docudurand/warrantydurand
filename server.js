@@ -840,6 +840,16 @@ app.post("/api/admin/login", (req, res) => {
       multiMagasins: null
     });
   }
+  if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
+    return res.json({
+      success:   true,
+      isSuper:   false,
+      isAdmin:   false,
+      isLimited: true,
+      magasin:   "Chassieu",
+      multiMagasins: null
+    });
+  }
   for (const magasin of MAGASINS) {
     const key = "magasin-" + magasin.replace(/[^\w]/g, "-") + "-pass";
     if (process.env[key] && pw === process.env[key]) {
