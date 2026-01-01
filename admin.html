@@ -291,11 +291,18 @@ html {
   margin-bottom: 18px;
 }
 
+:root{
+  --dossiers-maxh: 62vh;
+}
+
 .dossier-list{
   background:#fff;
   border-radius:12px;
   box-shadow:0 2px 12px #0001;
   padding:10px 10px 4px;
+
+  max-height: var(--dossiers-maxh);
+  overflow-y: auto;
 }
 
 .detail-panel{
