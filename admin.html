@@ -284,11 +284,22 @@ html {
 #admin-content{
   height: 100dvh;
   overflow: hidden;
-  padding-bottom: 0;
+  padding: 18px 14px 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .layout-main{
-  height: calc(100vh - 250px);
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.dossier-list,
+.detail-panel{
+  margin-bottom: 6px;
 }
 
 .detail-panel{
