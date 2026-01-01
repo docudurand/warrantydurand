@@ -816,10 +816,7 @@ app.post("/api/admin/login", (req, res) => {
       isAdmin:   false,
       isLimited: true,
       magasin:   null,
-      // Accès multi-magasins, mais on ne veut rien afficher à côté du titre côté UI.
-      // Le front masque le chip si defaultMagasin === "Remond".
-      multiMagasins: ["Gleize", "Les Echets", "Chassieu"],
-      defaultMagasin: "Remond"
+      multiMagasins: ["Gleize", "Les Echets", "Chassieu"]
     });
   }
   if (process.env["magasin-Casty-limited"] && pw === process.env["magasin-Casty-limited"]) {
@@ -833,20 +830,17 @@ app.post("/api/admin/login", (req, res) => {
       defaultMagasin: "Les Echets"
     });
   }
-  if (process.env["magasin-Barret-limited"] && pw === process.env["magasin-Barret-limited"]) {
-    return res.json({
-      success:   true,
-      isSuper:   false,
-      isAdmin:   false,
-      isLimited: true,
-      magasin:   "Gleize",
-      multiMagasins: null,
-      // Pour afficher le nom du magasin à côté du titre
-      defaultMagasin: "Gleize"
-    });
-  }
-
-  // Nouveau compte limité : ne voit que les dossiers du magasin de Chassieu
+if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
+  return res.json({
+    success: true,
+    isSuper: false,
+    isAdmin: false,
+    isLimited: true,
+    magasin: "Chassieu",
+    multiMagasins: null,
+    defaultMagasin: "Chassieu"
+  });
+}
   if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
     return res.json({
       success:   true,
@@ -854,9 +848,7 @@ app.post("/api/admin/login", (req, res) => {
       isAdmin:   false,
       isLimited: true,
       magasin:   "Chassieu",
-      multiMagasins: null,
-      // Pour afficher le nom du magasin à côté du titre
-      defaultMagasin: "Chassieu"
+      multiMagasins: null
     });
   }
   for (const magasin of MAGASINS) {
