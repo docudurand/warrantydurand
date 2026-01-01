@@ -2094,7 +2094,11 @@ function initEvents() {
           isLimited      = !!json.isLimited;
           magasinAdmin   = json.magasin || null;
           multiMagasins  = json.multiMagasins || null;
-		  defaultMagasin = json.defaultMagasin || null;
+		  defaultMagasin =
+  json.defaultMagasin ||
+  json.magasin ||
+  (Array.isArray(json.multiMagasins) ? json.multiMagasins[0] : null) ||
+  null;
 
           document.getElementById("login").style.display = "none";
           document.getElementById("admin-content").style.display = "block";
