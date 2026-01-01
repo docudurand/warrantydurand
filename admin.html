@@ -281,56 +281,27 @@ html {
       }
     }
 
-body.admin-open{
-  height: 100dvh;
-  overflow: hidden;
+#admin-content{
+  display: none;
+  padding: 18px 14px 110px;
 }
 
-body.admin-open #admin-content{
-  height: 100dvh;
-  overflow: hidden;
-  padding: 18px 14px 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-body.admin-open .layout-main{
-  flex: 1;
-  min-height: 0;
+.layout-main{
   align-items: stretch;
+  margin-bottom: 18px;
 }
 
-body.admin-open .dossier-list{
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+.dossier-list{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 12px #0001;
+  padding:10px 10px 4px;
 }
 
-body.admin-open .detail-panel{
-  max-height: 100%;
-  overflow-y: auto;
-}
-
-body.admin-open .dossier-list,
-body.admin-open .detail-panel{
-  margin-bottom: 6px;
-}
-
-:root{
-  --bottom-spacer: 90px;
-}
-body.admin-open .detail-panel::after,
-body.admin-open .dossier-list::after{
-  content:"";
-  display:block;
-  height: calc(var(--bottom-spacer) + env(safe-area-inset-bottom, 0px));
-}
-
-
-.dossier-list::after{
-  content:"";
-  display:block;
-  height: calc(var(--bottom-spacer) + env(safe-area-inset-bottom, 0px));
+.detail-panel{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 12px #0001;
 }
 
    .dossier-row {
@@ -2137,7 +2108,6 @@ function initEvents() {
 
           document.getElementById("login").style.display = "none";
           document.getElementById("admin-content").style.display = "block";
-          document.body.classList.add("admin-open");
           toggleSuperAdminUI();
 
 chargerDossiers().then(() => {
