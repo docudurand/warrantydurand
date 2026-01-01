@@ -711,6 +711,12 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
   overflow-y: auto !important; /* fallback si le parent ne resize pas */
 }
 
+
+/* DSG: bouton Accueil (visible iPad uniquement via JS) */
+.ipad-home { display:none; margin: 0 0 6px 0; }
+.ipad-home .btn { padding: 8px 14px; font-size: 0.95rem; }
+.ipad-home .btn span { margin-left: 6px; }
+
 </style>
 </head>
 <body>
@@ -762,6 +768,35 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
   }, 300);
 })();
 </script>
+
+
+<script>
+(function() {
+  // iPadOS peut se déclarer "Mac" : on détecte via touchpoints
+  const ua = navigator.userAgent || "";
+  const isiPad = /iPad/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (!isiPad) return;
+
+  const wrap = document.getElementById("ipad-home");
+  const btn  = document.getElementById("btn-home");
+  if (!wrap || !btn) return;
+
+  wrap.style.display = "block";
+
+  btn.addEventListener("click", () => {
+    const params = new URLSearchParams(window.location.search);
+    const home =
+      params.get("home") ||
+      document.referrer ||
+      "/";
+
+    window.location.href = home;
+  });
+})();
+</script>
+
+
 
 
 <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
@@ -890,6 +925,9 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
   <div id="admin-content">
   <div class="top-tools">
     <div class="top-left">
+      <div class="ipad-home" id="ipad-home">
+        <button type="button" class="btn secondary" id="btn-home" title="Retour à l'accueil">🏠 <span>Accueil</span></button>
+      </div>
       <div class="top-title">
         Suivi des dossiers de garantie
         <span id="role-chip" class="chip-role" style="display:none;"></span>
