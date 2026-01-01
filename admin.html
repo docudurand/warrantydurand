@@ -281,12 +281,31 @@ html {
       }
     }
 
-    .dossier-list {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px #0001;
-  padding: 10px 10px 4px;
-  max-height: none; overflow: visible; }
+#admin-content{
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+.layout-main{
+  height: calc(100vh - 330px);
+}
+
+.detail-panel{
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.dossier-list{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 12px #0001;
+  padding:10px 10px 4px;
+
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
    .dossier-row {
   padding: 8px 4px;
