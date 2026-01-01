@@ -816,7 +816,8 @@ app.post("/api/admin/login", (req, res) => {
       isAdmin:   false,
       isLimited: true,
       magasin:   null,
-      multiMagasins: ["Gleize", "Les Echets", "Chassieu"]
+      multiMagasins: ["Gleize", "Les Echets", "Chassieu"],
+      defaultMagasin: "Remond"
     });
   }
   if (process.env["magasin-Casty-limited"] && pw === process.env["magasin-Casty-limited"]) {
@@ -830,17 +831,18 @@ app.post("/api/admin/login", (req, res) => {
       defaultMagasin: "Les Echets"
     });
   }
-if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
-  return res.json({
-    success: true,
-    isSuper: false,
-    isAdmin: false,
-    isLimited: true,
-    magasin: "Chassieu",
-    multiMagasins: null,
-    defaultMagasin: "Chassieu"
-  });
-}
+  if (process.env["magasin-Barret-limited"] && pw === process.env["magasin-Barret-limited"]) {
+    return res.json({
+      success:   true,
+      isSuper:   false,
+      isAdmin:   false,
+      isLimited: true,
+      magasin:   "Gleize",
+      multiMagasins: null,
+      defaultMagasin: "Gleize"
+    });
+  }
+
   if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
     return res.json({
       success:   true,
@@ -848,7 +850,8 @@ if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chass
       isAdmin:   false,
       isLimited: true,
       magasin:   "Chassieu",
-      multiMagasins: null
+      multiMagasins: null,
+      defaultMagasin: "Chassieu"
     });
   }
   for (const magasin of MAGASINS) {
