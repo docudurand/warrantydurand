@@ -1045,36 +1045,34 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
       return raw || "";
     }
 
-        function toggleSuperAdminUI() {
-      const chip = document.getElementById("role-chip");
-            if (chip) {
-        if (isSuperAdmin) {
-          chip.style.display = "inline-flex";
-          chip.textContent = "Super Admin";
-        } else if (isAdmin) {
-          chip.style.display = "inline-flex";
-          chip.textContent = "Admin";
-        } else if (isLimited) {
-  if (defaultMagasin && defaultMagasin !== "Remond") {
-    chip.style.display = "inline-flex";
-    chip.textContent = defaultMagasin;
-  } 
-  else {
-    chip.style.display = "none";
-    chip.textContent = "";
-  }
-}
-        } else if (multiMagasins && multiMagasins.length) {
-          chip.style.display = "inline-flex";
-          chip.textContent = "Magasins : " + multiMagasins.join(" / ");
-        } else if (magasinAdmin) {
-          chip.style.display = "inline-flex";
-          chip.textContent = "Magasin : " + magasinAdmin;
-        } else {
-          chip.style.display = "none";
-          chip.textContent = "";
-        }
+function toggleSuperAdminUI() {
+  const chip = document.getElementById("role-chip");
+  if (chip) {
+    if (isSuperAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Super Admin";
+    } else if (isAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Admin";
+    } else if (isLimited) {
+      if (defaultMagasin && defaultMagasin !== "Remond") {
+        chip.style.display = "inline-flex";
+        chip.textContent = defaultMagasin;
+      } else {
+        chip.style.display = "none";
+        chip.textContent = "";
       }
+    } else if (multiMagasins && multiMagasins.length) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Magasins : " + multiMagasins.join(" / ");
+    } else if (magasinAdmin) {
+      chip.style.display = "inline-flex";
+      chip.textContent = "Magasin : " + magasinAdmin;
+    } else {
+      chip.style.display = "none";
+      chip.textContent = "";
+    }
+  }
 
       const magGroup = document.getElementById("magasin-filter-group");
       const magSelect = document.getElementById("magasin-filter");
