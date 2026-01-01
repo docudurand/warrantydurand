@@ -1055,8 +1055,15 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
           chip.style.display = "inline-flex";
           chip.textContent = "Admin";
         } else if (isLimited) {
-          chip.style.display = "inline-flex";
-          chip.textContent = "Accès limité";
+  if (defaultMagasin && defaultMagasin !== "Remond") {
+    chip.style.display = "inline-flex";
+    chip.textContent = defaultMagasin;
+  } 
+  else {
+    chip.style.display = "none";
+    chip.textContent = "";
+  }
+}
         } else if (multiMagasins && multiMagasins.length) {
           chip.style.display = "inline-flex";
           chip.textContent = "Magasins : " + multiMagasins.join(" / ");
