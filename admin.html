@@ -712,11 +712,20 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
 }
 
 
-/* DSG: bouton Accueil (visible iPad uniquement via JS) */
-.ipad-home { display:none; margin: 0 0 6px 0; }
-.ipad-home .btn { padding: 8px 14px; font-size: 0.95rem; }
-.ipad-home .btn span { margin-left: 6px; }
 
+/* --- Bouton Accueil (iPad uniquement) --- */
+.ipad-homebar{ margin-bottom:10px; }
+.btn-home{
+  border:0;
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:16px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.08);
+}
+.btn-home span{ margin-left:8px; }
+html.is-ipad .ipad-homebar{ display:block !important; }
 </style>
 </head>
 <body>
@@ -768,35 +777,6 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
   }, 300);
 })();
 </script>
-
-
-<script>
-(function() {
-  // iPadOS peut se déclarer "Mac" : on détecte via touchpoints
-  const ua = navigator.userAgent || "";
-  const isiPad = /iPad/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-  if (!isiPad) return;
-
-  const wrap = document.getElementById("ipad-home");
-  const btn  = document.getElementById("btn-home");
-  if (!wrap || !btn) return;
-
-  wrap.style.display = "block";
-
-  btn.addEventListener("click", () => {
-    const params = new URLSearchParams(window.location.search);
-    const home =
-      params.get("home") ||
-      document.referrer ||
-      "/";
-
-    window.location.href = home;
-  });
-})();
-</script>
-
-
 
 
 <div class="modal-backdrop" id="edit-modal-backdrop" style="display:none;">
@@ -925,8 +905,11 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
   <div id="admin-content">
   <div class="top-tools">
     <div class="top-left">
-      <div class="ipad-home" id="ipad-home">
-        <button type="button" class="btn secondary" id="btn-home" title="Retour à l'accueil">🏠 <span>Accueil</span></button>
+
+      <div class="ipad-homebar" id="ipad-homebar" aria-label="Navigation iPad" style="display:none;">
+        <button type="button" id="btn-home" class="btn-home" title="Accueil">
+          🏠 <span>Accueil</span>
+        </button>
       </div>
       <div class="top-title">
         Suivi des dossiers de garantie
@@ -2400,5 +2383,33 @@ function voirDossier(id) {
   }
 document.addEventListener("DOMContentLoaded", initEvents);
   </script>
+
+<script>
+(function(){
+  // iPad / iPadOS detection (incl. iPadOS 13+ reporting as Mac)
+  var isIpad = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if(!isIpad) return;
+
+  document.documentElement.classList.add('is-ipad');
+
+  // Home URL priority: ?home=...  -> referrer -> nothing
+  var params = new URLSearchParams(location.search);
+  var home = params.get('home') || '';
+  var btn = document.getElementById('btn-home');
+  if(!btn) return;
+
+  btn.addEventListener('click', function(){
+    if(home){
+      try { location.href = home; return; } catch(e){}
+    }
+    if(document.referrer){
+      location.href = document.referrer;
+      return;
+    }
+    // fallback (last resort)
+    location.href = '/';
+  });
+})();
+</script>
 </body>
 </html>
