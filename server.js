@@ -830,16 +830,17 @@ app.post("/api/admin/login", (req, res) => {
       defaultMagasin: "Les Echets"
     });
   }
-  if (process.env["magasin-Barret-limited"] && pw === process.env["magasin-Barret-limited"]) {
-    return res.json({
-      success:   true,
-      isSuper:   false,
-      isAdmin:   false,
-      isLimited: true,
-      magasin:   "Gleize",
-      multiMagasins: null
-    });
-  }
+if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
+  return res.json({
+    success: true,
+    isSuper: false,
+    isAdmin: false,
+    isLimited: true,
+    magasin: "Chassieu",
+    multiMagasins: null,
+    defaultMagasin: "Chassieu"
+  });
+}
   if (process.env["magasin-Chassieu-limited"] && pw === process.env["magasin-Chassieu-limited"]) {
     return res.json({
       success:   true,
