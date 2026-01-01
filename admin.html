@@ -282,7 +282,7 @@ html {
     }
 
 #admin-content{
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   padding-bottom: 0;
 }
@@ -305,6 +305,21 @@ html {
   height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+:root{
+  --bottom-spacer: 180px;
+}
+
+.detail-panel::after{
+  content:"";
+  display:block;
+  height: calc(var(--bottom-spacer) + env(safe-area-inset-bottom, 0px));
+}
+
+.dossier-list::after{
+  content:"";
+  display:block;
+  height: calc(var(--bottom-spacer) + env(safe-area-inset-bottom, 0px));
 }
 
    .dossier-row {
