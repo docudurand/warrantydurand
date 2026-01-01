@@ -701,19 +701,12 @@ html {
 }
 
 
-
-
-
-/* DSG: iframe — éviter double scroll SANS couper la page */
 html.dsg-in-iframe, html.dsg-in-iframe body {
   height: auto !important;
   overflow-x: hidden !important;
-  overflow-y: auto !important; /* fallback si le parent ne resize pas */
+  overflow-y: auto !important;
 }
 
-
-
-/* --- Bouton Accueil (iPad uniquement) --- */
 .ipad-homebar{ margin-bottom:10px; }
 .btn-home{
   border:0;
@@ -729,10 +722,8 @@ html.is-ipad .ipad-homebar{ display:block !important; }
 </style>
 </head>
 <body>
-<!-- DSG iframe auto-resize -->
 <script>
 (function () {
-  // Marqueur : on est dans une iframe ?
   try {
     if (window.self !== window.top) {
       document.documentElement.classList.add("dsg-in-iframe");
@@ -755,7 +746,6 @@ html.is-ipad .ipad-homebar{ display:block !important; }
   }
 
   function send() {
-    // petite marge pour éviter la coupe (ombres, marges, fonts)
     parent.postMessage({ type: "dsg-iframe-size", height: heightNow() + 24 }, "*");
   }
 
@@ -2386,13 +2376,11 @@ document.addEventListener("DOMContentLoaded", initEvents);
 
 <script>
 (function(){
-  // iPad / iPadOS detection (incl. iPadOS 13+ reporting as Mac)
   var isIpad = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if(!isIpad) return;
 
   document.documentElement.classList.add('is-ipad');
 
-  // Home URL priority: ?home=...  -> referrer -> nothing
   var params = new URLSearchParams(location.search);
   var home = params.get('home') || '';
   var btn = document.getElementById('btn-home');
@@ -2406,7 +2394,6 @@ document.addEventListener("DOMContentLoaded", initEvents);
       location.href = document.referrer;
       return;
     }
-    // fallback (last resort)
     location.href = '/';
   });
 })();
