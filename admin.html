@@ -701,29 +701,23 @@ html {
 }
 
 
+
+
+
+/* DSG: iframe — éviter double scroll SANS couper la page */
 html.dsg-in-iframe, html.dsg-in-iframe body {
   height: auto !important;
   overflow-x: hidden !important;
-  overflow-y: auto !important;
+  overflow-y: auto !important; /* fallback si le parent ne resize pas */
 }
 
-.ipad-homebar{ margin-bottom:10px; }
-.btn-home{
-  border:0;
-  border-radius:12px;
-  padding:10px 14px;
-  font-size:16px;
-  font-weight:700;
-  cursor:pointer;
-  box-shadow:0 6px 18px rgba(0,0,0,.08);
-}
-.btn-home span{ margin-left:8px; }
-html.is-ipad .ipad-homebar{ display:block !important; }
 </style>
 </head>
 <body>
+<!-- DSG iframe auto-resize -->
 <script>
 (function () {
+  // Marqueur : on est dans une iframe ?
   try {
     if (window.self !== window.top) {
       document.documentElement.classList.add("dsg-in-iframe");
@@ -746,6 +740,7 @@ html.is-ipad .ipad-homebar{ display:block !important; }
   }
 
   function send() {
+    // petite marge pour éviter la coupe (ombres, marges, fonts)
     parent.postMessage({ type: "dsg-iframe-size", height: heightNow() + 24 }, "*");
   }
 
@@ -895,12 +890,6 @@ html.is-ipad .ipad-homebar{ display:block !important; }
   <div id="admin-content">
   <div class="top-tools">
     <div class="top-left">
-
-      <div class="ipad-homebar" id="ipad-homebar" aria-label="Navigation iPad" style="display:none;">
-        <button type="button" id="btn-home" class="btn-home" title="Accueil">
-          🏠 <span>Accueil</span>
-        </button>
-      </div>
       <div class="top-title">
         Suivi des dossiers de garantie
         <span id="role-chip" class="chip-role" style="display:none;"></span>
@@ -2373,30 +2362,5 @@ function voirDossier(id) {
   }
 document.addEventListener("DOMContentLoaded", initEvents);
   </script>
-
-<script>
-(function(){
-  var isIpad = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if(!isIpad) return;
-
-  document.documentElement.classList.add('is-ipad');
-
-  var params = new URLSearchParams(location.search);
-  var home = params.get('home') || '';
-  var btn = document.getElementById('btn-home');
-  if(!btn) return;
-
-  btn.addEventListener('click', function(){
-    if(home){
-      try { location.href = home; return; } catch(e){}
-    }
-    if(document.referrer){
-      location.href = document.referrer;
-      return;
-    }
-    location.href = '/';
-  });
-})();
-</script>
 </body>
 </html>
