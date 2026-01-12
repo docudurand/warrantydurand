@@ -12,6 +12,14 @@ import PDFDocument from "pdfkit";
 import axios from "axios";
 import ExcelJS from "exceljs";
 
+console.log("[CONF][MAIL] fromEmail =", fromEmail || "(vide)");
+console.log("[CONF][MAIL] transporter =", transporter ? "OK" : "ABSENT");
+console.log("[CONF][MAIL] SMTP_HOST =", process.env.SMTP_HOST ? "OK" : "ABSENT");
+console.log("[CONF][MAIL] SMTP_USER =", process.env.SMTP_USER ? "OK" : "ABSENT");
+console.log("[CONF][MAIL] SMTP_PASS =", process.env.SMTP_PASS ? "OK" : "ABSENT");
+console.log("[CONF][MAIL] GMAIL_USER =", process.env.GMAIL_USER ? "OK" : "ABSENT");
+console.log("[CONF][MAIL] GMAIL_PASS =", process.env.GMAIL_PASS ? "OK" : "ABSENT");
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -993,8 +1001,21 @@ app.get("/", (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.sendFile(path.join(__dirname, "suivi.html"));
 });
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log("Serveur OK " + PORT);
   console.log("[CONF] MAGASIN_MAILS_JSON len =", String(process.env.MAGASIN_MAILS_JSON || "").length);
   console.log("[CONF] MAGASIN_MAILS keys =", Object.keys(MAGASIN_MAILS));
+
+  // ===== TEST SMTP AU DEMARRAGE =====
+  try {
+    if (!transporter) {
+      console.error("[CONF][MAIL] transporter ABSENT -> aucun mail ne peut partir");
+    } else {
+      await transporter.verify();
+      console.log("[CONF][MAIL] transporter.verify() OK");
+    }
+  } catch (e) {
+    console.error("[CONF][MAIL] transporter.verify() ERREUR :", e?.message || e);
+  }
+  // =================================
 });
