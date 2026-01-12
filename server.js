@@ -982,4 +982,8 @@ app.get("/", (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.sendFile(path.join(__dirname, "suivi.html"));
 });
-app.listen(PORT, () => console.log("Serveur OK " + PORT));
+app.listen(PORT, () => {
+  console.log("Serveur OK " + PORT);
+  console.log("[CONF] MAGASIN_MAILS_JSON len =", String(process.env.MAGASIN_MAILS_JSON || "").length);
+  console.log("[CONF] MAGASIN_MAILS keys =", Object.keys(MAGASIN_MAILS));
+});
