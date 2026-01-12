@@ -465,7 +465,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     }
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
-    if (d.email) {
       if (d.email) {
   if (!transporter) {
     console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
