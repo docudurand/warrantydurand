@@ -29,35 +29,30 @@ const MAGASINS = [
   "Les Echets", "Pavi", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
 ];
 
-const MAGASIN_MAILS = (() => {
-  const raw = (process.env.MAGASIN_MAILS_JSON || "").trim();
-  if (!raw) {
-    console.warn("[CONF] MAGASIN_MAILS_JSON est vide : aucune adresse magasin ne sera utilisée.");
-    return {};
-  }
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") return parsed;
-  } catch (err) {
-    console.warn("[CONF] Impossible de parser MAGASIN_MAILS_JSON :", err && err.message ? err.message : err);
-  }
-  return {};
-})();
+function parseEnvJsonObject(varName) {
+  const raw0 = (process.env[varName] || "").trim();
+  if (!raw0) return {};
 
-const FOURNISSEUR_MAILS = (() => {
-  const raw = (process.env.FOURNISSEUR_MAILS_JSON || "").trim();
-  if (!raw) {
-    console.warn("[CONF] FOURNISSEUR_MAILS_JSON est vide : aucune adresse fournisseur ne sera utilisée.");
+  let raw = raw0;
+  const first = raw[0];
+  const last = raw[raw.length - 1];
+  if ((first === "'" || first === '"' || first === "`") && last === first) {
+    raw = raw.slice(1, -1).trim();
+  }
+
+  try {
+    const obj = JSON.parse(raw);
+    return (obj && typeof obj === "object") ? obj : {};
+  } catch (e) {
+    console.warn(`[CONF] Impossible de parser ${varName}:`, e?.message || e);
     return {};
   }
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") return parsed;
-  } catch (err) {
-    console.warn("[CONF] Impossible de parser FOURNISSEUR_MAILS_JSON :", err && err.message ? err.message : err);
-  }
-  return {};
-})();
+}
+
+const MAGASIN_MAILS = parseEnvJsonObject("MAGASIN_MAILS_JSON");
+const FOURNISSEUR_MAILS = parseEnvJsonObject("FOURNISSEUR_MAILS_JSON");
+console.log("[CONF] MAGASIN_MAILS keys =", Object.keys(MAGASIN_MAILS));
+
 
 
 const FOURNISSEUR_PDFS = {
