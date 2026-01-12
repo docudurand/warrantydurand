@@ -466,34 +466,46 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
     const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
     if (d.email) {
-      if (!transporter) {
-        console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
-      } else {
-        await transporter.sendMail({
-          from: `Garantie <${fromEmail}>`,
-          to: d.email,
-          subject: "Demande de Garantie Envoyée",
-          text: `Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.\n\nCordialement\nL'équipe Durand Services Garantie.`,
-          attachments: [{ filename: nomFichier, content: pdfBuffer, contentType: "application/pdf" }]
-        });
-      }
+      if (d.email) {
+  if (!transporter) {
+    console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
+  } else {
+    try {
+      await transporter.sendMail({
+        from: `Garantie <${fromEmail}>`,
+        to: String(d.email || "").trim(),
+        subject: "Demande de Garantie Envoyée",
+        text: `Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.\n\nCordialement\nL'équipe Durand Services Garantie.`,
+        attachments: [{ filename: nomFichier, content: pdfBuffer, contentType: "application/pdf" }]
+      });
+      console.log("[MAIL] OK client:", String(d.email || "").trim());
+    } catch (e) {
+      console.error("[MAIL] ERREUR client:", e?.message || e);
     }
-    const respMail = MAGASIN_MAILS[d.magasin] || "";
-    if (respMail) {
-      const attachments = await fetchFilesFromFTP(d.files);
-      if (!transporter) {
-        console.error("[MAIL] SMTP not configured. Unable to send magasin notification.");
-      } else {
-        await transporter.sendMail({
-          from: `Garantie <${fromEmail}>`,
-          to: respMail,
-          subject: `Nouvelle demande de garantie`,
-          html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br> Client : ${d.nom} (${d.email})<br> Marque du produit : ${d.marque_produit||""}<br> Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
-          attachments: attachments.map(f=>({ filename: f.filename, path: f.path }))
-        });
-      }
-      cleanupFiles(attachments);
+  }
+}
+const respMail = String(MAGASIN_MAILS[d.magasin] || "").trim();
+if (respMail) {
+  const attachments = await fetchFilesFromFTP(d.files);
+  if (!transporter) {
+    console.error("[MAIL] SMTP not configured. Unable to send magasin notification.");
+  } else {
+    try {
+      await transporter.sendMail({
+        from: `Garantie <${fromEmail}>`,
+        to: respMail,
+        subject: `Nouvelle demande de garantie`,
+        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br> Client : ${d.nom} (${d.email})<br> Marque du produit : ${d.marque_produit||""}<br> Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
+        attachments: attachments.map(f=>({ filename: f.filename, path: f.path }))
+      });
+      console.log("[MAIL] OK magasin:", d.magasin, respMail);
+    } catch (e) {
+      console.error("[MAIL] ERREUR magasin:", e?.message || e);
     }
+  }
+  cleanupFiles(attachments);
+}
+
     res.json({ success: true });
   } catch (err) {
     console.error("Erreur /api/demandes :", err.message || err);
