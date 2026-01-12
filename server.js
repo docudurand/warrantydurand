@@ -484,7 +484,6 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
 const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
 
-// ✅ PDF temporaire pour envoyer en "path" (même méthode que les autres mails)
 const tmpPdfPath = path.join(__dirname, `tmp_${Date.now()}_${Math.round(Math.random()*1e6)}_${nomFichier}`);
 fs.writeFileSync(tmpPdfPath, pdfBuffer);
 
@@ -492,7 +491,7 @@ let mailClientOk = false;
 let mailMagasinOk = false;
 
 try {
-  // ===== Mail au client (avec PDF) =====
+
   if (d.email) {
     const toClient = String(d.email || "").trim();
     if (!transporter) {
@@ -526,7 +525,6 @@ try {
     }
   }
 
-  // ===== Mail au magasin (PDF + PJ uploadées) =====
   const respMail = String(MAGASIN_MAILS[d.magasin] || "").trim();
   if (respMail) {
     const attachments = await fetchFilesFromFTP(d.files);
@@ -566,7 +564,7 @@ try {
     cleanupFiles(attachments);
   }
 } finally {
-  // nettoyage PDF temporaire
+
   try { fs.unlinkSync(tmpPdfPath); } catch {}
 }
 
@@ -1065,7 +1063,6 @@ app.listen(PORT, async () => {
   console.log("[CONF] MAGASIN_MAILS_JSON len =", String(process.env.MAGASIN_MAILS_JSON || "").length);
   console.log("[CONF] MAGASIN_MAILS keys =", Object.keys(MAGASIN_MAILS));
 
-  // ===== TEST SMTP AU DEMARRAGE =====
   try {
     if (!transporter) {
       console.error("[CONF][MAIL] transporter ABSENT -> aucun mail ne peut partir");
@@ -1076,5 +1073,5 @@ app.listen(PORT, async () => {
   } catch (e) {
     console.error("[CONF][MAIL] transporter.verify() ERREUR :", e?.message || e);
   }
-  // =================================
+
 });
