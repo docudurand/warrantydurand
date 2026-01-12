@@ -90,7 +90,17 @@ app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 
+app.use((req, res, next) => {
+  const t0 = Date.now();
+  console.log(`[REQ] ${req.method} ${req.originalUrl} ip=${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
+  res.on("finish", () => {
+    console.log(`[RES] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${Date.now() - t0}ms)`);
+  });
+  next();
+});
+
 const TEMP_UPLOAD_DIR = path.join(__dirname, "temp_uploads");
+
 try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
 const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
