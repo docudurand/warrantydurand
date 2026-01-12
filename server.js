@@ -482,48 +482,95 @@ app.post("/api/demandes", upload.array("document"), async (req, res) => {
       if (!isNaN(dt)) dateStr = dt.toISOString().slice(0,10);
     }
     const nomFichier = `${clientNom}${dateStr ? "_" + dateStr : ""}.pdf`;
-    const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
-      if (d.email) {
-  if (!transporter) {
-    console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
-  } else {
-    try {
-      await transporter.sendMail({
-        from: `Garantie <${fromEmail}>`,
-        to: String(d.email || "").trim(),
-        subject: "Demande de Garantie Envoyée",
-        text: `Bonjour votre demande de garantie a été envoyée avec succès, merci d'imprimer et de joindre le fichier ci-joint avec votre pièce.\n\nCordialement\nL'équipe Durand Services Garantie.`,
-        attachments: [{ filename: nomFichier, content: pdfBuffer, contentType: "application/pdf" }]
-      });
-      console.log("[MAIL] OK client:", String(d.email || "").trim());
-    } catch (e) {
-      console.error("[MAIL] ERREUR client:", e?.message || e);
+const pdfBuffer = await creerPDFDemande(d, nomFichier.replace(/\.pdf$/, ""));
+
+// ✅ PDF temporaire pour envoyer en "path" (même méthode que les autres mails)
+const tmpPdfPath = path.join(__dirname, `tmp_${Date.now()}_${Math.round(Math.random()*1e6)}_${nomFichier}`);
+fs.writeFileSync(tmpPdfPath, pdfBuffer);
+
+let mailClientOk = false;
+let mailMagasinOk = false;
+
+try {
+  // ===== Mail au client (avec PDF) =====
+  if (d.email) {
+    const toClient = String(d.email || "").trim();
+    if (!transporter) {
+      console.error("[MAIL] SMTP not configured. Unable to send client confirmation.");
+    } else {
+      try {
+        const html = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.45;">
+          Bonjour,<br><br>
+          Votre demande de garantie a été envoyée avec succès.<br>
+          Merci d’imprimer et de joindre le fichier PDF ci-joint avec votre pièce.<br><br>
+          <b>Magasin :</b> ${d.magasin || ""}<br>
+          <b>Produit :</b> ${d.produit_concerne || ""}<br>
+          <b>Référence :</b> ${d.reference_piece || ""}<br><br>
+          Cordialement<br>
+          L'équipe Durand Services Garantie.
+        </div>`;
+
+        await transporter.sendMail({
+          from: `Durand Services Garantie <${fromEmail}>`,
+          to: toClient,
+          subject: "Demande de Garantie Envoyée",
+          html,
+          attachments: [{ filename: nomFichier, path: tmpPdfPath, contentType: "application/pdf" }]
+        });
+
+        mailClientOk = true;
+        console.log("[MAIL] OK client:", toClient);
+      } catch (e) {
+        console.error("[MAIL] ERREUR client:", e?.message || e);
+      }
     }
   }
-}
-const respMail = String(MAGASIN_MAILS[d.magasin] || "").trim();
-if (respMail) {
-  const attachments = await fetchFilesFromFTP(d.files);
-  if (!transporter) {
-    console.error("[MAIL] SMTP not configured. Unable to send magasin notification.");
-  } else {
-    try {
-      await transporter.sendMail({
-        from: `Garantie <${fromEmail}>`,
-        to: respMail,
-        subject: `Nouvelle demande de garantie`,
-        html: `<b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br> Client : ${d.nom} (${d.email})<br> Marque du produit : ${d.marque_produit||""}<br> Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br><br>`,
-        attachments: attachments.map(f=>({ filename: f.filename, path: f.path }))
-      });
-      console.log("[MAIL] OK magasin:", d.magasin, respMail);
-    } catch (e) {
-      console.error("[MAIL] ERREUR magasin:", e?.message || e);
+
+  // ===== Mail au magasin (PDF + PJ uploadées) =====
+  const respMail = String(MAGASIN_MAILS[d.magasin] || "").trim();
+  if (respMail) {
+    const attachments = await fetchFilesFromFTP(d.files);
+
+    if (!transporter) {
+      console.error("[MAIL] SMTP not configured. Unable to send magasin notification.");
+    } else {
+      try {
+        const finalAtt = [
+          { filename: nomFichier, path: tmpPdfPath, contentType: "application/pdf" },
+          ...attachments.map(f => ({ filename: f.filename, path: f.path }))
+        ];
+
+        await transporter.sendMail({
+          from: `Durand Services Garantie <${fromEmail}>`,
+          to: respMail,
+          subject: `Nouvelle demande de garantie`,
+          html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.45;">
+                  <b>Nouvelle demande reçue pour le magasin ${d.magasin}.</b><br>
+                  Client : ${d.nom || ""} (${d.email || ""})<br>
+                  Marque du produit : ${d.marque_produit || ""}<br>
+                  Produit : ${d.produit_concerne || ""}<br>
+                  Référence : ${d.reference_piece || ""}<br>
+                  Date : ${(new Date()).toLocaleDateString("fr-FR")}<br><br>
+                  Le PDF de demande est joint à ce mail.
+                </div>`,
+          attachments: finalAtt
+        });
+
+        mailMagasinOk = true;
+        console.log("[MAIL] OK magasin:", d.magasin, respMail);
+      } catch (e) {
+        console.error("[MAIL] ERREUR magasin:", e?.message || e);
+      }
     }
+
+    cleanupFiles(attachments);
   }
-  cleanupFiles(attachments);
+} finally {
+  // nettoyage PDF temporaire
+  try { fs.unlinkSync(tmpPdfPath); } catch {}
 }
 
-    res.json({ success: true });
+res.json({ success: true, mailClientOk, mailMagasinOk });
   } catch (err) {
     console.error("Erreur /api/demandes :", err.message || err);
     res.json({ success: false, message: err.message });
@@ -1009,7 +1056,9 @@ app.get("/admin", (req, res) => {
 });
 app.get("/", (req, res) => {
   res.setHeader("Cache-Control", "no-store");
-  res.sendFile(path.join(__dirname, "suivi.html"));
+  const p = path.join(__dirname, "suivi.html");
+  if (fs.existsSync(p)) return res.sendFile(p);
+  return res.redirect("/admin");
 });
 app.listen(PORT, async () => {
   console.log("Serveur OK " + PORT);
