@@ -148,22 +148,6 @@ html {
       background: #176a9d;
       color: #fff;
     }
-    .select-year{
-      height: 42px;
-      padding: 0 12px;
-      border-radius: 999px;
-      border: 1px solid #c5ced9;
-      background: #fff;
-      color: #123046;
-      font-weight: 600;
-      font-size: 0.98rem;
-      outline: none;
-    }
-    .select-year:focus{
-      border-color: #176a9d;
-      box-shadow: 0 0 0 1px #176a9d33;
-    }
-
     .btn.secondary {
       background: #fff;
       color: #176a9d;
@@ -928,9 +912,8 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
         <span id="role-chip" class="chip-role" style="display:none;"></span>
       </div>
     </div>
-    <div class="top-right" id="export-controls" style="display:none;">
-      <select id="export-year" class="select-year" title="Année à exporter"></select>
-      <button id="btn-export" class="btn" title="Exporter les demandes en Excel">
+    <div class="top-right">
+      <button id="btn-export" class="btn" title="Exporter toutes les demandes en Excel">
         📊 Export Excel
       </button>
     </div>
@@ -1129,9 +1112,13 @@ function toggleSuperAdminUI() {
         }
       }
 
-      const exportControls = document.getElementById("export-controls");
-      if (exportControls) {
-        exportControls.style.display = (isSuperAdmin || isAdmin) ? "flex" : "none";
+      const exportBtn = document.getElementById("btn-export");
+      if (exportBtn) {
+        if (isSuperAdmin || isAdmin) {
+          exportBtn.style.display = "inline-flex";
+        } else {
+          exportBtn.style.display = "none";
+        }
       }
     }
 
@@ -1162,38 +1149,6 @@ function toggleSuperAdminUI() {
     });
 }
 
-
-    function updateExportYearOptions(yearsSet) {
-      const sel = document.getElementById("export-year");
-      if (!sel) return;
-
-      const years = Array.from(yearsSet || []).filter(y => Number.isFinite(Number(y)));
-      years.sort((a, b) => Number(b) - Number(a));
-
-      const current = sel.value || "";
-      sel.innerHTML = "";
-
-      const optAll = document.createElement("option");
-      optAll.value = "";
-      optAll.textContent = "Toutes les années";
-      sel.appendChild(optAll);
-
-      years.forEach(y => {
-        const opt = document.createElement("option");
-        opt.value = String(y);
-        opt.textContent = String(y);
-        sel.appendChild(opt);
-      });
-
-      if (current && years.includes(Number(current))) {
-        sel.value = current;
-      } else if (years.length) {
-        sel.value = String(years[0]);
-      } else {
-        sel.value = "";
-      }
-    }
-
     function construireOnglets() {
       const tabsEl = document.getElementById("year-tabs");
       if (!tabsEl) return;
@@ -1205,9 +1160,7 @@ function toggleSuperAdminUI() {
         const dt = new Date(d.date);
         if (!isNaN(dt)) yearsSet.add(dt.getFullYear());
       });
-      
-      updateExportYearOptions(yearsSet);
-const years = Array.from(yearsSet).sort();
+      const years = Array.from(yearsSet).sort();
 
       const frag = document.createDocumentFragment();
 
@@ -2079,10 +2032,7 @@ function construireFormulaireEdition(d) {
     }
 
     function exportExcel() {
-      const sel = document.getElementById("export-year");
-      const year = sel ? String(sel.value || "").trim() : "";
-      const url = year ? ("/api/admin/export-excel?year=" + encodeURIComponent(year)) : "/api/admin/export-excel";
-      window.location.href = url;
+      window.location.href = "/api/admin/export-excel";
     }
 
     

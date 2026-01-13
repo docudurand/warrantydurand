@@ -817,15 +817,6 @@ app.get("/templates/:name", (req, res) => {
 app.get("/api/admin/dossiers", async (_req, res) => {
   try {
     const data = await readDataFTP();
-    const yearParam = String(req.query.year || "").trim();
-    const year = yearParam ? Number(yearParam) : null;
-    const filtered = (year && Number.isFinite(year))
-      ? (Array.isArray(data) ? data.filter(d => {
-          if (!d || !d.date) return false;
-          const dt = new Date(d.date);
-          return !isNaN(dt) && dt.getFullYear() === year;
-        }) : [])
-      : data;
     res.json(data);
   } catch (err) {
     console.error("Erreur /api/admin/dossiers :", err.message || err);
@@ -1018,21 +1009,9 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   }
 });
 
-app.get("/api/admin/export-excel", async (req, res) => {
+app.get("/api/admin/export-excel", async (_req, res) => {
   try {
     const data = await readDataFTP();
-
-    const yearRaw = (req.query && req.query.year) ? String(req.query.year) : "";
-    const year = yearRaw ? parseInt(yearRaw, 10) : NaN;
-
-    const filtered = (Number.isFinite(year) && year >= 2000 && year <= 2100)
-      ? (Array.isArray(data) ? data.filter(d => {
-          if (!d || !d.date) return false;
-          const dt = new Date(d.date);
-          if (Number.isNaN(dt.getTime())) return false;
-          return dt.getFullYear() === year;
-        }) : [])
-      : (Array.isArray(data) ? data : []);
     const columns = [
       { header: "Date", key: "date" },
       { header: "Magasin", key: "magasin" },
@@ -1047,9 +1026,9 @@ app.get("/api/admin/export-excel", async (req, res) => {
       { header: "Numéro d'avoir", key: "numero_avoir" },
     ];
     const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet(Number.isFinite(year) ? ("Demandes " + year) : "Demandes globales");
+    const ws = wb.addWorksheet("Demandes globales");
     ws.columns = columns;
-    filtered.forEach(d => {
+    data.forEach(d => {
       const obj = {};
       columns.forEach(col => {
         let val = d[col.key] || "";
@@ -1060,10 +1039,7 @@ app.get("/api/admin/export-excel", async (req, res) => {
       ws.addRow(obj);
     });
     res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="dossiers-' + (Number.isFinite(year) ? String(year) : "globales") + '.xlsx"'
-    );
+    res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
     await wb.xlsx.write(res);
     res.end();
   } catch (err) {
