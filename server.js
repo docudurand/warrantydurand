@@ -1009,9 +1009,21 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   }
 });
 
-app.get("/api/admin/export-excel", async (_req, res) => {
+app.get("/api/admin/export-excel", async (req, res) => {
   try {
     const data = await readDataFTP();
+
+    const yearRaw = (req.query && req.query.year) ? String(req.query.year) : "";
+    const year = yearRaw ? parseInt(yearRaw, 10) : NaN;
+
+    const filtered = (Number.isFinite(year) && year >= 2000 && year <= 2100)
+      ? (Array.isArray(data) ? data.filter(d => {
+          if (!d || !d.date) return false;
+          const dt = new Date(d.date);
+          if (Number.isNaN(dt.getTime())) return false;
+          return dt.getFullYear() === year;
+        }) : [])
+      : (Array.isArray(data) ? data : []);
     const columns = [
       { header: "Date", key: "date" },
       { header: "Magasin", key: "magasin" },
@@ -1026,9 +1038,9 @@ app.get("/api/admin/export-excel", async (_req, res) => {
       { header: "Numéro d'avoir", key: "numero_avoir" },
     ];
     const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("Demandes globales");
+    const ws = wb.addWorksheet(Number.isFinite(year) ? ("Demandes " + year) : "Demandes globales");
     ws.columns = columns;
-    data.forEach(d => {
+    filtered.forEach(d => {
       const obj = {};
       columns.forEach(col => {
         let val = d[col.key] || "";
@@ -1039,7 +1051,10 @@ app.get("/api/admin/export-excel", async (_req, res) => {
       ws.addRow(obj);
     });
     res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", 'attachment; filename="dossiers-globales.xlsx"');
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="dossiers-' + (Number.isFinite(year) ? String(year) : "globales") + '.xlsx"'
+    );
     await wb.xlsx.write(res);
     res.end();
   } catch (err) {
