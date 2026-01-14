@@ -23,7 +23,7 @@ function isTruthy(v) {
 function cleanEnv(v) {
   if (v === undefined || v === null) return "";
   let s = String(v).trim();
-  // retire "..." ou '...' ou `...`
+
   if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")) || (s.startsWith("`") && s.endsWith("`"))) {
     s = s.slice(1, -1).trim();
   }
