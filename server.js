@@ -1,4 +1,4 @@
-import express from "express";
+﻿import express from "express";
 import multer from "multer";
 import cors from "cors";
 import fs from "fs";
@@ -37,6 +37,7 @@ const MAGASINS = [
   "Les Echets", "Pavi", "Rives", "Saint-Egreve", "Saint-Jean-Bonnefonds", "Saint-martin-d'heres", "Seynod"
 ];
 
+// Lit une variable d'env JSON et renvoie {} si invalide.
 function parseEnvJsonObject(varName) {
   const raw0 = (process.env[varName] || "").trim();
   if (!raw0) return {};
@@ -86,10 +87,12 @@ const FTP_BACKUP_FOLDER = process.env.FTP_BACKUP_FOLDER || "/Disque 1/sauvegarde
 const JSON_FILE_FTP = path.posix.join(FTP_BACKUP_FOLDER, "demandes.json");
 const UPLOADS_FTP = path.posix.join(FTP_BACKUP_FOLDER, "uploads");
 
+// Middlewares de base (CORS, cookies, JSON).
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 
+// Log simple des requetes et temps de reponse.
 app.use((req, res, next) => {
   const t0 = Date.now();
   console.log(`[REQ] ${req.method} ${req.originalUrl} ip=${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
@@ -104,6 +107,7 @@ const TEMP_UPLOAD_DIR = path.join(__dirname, "temp_uploads");
 try { fs.mkdirSync(TEMP_UPLOAD_DIR, { recursive: true }); } catch {}
 const upload = multer({ dest: TEMP_UPLOAD_DIR });
 
+// Ouvre une connexion FTP configuree et renvoie le client.
 async function getFTPClient() {
   const client = new ftp.Client(10000);
   client.ftp.verbose = false;
@@ -124,6 +128,7 @@ async function getFTPClient() {
   }
 }
 
+// Lit demandes.json sur le FTP et renvoie un tableau.
 async function readDataFTP() {
   let client;
   try {
@@ -166,6 +171,7 @@ async function readDataFTP() {
   return json;
 }
 
+// Ecrit demandes.json sur le FTP avec les nouvelles donnees.
 async function writeDataFTP(data) {
   let client;
   try {
@@ -194,6 +200,7 @@ async function writeDataFTP(data) {
   }
 }
 
+// Envoie un fichier local vers le FTP (dossier uploads).
 async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFileName = null) {
   let client;
   try {
@@ -221,6 +228,7 @@ async function uploadFileToFTP(localPath, remoteSubfolder = "uploads", remoteFil
   }
 }
 
+// Supprime plusieurs fichiers sur le FTP (si possible).
 async function deleteFilesFromFTP(urls = []) {
   if (!urls.length) return;
   let client;
@@ -250,6 +258,7 @@ async function deleteFilesFromFTP(urls = []) {
   }
 }
 
+// Stream un fichier FTP directement dans la reponse HTTP.
 async function streamFTPFileToRes(res, remotePath, fileName) {
   let client;
   try {
@@ -295,6 +304,7 @@ async function streamFTPFileToRes(res, remotePath, fileName) {
   }
 }
 
+// Telecharge des fichiers du FTP vers des fichiers temporaires.
 async function fetchFilesFromFTP(fileObjs) {
   if (!fileObjs || !fileObjs.length) return [];
   let client;
@@ -329,6 +339,7 @@ async function fetchFilesFromFTP(fileObjs) {
   return files;
 }
 
+// Nettoie les fichiers temporaires locaux.
 function cleanupFiles(arr) {
   if (!arr || !arr.length) return;
   for (const f of arr) {
@@ -338,12 +349,14 @@ function cleanupFiles(arr) {
   }
 }
 
+// Recupere le logo en ligne pour le PDF.
 async function getLogoBuffer() {
   const url = "https://raw.githubusercontent.com/docudurand/warrantydurand/main/DSG.png";
   const res = await axios.get(url, { responseType: "arraybuffer" });
   return Buffer.from(res.data, "binary");
 }
 
+// Formate une date en JJ/MM/AAAA (ou renvoie brut si invalide).
 function formatDateJJMMAAAA(input) {
   if (!input) return "";
   const s = String(input).trim();
@@ -358,6 +371,7 @@ function formatDateJJMMAAAA(input) {
   return `${String(d).padStart(2,"0")}/${String(mo).padStart(2,"0")}/${String(y)}`;
 }
 
+// Genere le PDF recapitulatif d'une demande.
 async function creerPDFDemande(d, nomFichier) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -409,6 +423,7 @@ async function creerPDFDemande(d, nomFichier) {
       ];
       const sidePad = 16;
       const cornerRad = 14;
+
       function cellHeightFor(row) {
         const [ , value, type] = row;
         if (type === "multiline") {
@@ -447,6 +462,7 @@ async function creerPDFDemande(d, nomFichier) {
   });
 }
 
+// API: cree une demande, upload, PDF, mails, sauvegarde.
 app.post("/api/demandes", upload.array("document"), async (req, res) => {
   try {
     let data = await readDataFTP();
@@ -575,6 +591,7 @@ res.json({ success: true, mailClientOk, mailMagasinOk });
   }
 });
 
+// API admin: met a jour un dossier (statut, reponse, PJ).
 app.post("/api/admin/dossier/:id",
   upload.fields([{ name: "reponseFiles", maxCount: 10 }, { name: "documentsAjoutes", maxCount: 10 }]),
   async (req, res) => {
@@ -695,6 +712,7 @@ app.post("/api/admin/dossier/:id",
   }
 );
 
+// API admin: envoie le dossier complet au fournisseur.
 app.post("/api/admin/envoyer-fournisseur/:id",
   upload.fields([{ name: "fichiers", maxCount: 20 }, { name: "formulaire", maxCount: 1 }]),
   async (req, res) => {
@@ -767,6 +785,7 @@ app.post("/api/admin/envoyer-fournisseur/:id",
   }
 );
 
+// API admin: met a jour les champs editables du dossier.
 app.post("/api/admin/completer-dossier/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -794,6 +813,7 @@ app.post("/api/admin/completer-dossier/:id", async (req, res) => {
   }
 });
 
+// Sert un formulaire PDF autorise par son nom.
 app.get("/templates/:name", (req, res) => {
   const allowed = {
     "FICHE_GARANTIE_FEBI.pdf": path.join(__dirname, "formulaire", "FICHE_GARANTIE_FEBI.pdf"),
@@ -814,6 +834,7 @@ app.get("/templates/:name", (req, res) => {
   res.sendFile(filePath);
 });
 
+// API admin: renvoie la liste des dossiers.
 app.get("/api/admin/dossiers", async (_req, res) => {
   try {
     const data = await readDataFTP();
@@ -824,6 +845,7 @@ app.get("/api/admin/dossiers", async (_req, res) => {
   }
 });
 
+// API client: renvoie les dossiers d'un email.
 app.get("/api/mes-dossiers", async (req, res) => {
   try {
     const email = (req.query.email||"").toLowerCase();
@@ -836,6 +858,7 @@ app.get("/api/mes-dossiers", async (req, res) => {
   }
 });
 
+// Telechargement/affichage d'un fichier stocke sur le FTP.
 app.get("/download/:file", async (req, res) => {
   try {
     const raw = req.params.file;
@@ -856,6 +879,7 @@ app.get("/download/:file", async (req, res) => {
   }
 });
 
+// Auth admin simple par mot de passe (variables d'env).
 app.post("/api/admin/login", (req, res) => {
   const pw = (req.body && req.body.password) ? req.body.password : "";
   if (pw === process.env["superadmin-pass"]) {
@@ -939,6 +963,7 @@ app.post("/api/admin/login", (req, res) => {
   return res.json({ success: false, message: "Mot de passe incorrect" });
 });
 
+// API admin: supprime une piece jointe d'un dossier.
 app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
   try {
     const { id } = req.params;
@@ -972,6 +997,7 @@ app.post("/api/admin/dossier/:id/delete-file", async (req, res) => {
   }
 });
 
+// API admin super: supprime le dossier et ses fichiers.
 app.delete("/api/admin/dossier/:id", async (req, res) => {
   try {
     const isSuper = req.headers["x-superadmin"] === "1";
@@ -1009,6 +1035,7 @@ app.delete("/api/admin/dossier/:id", async (req, res) => {
   }
 });
 
+// API admin: export Excel des dossiers (annee optionnelle).
 app.get("/api/admin/export-excel", async (req, res) => {
   try {
     const data = await readDataFTP();
@@ -1063,16 +1090,19 @@ app.get("/api/admin/export-excel", async (req, res) => {
   }
 });
 
+// Sert la page admin.
 app.get("/admin", (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.sendFile(path.join(__dirname, "admin.html"));
 });
+// Sert la page publique de suivi (ou redirige).
 app.get("/", (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   const p = path.join(__dirname, "suivi.html");
   if (fs.existsSync(p)) return res.sendFile(p);
   return res.redirect("/admin");
 });
+// Demarre le serveur et verifie la config mail.
 app.listen(PORT, async () => {
   console.log("Serveur OK " + PORT);
   console.log("[CONF] MAGASIN_MAILS_JSON len =", String(process.env.MAGASIN_MAILS_JSON || "").length);
@@ -1090,3 +1120,4 @@ app.listen(PORT, async () => {
   }
 
 });
+

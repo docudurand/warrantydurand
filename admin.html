@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+<!--page admin pour la garantie (liste + detail + actions)-->
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -1060,7 +1061,6 @@ html.dsg-in-iframe, html.dsg-in-iframe body {
     let docsBufferGlobal = [];
     let reponseBufferGlobal = [];
 
-
     function statutChip(statut) {
       const raw = (statut || "");
       const s = raw.toLowerCase();
@@ -1144,6 +1144,7 @@ function toggleSuperAdminUI() {
       }
     }
 
+    // Charge tous les dossiers depuis l'API.
     function chargerDossiers() {
   return fetch("/api/admin/dossiers")
     .then(r => r.json())
@@ -1166,6 +1167,7 @@ function toggleSuperAdminUI() {
 }
 
 
+    // Met a jour la liste des annees exportables.
     function updateExportYearOptions(yearsSet) {
       const sel = document.getElementById("export-year");
       if (!sel) return;
@@ -1197,6 +1199,7 @@ function toggleSuperAdminUI() {
       }
     }
 
+    // Construit les onglets de navigation par annee.
     function construireOnglets() {
       const tabsEl = document.getElementById("year-tabs");
       if (!tabsEl) return;
@@ -1247,6 +1250,7 @@ const years = Array.from(yearsSet).sort();
       }
     }
 
+    // Met a jour l'onglet actif visuellement.
     function majOngletsActifs() {
       const tabsEl = document.getElementById("year-tabs");
       if (!tabsEl) return;
@@ -1263,6 +1267,7 @@ const years = Array.from(yearsSet).sort();
       });
     }
 
+        // Applique tous les filtres sur la liste brute.
         function filtrerDossiers() {
       let liste = allDossiers.slice();
 
@@ -1340,6 +1345,7 @@ const years = Array.from(yearsSet).sort();
       return liste;
     }
 
+    // Calcule et affiche les stats
     function afficherCompteurs(dossiers) {
       const row = document.getElementById("stats-row");
       if (!row) return;
@@ -1389,6 +1395,7 @@ const years = Array.from(yearsSet).sort();
       });
     }
 
+// Construit la liste des dossiers a l'ecran.
 function renderListe() {
   const list = document.getElementById("dossier-list");
   if (!list) return;
@@ -1484,10 +1491,12 @@ mid.innerHTML =
   list.appendChild(frag);
 }
 
+    // Rafraichit stats + liste apres un changement.
     function majStatsEtListe() {
       renderListe();
     }
 
+// Affiche les fichiers d'une section du dossier.
 function renderFilesList(arr, title, section) {
   if (!arr || !arr.length) return "";
   let html = '<div class="detail-field-label">' + title + "</div>";
@@ -1516,6 +1525,7 @@ function renderFilesList(arr, title, section) {
   return html;
 }
 
+// Demande au serveur de supprimer un fichier du dossier.
 function supprimerDocumentDossier(evt) {
   evt.stopPropagation();
   if (!dossierSelectionne) return;
@@ -1565,6 +1575,7 @@ function supprimerDocumentDossier(evt) {
     });
 }
 
+    // Affiche le detail du dossier selectionne.
     function afficherDetail(d) {
       const empty = document.getElementById("detail-empty");
       const content = document.getElementById("detail-content");
@@ -1707,6 +1718,7 @@ const docsAjHtml = renderFilesList(
       const repInput = document.querySelector('#edit-form input[name="reponseFiles"]');
       const repList = document.getElementById("reponse-files-buffer");
 
+      // Affiche un buffer de fichiers avant envoi.
       function renderBuffer(listEl, buffer) {
         if (!listEl) return;
         listEl.innerHTML = "";
@@ -1750,6 +1762,7 @@ const docsAjHtml = renderFilesList(
 }
 
 
+// Genere le formulaire d'edition du dossier.
 function construireFormulaireEdition(d) {
   const selectedEnr   = d.statut === "enregistré";
   const selectedAcc   = d.statut === "accepté";
@@ -1856,6 +1869,7 @@ function construireFormulaireEdition(d) {
   return html;
 }
 
+    // Envoie la mise a jour du dossier (statut/reponse).
     function onSubmitEditForm(e) {
       e.preventDefault();
 
@@ -1925,6 +1939,7 @@ function construireFormulaireEdition(d) {
     });
 }
 
+    // Supprime un dossier complet (super admin).
     function supprimerDossier() {
       if (!dossierSelectionne) return;
       if (!confirm("Supprimer définitivement ce dossier ?")) return;
@@ -1951,6 +1966,7 @@ function construireFormulaireEdition(d) {
         });
     }
 
+    // Ouvre la modale d'envoi fournisseur.
     function ouvrirModalFournisseur() {
       if (!dossierSelectionne) return;
       const backdrop = document.getElementById("modal-backdrop");
@@ -1959,11 +1975,13 @@ function construireFormulaireEdition(d) {
       if (form) form.reset();
     }
 
+    // Ferme la modale d'envoi fournisseur.
     function fermerModalFournisseur() {
       const backdrop = document.getElementById("modal-backdrop");
       if (backdrop) backdrop.style.display = "none";
     }
 
+    // Remplit et ouvre la modale de modification.
     function ouvrirModifierDossier() {
       if (!dossierSelectionne) return;
       const back = document.getElementById('edit-modal-backdrop');
@@ -2001,11 +2019,13 @@ function construireFormulaireEdition(d) {
       back.style.display = 'flex';
     }
 
+    // Ferme la modale de modification.
     function fermerModifierDossier() {
       const back = document.getElementById('edit-modal-backdrop');
       if (back) back.style.display = 'none';
     }
 
+    // Envoie les champs modifies du dossier.
     function onSubmitModifierForm(e) {
       e.preventDefault();
       if (!dossierSelectionne) return;
@@ -2055,6 +2075,7 @@ function construireFormulaireEdition(d) {
 });
 }
 
+    // Envoie le dossier au fournisseur.
     function onSubmitFournisseurForm(e) {
       e.preventDefault();
       if (!dossierSelectionne) return;
@@ -2081,6 +2102,7 @@ function construireFormulaireEdition(d) {
         });
     }
 
+    // Lance l'export Excel des dossiers.
     function exportExcel() {
       const sel = document.getElementById("export-year");
       const year = sel ? String(sel.value || "").trim() : "";
@@ -2089,6 +2111,7 @@ function construireFormulaireEdition(d) {
     }
 
     
+    // Ouvre le formulaire fournisseur (pdf ou lien).
     function ouvrirFormulaireFournisseur() {
       const fournisseurSelect = document.getElementById("fournisseur-select");
       if (!fournisseurSelect) return;
@@ -2141,11 +2164,13 @@ function construireFormulaireEdition(d) {
     }
 
 
+// Branche tous les evenements de la page.
 function initEvents() {
   const loginForm  = document.getElementById("login-form");
   const loginInput = document.getElementById("password");
   const loginMsg   = document.getElementById("login-msg");
 
+  // Tente une connexion admin avec le mot de passe.
   function tryLogin(evt) {
     if (evt) evt.preventDefault();
     const pw = loginInput.value;
@@ -2280,6 +2305,7 @@ chargerDossiers().then(() => {
 
     }
 
+// Formate une date en JJ/MM/AAAA.
 function formatDateFRshort(val) {
   if (!val) return "";
   if (typeof val === "string" && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
@@ -2297,6 +2323,7 @@ function formatDateFRshort(val) {
   return val;
 }
 
+// Ouvre une fenetre imprimable pour un dossier.
 function voirDossier(id) {
     let d = allDossiers.find(x=>x.id===id);
     if (!d) return alert("Dossier introuvable !");
@@ -2407,6 +2434,7 @@ function voirDossier(id) {
         </table>
       </div>
       <script>
+        // Renomme le titre avant impression pour un bon nom de fichier.
         function renameAndPrint(filename) {
           var oldTitle = document.title;
           document.title = filename;

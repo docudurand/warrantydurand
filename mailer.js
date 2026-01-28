@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+﻿import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -14,12 +14,14 @@ const {
   FROM_EMAIL,
 } = process.env;
 
+// Convertit une valeur en booleen lisible (true/1/yes).
 function isTruthy(v) {
   if (!v) return false;
   const s = String(v).trim().toLowerCase();
   return s === "true" || s === "1" || s === "yes";
 }
 
+// Nettoie une variable d'env (trim + enleve les guillemets).
 function cleanEnv(v) {
   if (v === undefined || v === null) return "";
   let s = String(v).trim();
@@ -69,3 +71,4 @@ if (smtpHost && smtpUser && smtpPass) {
 }
 
 export { transporter, fromEmail };
+

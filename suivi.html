@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+<!--page suivi pour la garantie-->
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -279,6 +280,7 @@ document.getElementById("statut-filter").onchange = function() {
 
 document.getElementById("input-recherche").oninput = afficherListe;
 
+// Appelle l'API pour charger les dossiers de l'email.
 function afficherDossiers() {
   let email = inputMail.value.trim();
   if (!email || !email.includes("@")) {
@@ -295,6 +297,7 @@ function afficherDossiers() {
     });
 }
 
+// Construit les options de filtres (mois/annee).
 function genererFiltres() {
   let moisSet = new Set(), anneeSet = new Set();
   dossiersData.forEach(d => {
@@ -314,6 +317,7 @@ function genererFiltres() {
   Array.from(anneeSet).sort().forEach(a => anneeSel.innerHTML += `<option value="${a}">${a}</option>`);
 }
 
+// Retourne un badge HTML selon le statut.
 function statutChip(statut) {
   let s = (statut || "").toLowerCase();
   if (s === "enregistré") return `<span class="statut-chip"><span class="statut-dot enregistre"></span>Enregistré</span>`;
@@ -323,6 +327,7 @@ function statutChip(statut) {
   return statut || "";
 }
 
+// Applique les filtres et affiche le tableau.
 function afficherListe() {
   let recherche = document.getElementById("input-recherche").value.trim().toLowerCase();
   let dossiers = dossiersData;
@@ -388,6 +393,7 @@ html += `</table>`;
 document.getElementById("dossiers-list").innerHTML = html;
 }
 
+// Ouvre une fenetre imprimable pour un dossier.
 function voirDossier(id) {
   let d = dossiersData.find(x=>x.id===id);
   if (!d) return alert("Dossier introuvable !");
@@ -475,6 +481,7 @@ function voirDossier(id) {
       </table>
     </div>
     <script>
+      // Renomme le titre avant impression pour un bon nom de fichier.
       function renameAndPrint(filename) {
         var oldTitle = document.title;
         document.title = filename;
